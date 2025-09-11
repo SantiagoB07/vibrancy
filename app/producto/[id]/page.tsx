@@ -3,8 +3,8 @@ import React from "react";
 import { useState } from "react";
 import { Star } from "lucide-react";
 
-export default function ProductoDetalle({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params);
+export default function ProductoDetalle({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
   return (
@@ -37,15 +37,19 @@ export default function ProductoDetalle({ params }: { params: Promise<{ id: stri
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHover(star)}
                   onMouseLeave={() => setHover(null)}
+                  aria-label={`Calificar ${star} de 5`}
+                  aria-pressed={rating >= star}
+                  title={`Calificar ${star} de 5`}
                 >
                   <Star
+                    aria-hidden="true"
                     className={`h-6 w-6 transition-colors ${
                       (hover ?? rating) >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
                     }`}
                   />
                 </button>
               ))}
-              <span className="ml-2 text-sm text-gray-500">
+              <span className="ml-2 text-sm text-gray-500" aria-live="polite">
                 {rating > 0 ? `${rating} / 5` : "Sin calificación"}
               </span>
             </div>
