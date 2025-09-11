@@ -71,7 +71,17 @@ function SidebarProvider({
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
+  const [_open, _setOpen] = React.useState<boolean>(() => {
+    try {
+      const m = document.cookie.match(
+        new RegExp('(?:^|; )' + SIDEBAR_COOKIE_NAME + '=([^;]*)')
+      )
+      if (m) return m[1] === "1" || m[1] === "true"
+    } catch {
+      /* ignore */
+    }
+    return defaultOpen
+  })
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -83,7 +93,11 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${
+        openState ? "1" : "0"
+      }; Path=/; Max-Age=${SIDEBAR_COOKIE_MAX_AGE}; SameSite=Lax${
+        location.protocol === "https:" ? "; Secure" : ""
+      }`
     },
     [setOpenProp, open]
   )
@@ -96,10 +110,24 @@ function SidebarProvider({
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key?.toLowerCase?.()
+      const modifier = event.metaKey || event.ctrlKey
+      const target = event.target as HTMLElement | null
+      const inEditable =
+        !!target &&
+        (target.isContentEditable ||
+          /^(input|textarea|select)$/i.test(target.tagName))
       if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
+        event.defaultPrevented ||
+        event.altKey ||
+        event.shiftKey ||
+        event.isComposing ||
+        event.repeat ||
+        inEditable
       ) {
+        return
+      }
+      if (modifier && key === SIDEBAR_KEYBOARD_SHORTCUT) {
         event.preventDefault()
         toggleSidebar()
       }
@@ -170,7 +198,7 @@ function Sidebar({
       <div
         data-slot="sidebar"
         className={cn(
-          "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
+          "bg-sidebar text-sidebar-foreground flex h-full w-[var(--sidebar-width)] flex-col",
           className
         )}
         {...props}

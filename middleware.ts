@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rutas públicas
-  if (pathname.startsWith("/contacto") || pathname.startsWith("/producto")) {
+  if (pathname === "/contacto" || /^\/producto\/\d+(?:\/|$)/.test(pathname)) {
     return NextResponse.next();
   }
 

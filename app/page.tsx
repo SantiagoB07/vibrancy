@@ -15,18 +15,17 @@ function App() {
       {/* Productos destacados */}
       <section className="py-16 px-6 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {[1, 2, 3].map((id) => (
-          <Card key={id} className="w-80">
-            <CardContent className="p-4 text-center">
-              <img
+          <Card key={id} className="w-full">
+            <CardContent className="p-4 text-center">              <img
                 src={`/producto/${id}.jpg`}
                 alt={`Producto ${id}`}
                 className="mx-auto mb-4 rounded-lg"
               />
               <h3 className="text-xl font-semibold">Producto {id}</h3>
               <p className="text-gray-600">Descripción breve.</p>
-              <Link href={`/producto/${id}`}>
-                <Button className="mt-4">Comprar</Button>
-              </Link>
+              <Button asChild className="mt-4">
+                <Link href={`/producto/${id}`}>Comprar</Link>
+              </Button>
             </CardContent>
           </Card>
         ))}

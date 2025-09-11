@@ -1,12 +1,20 @@
-export default function ProductoDetalle({ params }: { params: { id: string } }) {
+"use client";
+import React from "react";
+import { useState } from "react";
+import { Star } from "lucide-react";
+
+export default function ProductoDetalle({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState<number | null>(null);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full bg-white shadow-xl rounded-2xl overflow-hidden">
         {/* Imagen */}
         <div className="bg-gray-100 flex items-center justify-center">
           <img
-            src={`/producto${params.id}.jpg`}
-            alt={`Producto ${params.id}`}
+            src={`/producto${id}.jpg`}
+            alt={`Producto ${id}`}
             className="object-cover h-96 w-full"
           />
         </div>
@@ -14,13 +22,37 @@ export default function ProductoDetalle({ params }: { params: { id: string } }) 
         {/* Detalles */}
         <div className="p-6 flex flex-col justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-black">Producto {params.id}</h1>
+            <h1 className="text-4xl font-bold mb-4 text-black">Producto {id}</h1>
             <p className="text-gray-600 mb-6">
-              Una descripción extensa sobre el producto {params.id}. Incluye
+              Una descripción extensa sobre el producto {id}. Incluye
               características, beneficios y detalles técnicos.
             </p>
+
+            {/* Sistema de Calificación */}
+            <div className="flex items-center gap-2 mb-4">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHover(star)}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  <Star
+                    className={`h-6 w-6 transition-colors ${
+                      (hover ?? rating) >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
+              <span className="ml-2 text-sm text-gray-500">
+                {rating > 0 ? `${rating} / 5` : "Sin calificación"}
+              </span>
+            </div>
+
             <p className="text-3xl font-semibold text-green-600">$149.99</p>
           </div>
+
           <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
             Comprar ahora
           </button>
