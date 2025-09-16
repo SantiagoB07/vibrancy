@@ -1,42 +1,54 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { formatCOP } from "@/lib/utils";
 
-function App() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Hero */}
-      <section className="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-b from-white to-gray-100">
-        <h1 className="text-5xl font-bold mb-4 text-black">Bienvenido a <span className="text-blue-600">Vibrancy</span></h1>
-        <p className="text-lg text-gray-600 mb-6">Encuentra los mejores productos al mejor precio</p>
-        <Button size="lg">Explorar productos</Button>
-      </section>
-
-      {/* Productos destacados */}
-      <section className="py-16 px-6 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {[1, 2, 3].map((id) => (
-          <Card key={id} className="w-full">
-            <CardContent className="p-4 text-center">              <img
-                src={`/producto/${id}.jpg`}
-                alt={`Producto ${id}`}
-                className="mx-auto mb-4 rounded-lg"
-              />
-              <h3 className="text-xl font-semibold">Producto {id}</h3>
-              <p className="text-gray-600">Descripción breve.</p>
-              <Button asChild className="mt-4">
-                <Link href={`/producto/${id}`}>Comprar</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white text-center py-6 mt-auto">
-        <p>© 2025 Vibrancy. Todos los derechos reservados.</p>
-      </footer>
-    </div>
-  );
+function imgUrl(img?: string) {
+    if (!img) return "/images/04.png";
+    if (img.startsWith("http")) return img;
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${img}`;
 }
 
-export default App;
+export default async function Home() {
+    const supabase = await createClient();
+
+    const { data: products, error } = await supabase
+        .from("products")
+        .select("id, title, price, img, status")
+        .eq("status", true)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        return <p>Error cargando productos: {error.message}</p>;
+    }
+
+    return (
+        <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Bienvenido a Vibrancy</h1>
+            <p className="mb-6">Explora nuestra colección de productos exclusivos.</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {products?.map((p) => (
+                    <div
+                        key={p.id}
+                        className="border rounded-lg p-4 shadow hover:shadow-md transition"
+                    >
+                        <img
+                            src={imgUrl(p.img)}
+                            alt={p.title ?? "Producto"}
+                            className="w-full h-40 object-cover mb-3 rounded"
+                        />
+                        <h2 className="text-lg font-semibold">{p.title}</h2>
+                        <p className="text-gray-600">{formatCOP(p.price ?? 0)}</p>
+                        <Link
+                            href={`/producto/${p.id}`}
+                            className="mt-3 inline-block text-sm text-blue-600 hover:underline"
+                        >
+                            Ver detalle
+                        </Link>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
