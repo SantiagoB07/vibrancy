@@ -42,6 +42,7 @@ export default async function Home() {
                         <p className="text-gray-600">{formatCOP(p.price ?? 0)}</p>
                         <Link
                             href={`/producto/${p.id}`}
+                            prefetch={true}
                             className="mt-3 inline-block text-sm text-blue-600 hover:underline"
                         >
                             Ver detalle

@@ -1,3 +1,4 @@
+"use client"
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import React from "react"
 import { Home, Package, Tag, Settings, User } from "lucide-react"
 import Link from "next/link"
 
@@ -44,7 +46,7 @@ const menuItems = [
 
 export function AppSidebar() {
   return (
-    <Sidebar className="w-48 bg-background border-r">
+    <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-background border-r">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
           <Package className="h-6 w-6 text-blue-600" />
