@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP } from "@/lib/utils";
+import { ProductModal } from "@/components/product-modal";
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -55,33 +55,34 @@ export default async function ProductsPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {products.map((p) => (
-                            <Link
+                            <ProductModal
                                 key={p.id}
-                                href={`/producto/${p.id}`}
-                                className="group"
+                                product={p}
                             >
-                                <div className="bg-white rounded-2xl shadow hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:-translate-y-1">
-                                    <div className="relative">
-                                        <img
-                                            src={imgUrl(p.img)}
-                                            alt={p.title ?? "Producto"}
-                                            className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    </div>
-                                    <div className="p-6">
-                                        <h2 className="text-lg font-semibold text-amber-900 mb-2 group-hover:text-amber-700 transition-colors">
-                                            {p.title}
-                                        </h2>
-                                        <p className="text-xl font-bold text-orange-600">
-                                            {formatCOP(p.price ?? 0)}
-                                        </p>
-                                        <span className="mt-3 inline-block text-sm text-amber-600 group-hover:underline">
-                      Ver detalle →
-                    </span>
+                                <div className="group cursor-pointer">
+                                    <div className="bg-white rounded-2xl shadow hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:-translate-y-1">
+                                        <div className="relative">
+                                            <img
+                                                src={imgUrl(p.img)}
+                                                alt={p.title ?? "Producto"}
+                                                className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        </div>
+                                        <div className="p-6">
+                                            <h2 className="text-lg font-semibold text-amber-900 mb-2 group-hover:text-amber-700 transition-colors">
+                                                {p.title}
+                                            </h2>
+                                            <p className="text-xl font-bold text-orange-600">
+                                                {formatCOP(p.price ?? 0)}
+                                            </p>
+                                            <span className="mt-3 inline-block text-sm text-amber-600 group-hover:underline">
+                              Ver detalle →
+                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </Link>
+                            </ProductModal>
                         ))}
                     </div>
                 )}
