@@ -125,12 +125,8 @@ export function ProductModal({ product, children }: ProductModalProps) {
                     prefetch={true}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
                   >
-                    Ver detalles completos
+                    Comprar
                   </Link>
-                  
-                  <button className="w-full bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold py-3 px-6 rounded-lg transition-colors">
-                    Agregar al carrito
-                  </button>
                 </div>
               </div>
             </div>

@@ -6,11 +6,29 @@ import { formatCOP } from "@/lib/utils";
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
     if (img.startsWith("http")) return img;
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${img}`;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+        console.warn("NEXT_PUBLIC_SUPABASE_URL not configured, using placeholder");
+        return "/images/04.png";
+    }
+
+    return `${supabaseUrl}/storage/v1/object/public/product-images/${img}`;
+}
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  img?: string;
 }
 
-export default function ProductClient({ producto, relacionados }: { producto: any, relacionados: any[] }) {
-    const [rating, setRating] = useState(0);
+interface ProductClientProps {
+  producto: Product;
+  relacionados: Product[];
+}
+
+export default function ProductClient({ producto, relacionados }: ProductClientProps) {    const [rating, setRating] = useState(0);
     const [hover, setHover] = useState<number | null>(null);
 
     return (
