@@ -14,9 +14,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import React from "react"
-import { Home, Package, Tag, Settings, User } from "lucide-react"
+import {Home, Package, Tag, Settings, User, ShoppingCart} from "lucide-react"
 import Link from "next/link"
-
+import { Toaster } from "sonner";
 interface AppLayoutProps {
   children: React.ReactNode
 }
@@ -38,10 +38,15 @@ const menuItems = [
     icon: Tag,
   },
   {
+    title: "Mi Carrito",
+    url: "/cart",
+    icon: ShoppingCart,
+  },
+  {
     title: "Configuración",
     url: "/settings",
     icon: Settings,
-  },
+  }
 ]
 
 export function AppSidebar() {
@@ -123,6 +128,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </main>
         </div>
       </div>
+      <Toaster richColors position="top-right" closeButton />
     </SidebarProvider>
   )
 }
