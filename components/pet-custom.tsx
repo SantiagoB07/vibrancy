@@ -141,13 +141,25 @@ export function PetCustom({ product, children }: PetCustomProps) {
                   <input
                     type="text"
                     value={currentFace === 1 ? petName : ownerInfo}
-                    onChange={(e) => currentFace === 1 ? setPetName(e.target.value) : setOwnerInfo(e.target.value)}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (newValue.length <= 15) {
+                        currentFace === 1 ? setPetName(newValue) : setOwnerInfo(newValue);
+                      }
+                    }}
                     placeholder="Personaliza tu placa"
                     maxLength={15}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
                   />
-                  <p className="text-xs text-gray-500 mt-1 text-center">
-                    Máximo 15 caracteres
+                  <p className={`text-xs mt-1 text-center ${
+                    (currentFace === 1 ? petName.length : ownerInfo.length) >= 15
+                      ? 'text-red-500'
+                      : 'text-gray-500'
+                  }`}>
+                    {currentFace === 1 
+                      ? `${petName.length}/15 caracteres`
+                      : `${ownerInfo.length}/15 caracteres`
+                    }
                   </p>
                 </div>
               </div>
