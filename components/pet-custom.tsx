@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { X, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
 interface PetCustomProps {
@@ -16,7 +16,10 @@ interface PetCustomProps {
 
 export function PetCustom({ product, children }: PetCustomProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [engravingText, setEngravingText] = useState('');
+  const [petName, setPetName] = useState('');
+  const [ownerInfo, setOwnerInfo] = useState('');
+  const [currentFace, setCurrentFace] = useState(1);
+  const [isRotating, setIsRotating] = useState(false);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -40,7 +43,13 @@ export function PetCustom({ product, children }: PetCustomProps) {
               <div className="flex justify-center mb-8">
                 <div className="relative">
                   {/* Bone-shaped Pet Tag */}
-                  <div className="relative w-40 h-20">
+                  <div 
+                    className="relative w-40 h-20 transition-transform duration-500"
+                    style={{ 
+                      transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                      transformStyle: 'preserve-3d'
+                    }}
+                  >
                     {/* Rectangle with metallic finish */}
                     <div className="absolute inset-0 rounded-lg shadow-lg" 
                          style={{
@@ -48,10 +57,19 @@ export function PetCustom({ product, children }: PetCustomProps) {
                            boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.2)'
                          }}>
                       <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                          <div className="text-xs font-semibold text-gray-700 mb-1 drop-shadow-sm">PET TAG</div>
+                        <div 
+                          className="text-center"
+                          style={{
+                            transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                            opacity: isRotating ? 0 : 1,
+                            transition: 'opacity 0.1s ease-in-out'
+                          }}
+                        >
                           <div className="text-sm font-bold text-gray-900 max-w-20 truncate drop-shadow-sm">
-                            {engravingText || 'YOUR PET NAME'}
+                            {currentFace === 1 
+                              ? (petName || 'YOUR PET NAME')
+                              : (ownerInfo || 'YOUR PHONE')
+                            }
                           </div>
                         </div>
                       </div>
@@ -100,17 +118,34 @@ export function PetCustom({ product, children }: PetCustomProps) {
                 </div>
               </div>
 
+              {/* Face Switch Button */}
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={() => {
+                    setIsRotating(true);
+                    setCurrentFace(currentFace === 1 ? 2 : 1);
+                    setTimeout(() => setIsRotating(false), 500);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    {currentFace === 1 ? 'Ver cara 2' : 'Ver cara 1'}
+                  </span>
+                </button>
+              </div>
+
               {/* Customization Input */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Personaliza tu placa
+                    {currentFace === 1 ? 'Personaliza tu placa' : 'Información del dueño'}
                   </label>
                   <input
                     type="text"
-                    value={engravingText}
-                    onChange={(e) => setEngravingText(e.target.value)}
-                    placeholder="YOUR PET NAME"
+                    value={currentFace === 1 ? petName : ownerInfo}
+                    onChange={(e) => currentFace === 1 ? setPetName(e.target.value) : setOwnerInfo(e.target.value)}
+                    placeholder={currentFace === 1 ? "YOUR PET NAME" : "YOUR PHONE NUMBER"}
                     maxLength={15}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold uppercase tracking-wide"
                   />
