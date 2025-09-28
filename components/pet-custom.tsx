@@ -44,7 +44,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                 <div className="relative">
                   {/* Bone-shaped Pet Tag */}
                   <div 
-                    className="relative w-40 h-20 transition-transform duration-500"
+                    className="relative w-56 h-28 transition-transform duration-500"
                     style={{ 
                       transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
                       transformStyle: 'preserve-3d'
@@ -65,7 +65,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                             transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
                           }}
                         >
-                          <div className="text-sm font-bold text-gray-900 max-w-20 truncate drop-shadow-sm">
+                          <div className="text-base font-bold text-gray-900 max-w-28 truncate drop-shadow-sm">
                             {currentFace === 1 
                               ? (petName || 'YOUR PET NAME')
                               : (ownerInfo || 'YOUR PHONE')
@@ -77,7 +77,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     
                     {/* Blended circles for seamless bone shape */}
                     {/* Top-left circle */}
-                    <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full"
+                    <div className="absolute -top-6 -left-6 w-16 h-16 rounded-full"
                          style={{
                            background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
                            boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
@@ -86,7 +86,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     </div>
                     
                     {/* Top-right circle */}
-                    <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full"
+                    <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full"
                          style={{
                            background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
                            boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
@@ -95,7 +95,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     </div>
                     
                     {/* Bottom-left circle */}
-                    <div className="absolute -bottom-4 -left-4 w-12 h-12 rounded-full"
+                    <div className="absolute -bottom-6 -left-6 w-16 h-16 rounded-full"
                          style={{
                            background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
                            boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
@@ -104,7 +104,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     </div>
                     
                     {/* Bottom-right circle */}
-                    <div className="absolute -bottom-4 -right-4 w-12 h-12 rounded-full"
+                    <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full"
                          style={{
                            background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
                            boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
