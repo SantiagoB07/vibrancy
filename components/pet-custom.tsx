@@ -16,8 +16,18 @@ interface PetCustomProps {
 
 export function PetCustom({ product, children }: PetCustomProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [petName, setPetName] = useState('');
-  const [ownerInfo, setOwnerInfo] = useState('');
+  const [petName, setPetName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('petTag_petName') || '';
+    }
+    return '';
+  });
+  const [ownerInfo, setOwnerInfo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('petTag_ownerInfo') || '';
+    }
+    return '';
+  });
   const [currentFace, setCurrentFace] = useState(1);
   const [isRotating, setIsRotating] = useState(false);
 
@@ -44,7 +54,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                 <div className="relative">
                   {/* Bone-shaped Pet Tag */}
                   <div 
-                    className="relative w-56 h-28 transition-transform duration-500"
+                    className="relative w-64 h-28 transition-transform duration-500"
                     style={{ 
                       transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
                       transformStyle: 'preserve-3d'
@@ -65,7 +75,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                             transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
                           }}
                         >
-                          <div className="text-base font-bold text-gray-900 max-w-28 truncate drop-shadow-sm">
+                          <div className="text-base font-bold text-gray-900 max-w-32 truncate drop-shadow-sm">
                             {currentFace === 1 
                               ? petName
                               : ownerInfo
@@ -144,7 +154,13 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     onChange={(e) => {
                       const newValue = e.target.value;
                       if (newValue.length <= 15) {
-                        currentFace === 1 ? setPetName(newValue) : setOwnerInfo(newValue);
+                        if (currentFace === 1) {
+                          setPetName(newValue);
+                          localStorage.setItem('petTag_petName', newValue);
+                        } else {
+                          setOwnerInfo(newValue);
+                          localStorage.setItem('petTag_ownerInfo', newValue);
+                        }
                       }
                     }}
                     placeholder="Personaliza tu placa"
