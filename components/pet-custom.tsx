@@ -60,9 +60,9 @@ export function PetCustom({ product, children }: PetCustomProps) {
                         <div 
                           className="text-center"
                           style={{
-                            transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
                             opacity: isRotating ? 0 : 1,
-                            transition: 'opacity 0.1s ease-in-out'
+                            transition: 'opacity 0.1s ease-in-out',
+                            transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
                           }}
                         >
                           <div className="text-sm font-bold text-gray-900 max-w-20 truncate drop-shadow-sm">
