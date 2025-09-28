@@ -38,7 +38,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
               </button>
             </div>
             
-            <div className="p-8">
+            <div className="p-8 pb-12">
               {/* Pet Tag Preview */}
               <div className="flex justify-center mb-8">
                 <div className="relative">
@@ -67,8 +67,8 @@ export function PetCustom({ product, children }: PetCustomProps) {
                         >
                           <div className="text-base font-bold text-gray-900 max-w-28 truncate drop-shadow-sm">
                             {currentFace === 1 
-                              ? (petName || 'YOUR PET NAME')
-                              : (ownerInfo || 'YOUR PHONE')
+                              ? petName
+                              : ownerInfo
                             }
                           </div>
                         </div>
@@ -138,16 +138,13 @@ export function PetCustom({ product, children }: PetCustomProps) {
               {/* Customization Input */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {currentFace === 1 ? 'Personaliza tu placa' : 'Información del dueño'}
-                  </label>
                   <input
                     type="text"
                     value={currentFace === 1 ? petName : ownerInfo}
                     onChange={(e) => currentFace === 1 ? setPetName(e.target.value) : setOwnerInfo(e.target.value)}
-                    placeholder={currentFace === 1 ? "YOUR PET NAME" : "YOUR PHONE NUMBER"}
+                    placeholder="Personaliza tu placa"
                     maxLength={15}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold uppercase tracking-wide"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
                   />
                   <p className="text-xs text-gray-500 mt-1 text-center">
                     Máximo 15 caracteres
