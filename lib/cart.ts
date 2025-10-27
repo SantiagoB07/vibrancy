@@ -85,20 +85,38 @@ export async function getOrCreateCart(): Promise<number | null> {
 }
 
 export async function addToCart(productId: number, quantity = 1): Promise<boolean> {
+    // Validar entradas
+    if (!Number.isInteger(productId) || productId <= 0) {
+        console.error("❌ addToCart: productId inválido", { productId, quantity });
+        return false;
+    }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+        console.error("❌ addToCart: quantity inválida (debe ser entero >= 1)", { productId, quantity });
+        return false;
+    }
+
     const supabase = createClient();
     const cartId = await getOrCreateCart();
-    if (!cartId) return false;
+    if (!cartId) {
+        console.error("❌ addToCart: no se pudo obtener/crear cartId");
+        return false;
+    }
 
     const { error } = await supabase.from("cart_items").upsert(
         { cart_id: cartId, product_id: productId, quantity },
         { onConflict: "cart_id,product_id" }
     );
 
-    return !error;
+    if (error) {
+        console.error("❌ Error agregando al carrito", { error, cartId, productId, quantity });
+        return false;
+    }
+
+    return true;
 }
 
 // Eliminar producto del carrito (solo query, sin React)
-export async function removeFromCart(itemId: number) {
+export async function removeFromCart(itemId: number): Promise<boolean> {
     const supabase = createClient();
 
     const { error } = await supabase.from("cart_items").delete().eq("id", itemId);
@@ -107,7 +125,5 @@ export async function removeFromCart(itemId: number) {
         console.error("❌ Error eliminando producto:", error.message);
         return false;
     }
-
-    console.log("🗑️ Producto eliminado del carrito:", itemId);
     return true;
 }
