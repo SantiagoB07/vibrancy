@@ -50,7 +50,7 @@ function computeFontSize(
         const fitsH = lines.length * f * lineHeight <= boxH;
         if (fitsW && fitsH) return f;
     }
-    return Math.max(14, 10)
+    return Math.max(10, Math.min(maxPx, 14))
 }
 
 function EngravedText({
