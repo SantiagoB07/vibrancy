@@ -50,84 +50,80 @@ export function ProductModal({ product, children }: ProductModalProps) {
         <DialogTitle className="sr-only">
           {product.title} - {formatCOP(product.price)}
         </DialogTitle>
-        <div className="bg-white rounded-2xl overflow-hidden">
-          <div className="relative">
-            <div className="absolute right-4 top-4 z-10">
-              <DialogTrigger asChild>
-                <button className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
-                  <X className="h-5 w-5 text-amber-900" />
-                </button>
-              </DialogTrigger>
-            </div>
+        <div className="bg-white rounded-2xl overflow-hidden relative"> {/* Añadido relative aquí */}
+          <div className="absolute right-4 top-4 z-20"> {/* Aumentado z-index para asegurar que esté por encima de todo */}
+            <DialogTrigger asChild>
+              <button className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
+                <X className="h-5 w-5 text-amber-900" />
+              </button>
+            </DialogTrigger>
+          </div>
+          
+          {/* Carrusel de imágenes y ahora también información superpuesta */}
+          <div className="relative h-80 md:h-96 group"> {/* Este contenedor ya era relative */}
+            <Image
+              src={imgUrl(allImages[currentImageIndex])}
+              alt={product.title}
+              fill
+              className="object-cover rounded-lg"
+            />
             
-            <div className="grid md:grid-cols-2 gap-6 p-6">
-              {/* Carrusel de imágenes */}
-              <div className="relative h-80 md:h-96 group">
-                <Image
-                  src={imgUrl(allImages[currentImageIndex])}
-                  alt={product.title}
-                  fill
-                  className="object-cover rounded-lg"
-                />
-                
-                {/* Controles del carrusel */}
-                {allImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </>
-                )}
-                
-                {/* Indicadores de imágenes */}
-                {allImages.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                    {allImages.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
+            {/* Controles del carrusel */}
+            {allImages.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </>
+            )}
+            
+            {/* Indicadores de imágenes */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                {allImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                    }`}
+                  />
+                ))}
               </div>
+            )}
+
+            {/* Información del producto superpuesta sobre la imagen */}
+            <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent rounded-lg text-white">
+              <h2 className="text-2xl font-bold mb-2">
+                {product.title}
+              </h2>
               
-              {/* Información del producto */}
-              <div className="flex flex-col justify-center">
-                <h2 className="text-2xl font-bold text-amber-900 mb-4">
-                  {product.title}
-                </h2>
-                
-                <p className="text-3xl font-bold text-orange-600 mb-6">
-                  {formatCOP(product.price)}
-                </p>
-                
-                <p className="text-amber-700 mb-6">
-                  {/* Aquí puedes agregar más información del producto si la tienes */}
-                  Producto exclusivo de Vibrancy. Calidad premium garantizada.
-                </p>
-                
-                <div className="space-y-3">
-                  <Link
-                    href={`/producto/${product.id}`}
-                    prefetch={true}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
-                  >
-                    Comprar
-                  </Link>
-                </div>
+              <p className="text-3xl font-bold mb-4">
+                {formatCOP(product.price)}
+              </p>
+              
+              <p className="mb-6 text-sm opacity-90">
+                {/* Aquí puedes agregar más información del producto si la tienes */}
+                Producto exclusivo de Vibrancy. Calidad premium garantizada.
+              </p>
+              
+              <div className="space-y-3">
+                <Link
+                  href={`/producto/${product.id}`}
+                  prefetch={true}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
+                >
+                  Comprar
+                </Link>
               </div>
             </div>
           </div>

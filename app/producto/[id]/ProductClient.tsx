@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 import { formatCOP } from "@/lib/utils";
-import { PetCustom } from "@/components/pet-custom";
+import { RelicarioCustom } from "@/components/relicario-custom";
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -79,11 +79,11 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                         </p>
                     </div>
 
-                    <PetCustom product={producto}>
+                    <RelicarioCustom product={producto}>
                         <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
                             Comprar ahora
                         </button>
-                    </PetCustom>
+                    </RelicarioCustom>
                 </div>
             </div>
 
