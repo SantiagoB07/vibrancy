@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Inter, Lobster,  Coming_Soon , Pacifico, Tangerine } from 'next/font/google';
+
+export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
+export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
+export const robotoSlab = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
+export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
+export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
+
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { AppLayout } from '@/components/layout/AppLayout'

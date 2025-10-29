@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 import { formatCOP } from "@/lib/utils";
+import { RelicarioCustom } from "@/components/relicario-custom";
 import { useRouter } from "next/navigation";
 
 function imgUrl(img?: string) {
@@ -94,6 +95,11 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                         </p>
                     </div>
 
+                    <RelicarioCustom product={producto}>
+                        <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                            Comprar ahora
+                        </button>
+                    </RelicarioCustom>
                     <button
                         onClick={handleBuyNow}
                         className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
