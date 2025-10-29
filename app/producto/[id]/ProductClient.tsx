@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { formatCOP } from "@/lib/utils";
 import { RelicarioCustom } from "@/components/relicario-custom";
+import { useRouter } from "next/navigation";
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -16,21 +17,36 @@ function imgUrl(img?: string) {
 
     return `${supabaseUrl}/storage/v1/object/public/product-images/${img}`;
 }
+
 interface Product {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  img?: string;
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    img?: string;
 }
 
 interface ProductClientProps {
-  producto: Product;
-  relacionados: Product[];
+    producto: Product;
+    relacionados: Product[];
 }
 
-export default function ProductClient({ producto, relacionados }: ProductClientProps) {    const [rating, setRating] = useState(0);
+export default function ProductClient({ producto, relacionados }: ProductClientProps) {
+    const [rating, setRating] = useState(0);
     const [hover, setHover] = useState<number | null>(null);
+    const router = useRouter();
+
+    const handleBuyNow = () => {
+        // Normaliza el título a minúsculas para evitar errores
+        const nombre = producto.title.toLowerCase();
+
+        if (nombre.includes("llavero")) {
+            // Si es un llavero → redirige
+            router.push("/personalizar-llavero");
+        } else {
+            // Si no es llavero → no hace nada
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -84,6 +100,12 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                             Comprar ahora
                         </button>
                     </RelicarioCustom>
+                    <button
+                        onClick={handleBuyNow}
+                        className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
+                    >
+                        Comprar ahora
+                    </button>
                 </div>
             </div>
 
