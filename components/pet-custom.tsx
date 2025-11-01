@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface PetCustomProps {
   product: {
@@ -30,6 +30,20 @@ export function PetCustom({ product, children }: PetCustomProps) {
   });
   const [currentFace, setCurrentFace] = useState(1);
   const [isRotating, setIsRotating] = useState(false);
+
+  // Constraints
+  const MAX_PER_LINE = 15; // 15 characters per line as requested
+  const MAX_LINES = 2; // Assumption: up to two lines fits the tag best
+
+  // Sanitize input to respect per-line and max-lines constraints
+  function clampMultiline(value: string) {
+    const lines = value.split(/\r?\n/).slice(0, MAX_LINES);
+    const trimmed = lines.map((l) => l.slice(0, MAX_PER_LINE));
+    return trimmed.join("\n");
+  }
+
+  const currentValue = currentFace === 1 ? petName : ownerInfo;
+  const currentLines = useMemo(() => currentValue.split(/\r?\n/), [currentValue]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -68,28 +82,30 @@ export function PetCustom({ product, children }: PetCustomProps) {
 
                     {/* Text overlay */}
                     <div
-                      className="absolute inset-0 flex items-center justify-center px-10"
+                      className="absolute inset-0 flex items-center justify-center px-10 text-center"
                       style={{
                         opacity: isRotating ? 0 : 1,
                         transition: 'opacity 0.1s ease-in-out',
                         transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
                       }}
                     >
-                      <span
-                        className="text-center font-bold text-gray-900 tracking-wide"
+                      <div
+                        className="font-bold text-gray-900 tracking-wide"
                         style={{
-                          textShadow: '0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.4)',
-                          // Clamp font-size to fit inside the tag horizontally
-                          fontSize: 'clamp(12px, 6vw, 22px)',
+                          WebkitFontSmoothing: 'antialiased',
+                          MozOsxFontSmoothing: 'grayscale',
+                          textRendering: 'optimizeLegibility',
+                          letterSpacing: '0.2px',
+                          // Slightly smaller when using two lines
+                          fontSize: currentLines.length > 1 ? 'clamp(11px, 4.8vw, 18px)' : 'clamp(13px, 6vw, 22px)',
                           lineHeight: 1.1,
-                          whiteSpace: 'nowrap',
-                          textOverflow: 'ellipsis',
-                          overflow: 'hidden',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
                           maxWidth: '100%'
                         }}
                       >
                         {currentFace === 1 ? petName : ownerInfo}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -115,35 +131,38 @@ export function PetCustom({ product, children }: PetCustomProps) {
               {/* Customization Input */}
               <div className="space-y-4">
                 <div>
-                  <input
-                    type="text"
-                    value={currentFace === 1 ? petName : ownerInfo}
-                    onChange={(e) => {
-                      const newValue = e.target.value;
-                      if (newValue.length <= 15) {
-                        if (currentFace === 1) {
-                          setPetName(newValue);
-                          localStorage.setItem('petTag_petName', newValue);
-                        } else {
-                          setOwnerInfo(newValue);
-                          localStorage.setItem('petTag_ownerInfo', newValue);
+                  <textarea
+                    value={currentValue}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const lines = currentValue.split(/\r?\n/);
+                        if (lines.length >= MAX_LINES) {
+                          e.preventDefault();
                         }
                       }
                     }}
-                    placeholder="Personaliza tu placa"
-                    maxLength={15}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                    onChange={(e) => {
+                      const clamped = clampMultiline(e.target.value);
+                      if (currentFace === 1) {
+                        setPetName(clamped);
+                        localStorage.setItem('petTag_petName', clamped);
+                      } else {
+                        setOwnerInfo(clamped);
+                        localStorage.setItem('petTag_ownerInfo', clamped);
+                      }
+                    }}
+                    placeholder="Personaliza tu placa (Enter para nueva línea)"
+                    rows={Math.min(MAX_LINES, Math.max(1, currentLines.length))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
                   />
-                  <p className={`text-xs mt-1 text-center ${
-                    (currentFace === 1 ? petName.length : ownerInfo.length) >= 15
-                      ? 'text-red-500'
-                      : 'text-gray-500'
-                  }`}>
-                    {currentFace === 1 
-                      ? `${petName.length}/15 caracteres`
-                      : `${ownerInfo.length}/15 caracteres`
-                    }
-                  </p>
+                  <div className="mt-1 text-center text-xs text-gray-500">
+                    {currentLines.map((l, i) => (
+                      <div key={i}>{`L${i + 1}: ${l.length}/${MAX_PER_LINE} caracteres`}</div>
+                    ))}
+                    {currentLines.length < MAX_LINES && (
+                      <div>{`Puedes añadir otra línea (máx. ${MAX_LINES}).`}</div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
