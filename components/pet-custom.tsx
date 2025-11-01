@@ -52,78 +52,45 @@ export function PetCustom({ product, children }: PetCustomProps) {
               {/* Pet Tag Preview */}
               <div className="flex justify-center mb-8">
                 <div className="relative">
-                  {/* Bone-shaped Pet Tag */}
-                  <div 
-                    className="relative w-64 h-28 transition-transform duration-500"
-                    style={{ 
+                  {/* Bone-shaped Pet Tag IMAGE */}
+                  <div
+                    className="relative w-72 transition-transform duration-500"
+                    style={{
                       transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
                       transformStyle: 'preserve-3d'
                     }}
                   >
-                    {/* Rectangle with metallic finish */}
-                    <div className="absolute inset-0 rounded-lg shadow-lg" 
-                         style={{
-                           background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
-                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.2)'
-                         }}>
-                      <div className="flex items-center justify-center h-full">
-                        <div 
-                          className="text-center"
-                          style={{
-                            opacity: isRotating ? 0 : 1,
-                            transition: 'opacity 0.1s ease-in-out',
-                            transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
-                          }}
-                        >
-                          <div className="text-base font-bold text-gray-900 max-w-32 truncate drop-shadow-sm">
-                            {currentFace === 1 
-                              ? petName
-                              : ownerInfo
-                            }
-                          </div>
-                        </div>
-                      </div>
+                    <img
+                      src="/images/pet-tag-removebg-preview.png"
+                      alt="Placa para mascota en forma de hueso"
+                      className="block w-72 h-auto select-none pointer-events-none drop-shadow"
+                    />
+
+                    {/* Text overlay */}
+                    <div
+                      className="absolute inset-0 flex items-center justify-center px-10"
+                      style={{
+                        opacity: isRotating ? 0 : 1,
+                        transition: 'opacity 0.1s ease-in-out',
+                        transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
+                      }}
+                    >
+                      <span
+                        className="text-center font-bold text-gray-900 tracking-wide"
+                        style={{
+                          textShadow: '0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.4)',
+                          // Clamp font-size to fit inside the tag horizontally
+                          fontSize: 'clamp(12px, 6vw, 22px)',
+                          lineHeight: 1.1,
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                          maxWidth: '100%'
+                        }}
+                      >
+                        {currentFace === 1 ? petName : ownerInfo}
+                      </span>
                     </div>
-                    
-                    {/* Blended circles for seamless bone shape */}
-                    {/* Top-left circle */}
-                    <div className="absolute -top-6 -left-6 w-16 h-16 rounded-full"
-                         style={{
-                           background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
-                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
-                           filter: 'blur(1px)'
-                         }}>
-                    </div>
-                    
-                    {/* Top-right circle */}
-                    <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full"
-                         style={{
-                           background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
-                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
-                           filter: 'blur(1px)'
-                         }}>
-                    </div>
-                    
-                    {/* Bottom-left circle */}
-                    <div className="absolute -bottom-6 -left-6 w-16 h-16 rounded-full"
-                         style={{
-                           background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
-                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
-                           filter: 'blur(1px)'
-                         }}>
-                    </div>
-                    
-                    {/* Bottom-right circle */}
-                    <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full"
-                         style={{
-                           background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #f3f4f6 50%, #d1d5db 75%, #9ca3af 100%)',
-                           boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.1)',
-                           filter: 'blur(1px)'
-                         }}>
-                    </div>
-                    
-                    {/* Small hole at top */}
-                    <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-600 rounded-full shadow-inner"></div>
                   </div>
                 </div>
               </div>
