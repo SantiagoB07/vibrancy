@@ -106,82 +106,53 @@ export function ProductModal({ product, children }: ProductModalProps) {
 
             {/* Información del producto superpuesta sobre la imagen */}
             <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent rounded-lg text-white">
-              <h2 className="text-2xl font-bold mb-2">
-                {product.title}
-              </h2>
-              
-              <p className="text-3xl font-bold mb-4">
-                {formatCOP(product.price)}
-              </p>
-              
+              <h2 className="text-2xl font-bold mb-2">{product.title}</h2>
+
+              <p className="text-3xl font-bold mb-4">{formatCOP(product.price)}</p>
+
               <p className="mb-6 text-sm opacity-90">
-                {/* Aquí puedes agregar más información del producto si la tienes */}
                 Producto exclusivo de Vibrancy. Calidad premium garantizada.
               </p>
-              
+
               <div className="space-y-3">
                 <Link
-                  href={`/producto/${product.id}`}
-                  prefetch={true}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
+                    href={`/producto/${product.id}`}
+                    prefetch={true}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
                 >
                   Comprar
                 </Link>
-              {/* Información del producto */}
-              <div className="flex flex-col justify-center">
-                <h2 className="text-2xl font-bold text-amber-900 mb-4">
-                  {product.title}
-                </h2>
-                
-                <p className="text-3xl font-bold text-orange-600 mb-6">
-                  {formatCOP(product.price)}
-                </p>
-                
-                <p className="text-amber-700 mb-6">
-                  {/* Aquí puedes agregar más información del producto si la tienes */}
-                  Producto exclusivo de Vibrancy. Calidad premium garantizada.
-                </p>
 
-                <div className="space-y-3">
-                  <Link
-                      href={`/producto/${product.id}`}
-                      prefetch={true}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
-                  >
-                    Comprar
-                  </Link>
-
-                  {/* Botón Añadir al carrito */}
-                  <Button
-                      variant="secondary"
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center gap-2"
-                      onClick={async () => {
-                        const ok = await addToCart(Number(product.id));
-                        if (ok) {
-                          toast.success("Producto añadido", {
-                            description: product.title,
-                            action: {
-                              label: "Ver carrito",
-                              onClick: () => (window.location.href = "/cart"),
-                            },
-                            duration: 2500,
-                          });
-                        } else {
-                          toast.error("No se pudo añadir", {
-                            description: "Intenta de nuevo en unos segundos",
-                          });
-                        }
-                      }}
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Añadir al carrito
-                  </Button>
-                </div>
-
+                {/* Botón Añadir al carrito */}
+                <Button
+                    variant="secondary"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center gap-2"
+                    onClick={async () => {
+                      const ok = await addToCart(Number(product.id));
+                      if (ok) {
+                        toast.success("Producto añadido", {
+                          description: product.title,
+                          action: {
+                            label: "Ver carrito",
+                            onClick: () => (window.location.href = "/cart"),
+                          },
+                          duration: 2500,
+                        });
+                      } else {
+                        toast.error("No se pudo añadir", {
+                          description: "Intenta de nuevo en unos segundos",
+                        });
+                      }
+                    }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Añadir al carrito
+                </Button>
               </div>
             </div>
+
           </div>
-        </div>
+          </div>
       </DialogContent>
     </Dialog>
   );

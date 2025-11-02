@@ -1,28 +1,56 @@
 'use client';
 
-import {useMemo, useState, type ReactNode, JSX} from 'react';
-import {ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect, useMemo, useState, type ReactNode, JSX } from 'react';
 
+import {ChevronDown, ChevronUp } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!
+);
 type Color = 'silver' | 'black';
 
-const IMAGES = {
-    base: {
-        silver: '/assets/keychain/placa-grande-silver.png',
-        black: '/assets/keychain/placa-grande-black.png',
-    },
-    small: {
-        silver: '/assets/keychain/placa-pequena-silver.png',
-        black: '/assets/keychain/placa-pequena-black.png',
-    },
-    helmet: {
-        silver: '/assets/keychain/casco-silver.png',
-        black: '/assets/keychain/casco-black.png',
-    },
-    moto: {
-        silver: '/assets/keychain/moto-silver.png',
-        black: '/assets/keychain/moto-black.png',
-    },
+type ImagePaths = {
+    base: { silver: string; black: string };
+    small: { silver: string; black: string };
+    helmet: { silver: string; black: string };
+    moto: { silver: string; black: string };
 };
+
+export function useSupabaseImages() {
+    const [images, setImages] = useState<ImagePaths | null>(null);
+
+    useEffect(() => {
+        async function fetchUrls() {
+            const categories = ['base', 'small', 'helmet', 'moto'];
+            const colors = ['silver', 'black'];
+
+            const urls: any = {};
+
+            for (const cat of categories) {
+                urls[cat] = {};
+                for (const color of colors) {
+                    const filePath = `${cat}/${cat === 'base' ? 'placa-grande' : cat}-${color}.png`;
+                    const { data } = supabase.storage
+                        .from('keychains-images')
+                        .getPublicUrl(filePath);
+
+                    urls[cat][color] = data?.publicUrl ?? '';
+
+                }
+            }
+
+            setImages(urls);
+        }
+
+        fetchUrls();
+    }, []);
+
+    return images;
+}
+
+
 
 const PRICE = {
     base: 45000,
@@ -105,6 +133,9 @@ function EngravedText({
 }
 
 export default function PersonalizarLlaveroPage() {
+    const IMAGES = useSupabaseImages();
+
+
     const [baseColor, setBaseColor] = useState<Color>('silver');
     const [baseText, setBaseText] = useState<string>('Tu mensaje');
 
@@ -120,6 +151,7 @@ export default function PersonalizarLlaveroPage() {
     const [motoColor, setMotoColor] = useState<Color>('silver');
 
     const [expandedSection, setExpandedSection] = useState<string | null>('base');
+
 
     const total =
         PRICE.base +
@@ -149,6 +181,10 @@ export default function PersonalizarLlaveroPage() {
             total,
         ]
     );
+
+    if (!IMAGES) {
+        return <div className="p-10 text-center">Cargando imágenes...</div>;
+    }
 
     function handlePay() {
         alert(

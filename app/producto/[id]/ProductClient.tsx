@@ -95,17 +95,23 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                         </p>
                     </div>
 
-                    <RelicarioCustom product={producto}>
-                        <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                    {producto.title.toLowerCase().includes("corazón") ? (
+                        // Si el producto es un relicario → abrir modal personalizado
+                        <RelicarioCustom product={producto}>
+                            <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                                Comprar ahora
+                            </button>
+                        </RelicarioCustom>
+                    ) : (
+                        // Si el producto es un llavero (u otro tipo) → redirigir
+                        <button
+                            onClick={handleBuyNow}
+                            className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full"
+                        >
                             Comprar ahora
                         </button>
-                    </RelicarioCustom>
-                    <button
-                        onClick={handleBuyNow}
-                        className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
-                    >
-                        Comprar ahora
-                    </button>
+                    )}
+
                 </div>
             </div>
 

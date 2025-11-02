@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
   // Rutas públicas
   if (
     pathname === "/contacto" ||
+      pathname === "/personalizar-llavero" ||
     /^\/producto\/\d+(?:\/|$)/.test(pathname) ||
     pathname === "/cart"
   ) {
