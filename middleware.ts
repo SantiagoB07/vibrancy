@@ -6,7 +6,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rutas públicas
-  if (pathname === "/contacto" || /^\/producto\/\d+(?:\/|$)/.test(pathname)) {
+  if (
+    pathname === "/contacto" ||
+    /^\/producto\/\d+(?:\/|$)/.test(pathname) ||
+    pathname === "/cart"
+  ) {
     return NextResponse.next();
   }
 
