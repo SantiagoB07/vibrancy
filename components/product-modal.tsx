@@ -177,7 +177,7 @@ export function ProductModal({ product, children }: ProductModalProps) {
                     Añadir al carrito
                   </Button>
                 </div>
-
+              </div>
               </div>
             </div>
           </div>

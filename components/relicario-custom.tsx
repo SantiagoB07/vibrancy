@@ -53,7 +53,7 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   const PRESET_DESIGNS = [
    '/images/eRelicarios/alas.svg','/images/eRelicarios/anillos.svg',
    '/images/eRelicarios/corazon.svg','/images/eRelicarios/corazon2.svg',
-   '/images/eRelicarios/corazon3.svg','/images/eRelicarios/corazon3.svg',
+   '/images/eRelicarios/corazon3.svg','/images/eRelicarios/corazon4.svg',
    '/images/eRelicarios/estrellas.svg','/images/eRelicarios/flores.svg',
    '/images/eRelicarios/flores2.svg', '/images/eRelicarios/mariposas.svg'
   ];

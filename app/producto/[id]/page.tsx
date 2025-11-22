@@ -19,7 +19,7 @@ export default async function ProductoPage({ params }: { params: { id: string } 
     // Productos relacionados
     const { data: relacionados } = await supabase
         .from("products")
-        .select("id, title, price, img")
+        .select("id, title, description, price, img")
         .neq("id", params.id)
         .order("created_at", { ascending: false })
         .limit(3);
