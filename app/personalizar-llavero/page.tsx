@@ -151,6 +151,7 @@ export default function PersonalizarLlaveroPage() {
     const [motoColor, setMotoColor] = useState<Color>('silver');
 
     const [expandedSection, setExpandedSection] = useState<string | null>('base');
+    const [activeView, setActiveView] = useState<'base' | 'helmet' | 'small' | 'moto'>('base');
 
 
     const total =
@@ -222,43 +223,46 @@ export default function PersonalizarLlaveroPage() {
                         <div className="bg-white rounded-3xl p-8 shadow-lg">
                             <div className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden">
 
-                                {/* Placa grande - CENTRO */}
-                                <div className="absolute" style={{
-                                    width: '120%',
-                                    height: '80%',
-                                    top: '10%',
-                                    left: '50%',
-                                    transform: 'translateX(-50%) scale(1.1)'
-                                }}>
-                                    <div className="relative w-full h-full">
-                                        <img
-                                            src={IMAGES.base[baseColor]}
-                                            alt="Placa grande"
-                                            className="w-full h-full object-contain"
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center p-4 translate-y-6  "
-                                             style={{
-                                                 transform: "translateY(30px)", // 🔹 mueve el bloque 30 px hacia abajo
-                                             }}>
-                                            <EngravedText
-                                                value={baseText}
-                                                boxW={130}
-                                                boxH={100}
-                                                maxPx={18}
-                                                maxLines={3}
-                                                color={baseColor}
+                                {/* Placa grande */}
+                                {activeView === 'base' && (
+                                    <div className="absolute" style={{
+                                        width: '120%',
+                                        height: '80%',
+                                        top: '10%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%) scale(1.1)'
+                                    }}>
+                                        <div className="relative w-full h-full">
+                                            <img
+                                                src={IMAGES.base[baseColor]}
+                                                alt="Placa grande"
+                                                className="w-full h-full object-contain"
                                             />
+                                            <div className="absolute inset-0 flex items-center justify-center p-4 translate-y-6"
+                                                 style={{
+                                                     transform: "translateY(30px)",
+                                                 }}>
+                                                <EngravedText
+                                                    value={baseText}
+                                                    boxW={130}
+                                                    boxH={100}
+                                                    maxPx={18}
+                                                    maxLines={3}
+                                                    color={baseColor}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
 
-                                {/* Casco - ARRIBA IZQUIERDA */}
-                                {addHelmet && (
+                                {/* Casco */}
+                                {activeView === 'helmet' && addHelmet && (
                                     <div className="absolute" style={{
-                                        width: '20%',
-                                        height: '20%',
-                                        top: '12%',
-                                        left: '65%'
+                                        width: '60%',
+                                        height: '60%',
+                                        top: '20%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)'
                                     }}>
                                         <div className="relative w-full h-full">
                                             <img
@@ -269,9 +273,9 @@ export default function PersonalizarLlaveroPage() {
                                             <div className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: '20%' }}>
                                                 <EngravedText
                                                     value={helmetText}
-                                                    boxW={80}
-                                                    boxH={40}
-                                                    maxPx={16}
+                                                    boxW={160}
+                                                    boxH={80}
+                                                    maxPx={24}
                                                     maxLines={2}
                                                     color={helmetColor}
                                                 />
@@ -280,13 +284,14 @@ export default function PersonalizarLlaveroPage() {
                                     </div>
                                 )}
 
-                                {/* Placa pequeña - ABAJO DERECHA */}
-                                {addSmall && (
+                                {/* Placa pequeña */}
+                                {activeView === 'small' && addSmall && (
                                     <div className="absolute" style={{
-                                        width: '25%',
-                                        height: '20%',
-                                        bottom: '10%',
-                                        left: '70%'
+                                        width: '70%',
+                                        height: '50%',
+                                        top: '25%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)'
                                     }}>
                                         <div className="relative w-full h-full">
                                             <img
@@ -297,9 +302,9 @@ export default function PersonalizarLlaveroPage() {
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <EngravedText
                                                     value={smallText}
-                                                    boxW={120}
-                                                    boxH={50}
-                                                    maxPx={18}
+                                                    boxW={200}
+                                                    boxH={80}
+                                                    maxPx={24}
                                                     maxLines={2}
                                                     color={smallColor}
                                                 />
@@ -308,13 +313,14 @@ export default function PersonalizarLlaveroPage() {
                                     </div>
                                 )}
 
-                                {/* Moto - ABAJO IZQUIERDA */}
-                                {addMoto && (
+                                {/* Moto */}
+                                {activeView === 'moto' && addMoto && (
                                     <div className="absolute" style={{
-                                        width: '50%',
-                                        height: '50%',
-                                        bottom: '8%',
-                                        right: '60%'
+                                        width: '80%',
+                                        height: '80%',
+                                        top: '10%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)'
                                     }}>
                                         <img
                                             src={IMAGES.moto[motoColor]}
@@ -322,6 +328,87 @@ export default function PersonalizarLlaveroPage() {
                                             className="w-full h-full object-contain"
                                         />
                                     </div>
+                                )}
+                            </div>
+
+                            {/* Miniaturas de navegación */}
+                            <div className="flex gap-3 mt-6 justify-center flex-wrap">
+                                <button
+                                    onClick={() => setActiveView('base')}
+                                    className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                        activeView === 'base'
+                                            ? 'border-blue-500 bg-blue-50'
+                                            : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                    }`}
+                                >
+                                    <img
+                                        src={IMAGES.base[baseColor]}
+                                        alt="Placa grande"
+                                        className="w-full h-full object-contain"
+                                    />
+                                    {activeView === 'base' && (
+                                        <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                    )}
+                                </button>
+
+                                {addHelmet && (
+                                    <button
+                                        onClick={() => setActiveView('helmet')}
+                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                            activeView === 'helmet'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                        }`}
+                                    >
+                                        <img
+                                            src={IMAGES.helmet[helmetColor]}
+                                            alt="Casco"
+                                            className="w-full h-full object-contain"
+                                        />
+                                        {activeView === 'helmet' && (
+                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                        )}
+                                    </button>
+                                )}
+
+                                {addSmall && (
+                                    <button
+                                        onClick={() => setActiveView('small')}
+                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                            activeView === 'small'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                        }`}
+                                    >
+                                        <img
+                                            src={IMAGES.small[smallColor]}
+                                            alt="Placa pequeña"
+                                            className="w-full h-full object-contain"
+                                        />
+                                        {activeView === 'small' && (
+                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                        )}
+                                    </button>
+                                )}
+
+                                {addMoto && (
+                                    <button
+                                        onClick={() => setActiveView('moto')}
+                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                            activeView === 'moto'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                        }`}
+                                    >
+                                        <img
+                                            src={IMAGES.moto[motoColor]}
+                                            alt="Moto"
+                                            className="w-full h-full object-contain"
+                                        />
+                                        {activeView === 'moto' && (
+                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                        )}
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -360,7 +447,11 @@ export default function PersonalizarLlaveroPage() {
                             title="Casco"
                             price={PRICE.addon}
                             checked={addHelmet}
-                            onChecked={setAddHelmet}
+                            onChecked={(v) => {
+                                setAddHelmet(v);
+                                if (v) setActiveView('helmet');
+                                else if (activeView === 'helmet') setActiveView('base');
+                            }}
                             isExpanded={expandedSection === 'helmet'}
                             onToggle={() => setExpandedSection(expandedSection === 'helmet' ? null : 'helmet')}
                             preview={<img src={IMAGES.helmet[helmetColor]} alt="Casco" className="w-12 h-12 object-contain" />}
@@ -375,7 +466,7 @@ export default function PersonalizarLlaveroPage() {
                                         value={helmetText}
                                         onChange={(e) => setHelmetText(e.target.value.slice(0, 120))}
                                         rows={2}
-                                        className="w-full rounded-xl border border-zinc-300 p-3 text-zinc-800 outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Inicial o nombre..."
                                     />
                                     <p className="text-xs text-zinc-500 mt-1">Hasta 2 líneas</p>
@@ -388,7 +479,11 @@ export default function PersonalizarLlaveroPage() {
                             title="Placa pequeña"
                             price={PRICE.addon}
                             checked={addSmall}
-                            onChecked={setAddSmall}
+                            onChecked={(v) => {
+                                setAddSmall(v);
+                                if (v) setActiveView('small');
+                                else if (activeView === 'small') setActiveView('base');
+                            }}
                             isExpanded={expandedSection === 'small'}
                             onToggle={() => setExpandedSection(expandedSection === 'small' ? null : 'small')}
                             preview={<img src={IMAGES.small[smallColor]} alt="Placa pequeña" className="w-12 h-12 object-contain" />}
@@ -403,7 +498,7 @@ export default function PersonalizarLlaveroPage() {
                                         value={smallText}
                                         onChange={(e) => setSmallText(e.target.value.slice(0, 120))}
                                         rows={2}
-                                        className="w-full rounded-xl border border-zinc-300 p-3 text-zinc-800 outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Fecha o iniciales..."
                                     />
                                     <p className="text-xs text-zinc-500 mt-1">Hasta 2 líneas</p>
@@ -416,7 +511,11 @@ export default function PersonalizarLlaveroPage() {
                             title="Moto"
                             price={PRICE.addon}
                             checked={addMoto}
-                            onChecked={setAddMoto}
+                            onChecked={(v) => {
+                                setAddMoto(v);
+                                if (v) setActiveView('moto');
+                                else if (activeView === 'moto') setActiveView('base');
+                            }}
                             isExpanded={expandedSection === 'moto'}
                             onToggle={() => setExpandedSection(expandedSection === 'moto' ? null : 'moto')}
                             preview={<img src={IMAGES.moto[motoColor]} alt="Moto" className="w-12 h-12 object-contain" />}

@@ -4,6 +4,8 @@ import { Star } from "lucide-react";
 import { formatCOP } from "@/lib/utils";
 import { RelicarioCustom } from "@/components/relicario-custom";
 import { useRouter } from "next/navigation";
+import { GirasolCustom } from "@/components/girasol-custom";
+
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -96,14 +98,21 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                     </div>
 
                     {producto.title.toLowerCase().includes("corazón") ? (
-                        // Si el producto es un relicario → abrir modal personalizado
+                        // ❤️ Modal para relicario de corazón
                         <RelicarioCustom product={producto}>
                             <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
                                 Comprar ahora
                             </button>
                         </RelicarioCustom>
+                    ) : producto.title.toLowerCase().includes("girasol") ? (
+                        // 🌻 Modal para dije de girasol
+                        <GirasolCustom product={producto}>
+                            <button className="mt-6 bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition w-full">
+                                Personalizar girasol
+                            </button>
+                        </GirasolCustom>
                     ) : (
-                        // Si el producto es un llavero (u otro tipo) → redirigir
+                        // 🔑 Otros productos (redirigir)
                         <button
                             onClick={handleBuyNow}
                             className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full"
@@ -111,6 +120,7 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                             Comprar ahora
                         </button>
                     )}
+
 
                 </div>
             </div>
