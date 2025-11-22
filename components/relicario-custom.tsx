@@ -49,6 +49,27 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   const [currentFace, setCurrentFace] = useState(1); // 1 para el frente, 2 para la parte trasera
   const [isRotating, setIsRotating] = useState(false); // Para la transición de opacidad del texto
 
+  // Diseños predeterminados
+  const PRESET_DESIGNS = [
+   '/images/eRelicarios/alas.svg','/images/eRelicarios/anillos.svg',
+   '/images/eRelicarios/corazon.svg','/images/eRelicarios/corazon2.svg',
+   '/images/eRelicarios/corazon3.svg','/images/eRelicarios/corazon3.svg',
+   '/images/eRelicarios/estrellas.svg','/images/eRelicarios/flores.svg',
+   '/images/eRelicarios/flores2.svg', '/images/eRelicarios/mariposas.svg'
+  ];
+  // Diseño seleccionado (ruta relativa desde public/)
+  const [selectedDesign, setSelectedDesign] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('petTag_design') || null;
+    }
+    return null;
+  });
+
+  const chooseDesign = (path: string | null) => {
+    setSelectedDesign(path);
+    if (path) localStorage.setItem('petTag_design', path);
+    else localStorage.removeItem('petTag_design');
+  };
   // Función para manejar el giro de la placa
   const handleRotate = () => {
     setIsRotating(true);
@@ -150,9 +171,21 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
                        fill
                        className="object-contain" // Cambiado a object-contain para que la imagen se adapte sin recortar
                      />
+                      {/* preset design overlay (frente) */}
+                      {selectedDesign && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                          <Image
+                            src={selectedDesign}
+                            alt="Diseño seleccionado"
+                            width={320}
+                            height={180}
+                            className="object-contain w-[60%] h-[60%]"
+                          />
+                        </div>
+                      )}
                     <div 
                       className="absolute inset-0 flex items-center justify-center"
-                      style={{ 
+                      style={{ zIndex: 20, 
                         opacity: currentFace === 1 && !isRotating ? 1 : 0, 
                         transition: 'opacity 0.2s ease-in-out' 
                       }}
@@ -191,6 +224,18 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
                         transition: 'opacity 0.2s ease-in-out' 
                       }}
                     >
+                      {/* preset design overlay (reverso) */}
+                      {selectedDesign && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                          <Image
+                            src={selectedDesign}
+                            alt="Diseño seleccionado (reverso)"
+                            width={320}
+                            height={180}
+                            className="object-contain w-[60%] h-[60%]"
+                          />
+                        </div>
+                        )}
                       <span
                         className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
                         style={{
@@ -226,6 +271,35 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
                 >
                   {variant === 'gold' ? 'Cambiar a Silver' : 'Cambiar a Gold'}
                 </button>
+              </div>
+
+              {/* Selector de diseños predeterminados */}
+              <div className="px-8 mt-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Diseños predeterminados</h4>
+                <div className="grid grid-cols-4 gap-3">
+                  {PRESET_DESIGNS.map((p) => {
+                    const active = selectedDesign === p;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => chooseDesign(p)}
+                        className={`p-1 border rounded-md overflow-hidden ${active ? 'ring-2 ring-green-500' : 'border-gray-200'}`}
+                        aria-pressed={active}
+                        title={p.split('/').pop()}
+                      >
+                        <div className="relative w-full h-16">
+                          <Image src={p} alt={p} fill className="object-contain" />
+                        </div>
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => chooseDesign(null)}
+                    className="col-span-4 mt-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
+                  >
+                    Quitar diseño
+                  </button>
+                </div>
               </div>
 
               {/* Customization Input */}
