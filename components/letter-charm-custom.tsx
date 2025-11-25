@@ -28,10 +28,6 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
     // gold/silver/rose
     const [variant, setVariant] = useState<'gold' | 'silver' | 'rose'>('gold');
 
-    // cara 1 (sobre) o cara 2 (adentro)
-    const [currentFace, setCurrentFace] = useState<1 | 2>(1);
-    const [isRotating, setIsRotating] = useState(false);
-
     // texto personalizado para adentro
     const [message, setMessage] = useState('');
     const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
@@ -49,22 +45,11 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
         if (savedFont) setFontFamily(savedFont);
     }, []);
 
-    const toggleVariant = () => {
-        const variants: ('gold' | 'silver' | 'rose')[] = ['gold', 'silver', 'rose'];
-        const currentIndex = variants.indexOf(variant);
-        const next = variants[(currentIndex + 1) % variants.length];
-        setVariant(next);
+    const handleVariantChange = (newVariant: 'gold' | 'silver' | 'rose') => {
+        setVariant(newVariant);
         if (typeof window !== 'undefined') {
-            localStorage.setItem('letter_variant', next);
+            localStorage.setItem('letter_variant', newVariant);
         }
-    };
-
-    const handleRotate = () => {
-        setIsRotating(true);
-        setTimeout(() => {
-            setCurrentFace(prev => (prev === 1 ? 2 : 1));
-            setIsRotating(false);
-        }, 250);
     };
 
     const getImages = () => {
@@ -82,7 +67,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-3xl sm:max-h-[90vh] p-0 bg-transparent border-none overflow-y-auto">
+            <DialogContent className="sm:max-w-4xl sm:max-h-[90vh] p-0 bg-transparent border-none overflow-y-auto">
                 <div className="bg-white rounded-2xl shadow-2xl min-h-[80vh] flex flex-col justify-between">
                     {/* botón cerrar */}
                     <div className="relative">
@@ -95,80 +80,89 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
 
                         {/* contenido */}
                         <div className="p-8 pb-12">
-                            {/* Vista del dije */}
-                            <div className="flex justify-center gap-6 mb-8 items-center">
-                                <div
-                                    className="relative w-[300px] h-[300px] perspective-1000"
-                                    style={{ transformStyle: 'preserve-3d' }}
-                                >
-                                    {/* cara 1: sobre */}
-                                    <div
-                                        className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                            currentFace === 1 ? 'rotate-y-0' : 'rotate-y-180'
-                                        }`}
-                                    >
-                                        <Image
-                                            src={images.sobre}
-                                            alt="Sobre carta"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
+                            {/* Vista del dije (Dos imágenes lado a lado) */}
+                            <div className="flex flex-col md:flex-row justify-center gap-8 mb-8 items-center">
+                                {/* Sobre */}
+                                <div className="relative w-[280px] h-[280px]">
+                                    <Image
+                                        src={images.sobre}
+                                        alt="Sobre carta"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                    <p className="absolute -bottom-6 left-0 right-0 text-center text-sm text-gray-500 font-medium">
+                                        Exterior (Sobre)
+                                    </p>
+                                </div>
 
-                                    {/* cara 2: adentro + texto */}
+                                {/* Adentro + texto */}
+                                <div className="relative w-[280px] h-[280px]">
+                                    <Image
+                                        src={images.adentro}
+                                        alt="Carta adentro"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                    {/* overlay de texto */}
                                     <div
-                                        className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                            currentFace === 2 ? 'rotate-y-0' : '-rotate-y-180'
-                                        }`}
+                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
+                                        style={{
+                                            transform: 'translate(-50%, -40%)', // Ajustar posición según la imagen
+                                            width: '150px', // Ajustar ancho según el área escribible
+                                            height: '90px', // Ajustar alto
+                                        }}
                                     >
-                                        <Image
-                                            src={images.adentro}
-                                            alt="Carta adentro"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                        {/* overlay de texto */}
-                                        <div
-                                            className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
+                                        <span
+                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
                                             style={{
-                                                transform: 'translate(-50%, -40%)', // Ajustar posición según la imagen
-                                                width: '160px', // Ajustar ancho según el área escribible
-                                                height: '100px', // Ajustar alto
+                                                fontFamily,
+                                                wordBreak: 'break-word',
+                                                whiteSpace: 'pre-wrap'
                                             }}
                                         >
-                                            <span
-                                                className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
-                                                style={{
-                                                    fontFamily,
-                                                    wordBreak: 'break-word',
-                                                    whiteSpace: 'pre-wrap'
-                                                }}
-                                            >
-                                                {message}
-                                            </span>
-                                        </div>
+                                            {message}
+                                        </span>
                                     </div>
+                                    <p className="absolute -bottom-6 left-0 right-0 text-center text-sm text-gray-500 font-medium">
+                                        Interior (Mensaje)
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Botones de control */}
-                            <div className="flex justify-center mb-6 space-x-4">
-                                <button
-                                    onClick={handleRotate}
-                                    className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-                                >
-                                    <RotateCcw className="h-4 w-4" />
-                                    <span className="text-sm font-medium">
-                                        Rotar dije ({currentFace === 1 ? 'Ver adentro' : 'Ver sobre'})
-                                    </span>
-                                </button>
-
-                                <button
-                                    onClick={toggleVariant}
-                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors capitalize"
-                                >
-                                    Color: {variant === 'rose' ? 'Rose Gold' : variant}
-                                </button>
+                            {/* Selector de Color */}
+                            <div className="flex justify-center mb-8">
+                                <div className="bg-gray-100 p-1.5 rounded-xl flex gap-2">
+                                    <button
+                                        onClick={() => handleVariantChange('gold')}
+                                        className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                                            variant === 'gold'
+                                                ? 'bg-white text-yellow-600 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                                        }`}
+                                    >
+                                        Gold
+                                    </button>
+                                    <button
+                                        onClick={() => handleVariantChange('silver')}
+                                        className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                                            variant === 'silver'
+                                                ? 'bg-white text-gray-800 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                                        }`}
+                                    >
+                                        Silver
+                                    </button>
+                                    <button
+                                        onClick={() => handleVariantChange('rose')}
+                                        className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                                            variant === 'rose'
+                                                ? 'bg-white text-rose-600 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+                                        }`}
+                                    >
+                                        Rose Gold
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Inputs de texto */}
