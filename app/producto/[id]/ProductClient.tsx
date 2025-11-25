@@ -5,6 +5,7 @@ import { formatCOP } from "@/lib/utils";
 import { RelicarioCustom } from "@/components/relicario-custom";
 import { useRouter } from "next/navigation";
 import { GirasolCustom } from "@/components/girasol-custom";
+import { LetterCharmCustom } from "@/components/letter-charm-custom";
 
 
 function imgUrl(img?: string) {
@@ -111,6 +112,13 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                                 Personalizar girasol
                             </button>
                         </GirasolCustom>
+                    ) : (producto.title.toLowerCase().includes("carta") || producto.title.toLowerCase().includes("sobre") || producto.title.toLowerCase().includes("placa") || producto.title.toLowerCase().includes("mascota") || producto.title.toLowerCase().includes("llavero")) ? (
+                        // 💌 Modal para dije de carta (y provisionalmente placas/llaveros)
+                        <LetterCharmCustom product={producto}>
+                            <button className="mt-6 bg-pink-500 text-white py-3 rounded-lg hover:bg-pink-600 transition w-full">
+                                Personalizar carta
+                            </button>
+                        </LetterCharmCustom>
                     ) : (
                         // 🔑 Otros productos (redirigir)
                         <button
