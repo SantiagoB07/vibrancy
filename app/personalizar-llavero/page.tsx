@@ -57,11 +57,14 @@ const PRICE = {
     addon: 10000,
 };
 
+const PRICE_PHOTO = 15000;
+
 const nf = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
     maximumFractionDigits: 0,
 });
+
 
 function computeFontSize(
     value: string,
@@ -133,6 +136,10 @@ function EngravedText({
 }
 
 export default function PersonalizarLlaveroPage() {
+
+
+    const [photoEngraving, setPhotoEngraving] = useState(false);
+    const [photoImage, setPhotoImage] = useState<string | null>(null);
     const IMAGES = useSupabaseImages();
 
 
@@ -153,12 +160,84 @@ export default function PersonalizarLlaveroPage() {
     const [expandedSection, setExpandedSection] = useState<string | null>('base');
     const [activeView, setActiveView] = useState<'base' | 'helmet' | 'small' | 'moto'>('base');
 
+    function applyTemplate(templateId: number) {
+        switch (templateId) {
+            case 1:
+                // Diseño 1: Placa grande negra + Moto negra
+                setBaseColor('black');
+                setBaseText('Mi amor,\nA donde quiero que\nvayas maneja con cuidado,\nuna parte de mi siempre\nte acompaña,\nDios y la virgen te bendigan.\nTe amo con todo mi corazón\n17-01-2022');
+                setAddMoto(true);
+                setMotoColor('black');
+                setAddHelmet(false);
+                setAddSmall(false);
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+
+            case 2:
+                // Diseño 2: Placa pequeña plateada + Casco negro + Moto negra
+                setBaseColor('silver');
+                setBaseText('Harold Parodi');
+                setAddSmall(true);
+                setSmallColor('silver');
+                setSmallText('Harold Parodi');
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Harold');
+                setAddMoto(true);
+                setMotoColor('black');
+                setActiveView('small');
+                setExpandedSection('small');
+                break;
+
+            case 3:
+                // Diseño 3: Placa grande plateada + Casco negro
+                setBaseColor('silver');
+                setBaseText('Mi amor\nConduce con Cuidado\nQue Dios guíe tu camino\nTe Quiero Mucho');
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Biker Super');
+                setAddMoto(false);
+                setAddSmall(false);
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+
+            case 4:
+                // Diseño 4: Placa grande plateada + Placa pequeña plateada + Casco negro + Moto negra
+                setBaseColor('silver');
+                setBaseText('A la velocidad\nque vayas y cada\nkilómetro que recorras\nte lleve tan lejos\nque superes tus límites.\nConduce siempre\nhacia tu felicidad.\n¡Te Quiero Mucho!');
+                setAddSmall(true);
+                setSmallColor('silver');
+                setSmallText('Nancy Parra');
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Nancy');
+                setAddMoto(true);
+                setMotoColor('black');
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+        }
+    }
+
+    function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     const total =
         PRICE.base +
         (addHelmet ? PRICE.addon : 0) +
         (addSmall ? PRICE.addon : 0) +
-        (addMoto ? PRICE.addon : 0);
+        (addMoto ? PRICE.addon : 0) +
+        (photoEngraving ? PRICE_PHOTO : 0);
 
     const payload = useMemo(
         () => ({
@@ -166,6 +245,7 @@ export default function PersonalizarLlaveroPage() {
             helmet: addHelmet ? { color: helmetColor, text: helmetText } : null,
             small: addSmall ? { color: smallColor, text: smallText } : null,
             moto: addMoto ? { color: motoColor } : null,
+            photoEngraving: photoEngraving ? { image: photoImage } : null,
             total,
         }),
         [
@@ -179,6 +259,8 @@ export default function PersonalizarLlaveroPage() {
             smallText,
             addMoto,
             motoColor,
+            photoEngraving,
+            photoImage,
             total,
         ]
     );
@@ -215,7 +297,7 @@ export default function PersonalizarLlaveroPage() {
                 </div>
             </div>
 
-            <div className="mx-auto max-w-7xl p-4 md:p-8">
+            <div className="mx-auto max-w-7xl p-4 md:p-8 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr,1fr] gap-8 items-start">
 
                     {/* Vista previa - IZQUIERDA */}
@@ -240,13 +322,13 @@ export default function PersonalizarLlaveroPage() {
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center p-4 translate-y-6"
                                                  style={{
-                                                     transform: "translateY(30px)",
+                                                     transform: "translateY(65px)",
                                                  }}>
                                                 <EngravedText
                                                     value={baseText}
                                                     boxW={130}
                                                     boxH={100}
-                                                    maxPx={18}
+                                                    maxPx={12}
                                                     maxLines={3}
                                                     color={baseColor}
                                                 />
@@ -270,7 +352,9 @@ export default function PersonalizarLlaveroPage() {
                                                 alt="Casco"
                                                 className="w-full h-full object-contain"
                                             />
-                                            <div className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: '20%' }}>
+                                            <div className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: '15%' }}>
+                                                <div style={{ transform: 'rotate(28deg) translateX(-30px)  translateY(15px)' }}>
+
                                                 <EngravedText
                                                     value={helmetText}
                                                     boxW={160}
@@ -279,6 +363,7 @@ export default function PersonalizarLlaveroPage() {
                                                     maxLines={2}
                                                     color={helmetColor}
                                                 />
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
@@ -330,6 +415,8 @@ export default function PersonalizarLlaveroPage() {
                                     </div>
                                 )}
                             </div>
+
+
 
                             {/* Miniaturas de navegación */}
                             <div className="flex gap-3 mt-6 justify-center flex-wrap">
@@ -432,7 +519,7 @@ export default function PersonalizarLlaveroPage() {
                                     </label>
                                     <textarea
                                         value={baseText}
-                                        onChange={(e) => setBaseText(e.target.value.slice(0, 200))}
+                                        onChange={(e) => setBaseText(e.target.value.slice(0, 165))}
                                         rows={3}
                                         className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Escribe tu mensaje aquí..."
@@ -464,12 +551,12 @@ export default function PersonalizarLlaveroPage() {
                                     </label>
                                     <textarea
                                         value={helmetText}
-                                        onChange={(e) => setHelmetText(e.target.value.slice(0, 120))}
+                                        onChange={(e) => setHelmetText(e.target.value.slice(0, 10))}
                                         rows={2}
                                         className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Inicial o nombre..."
                                     />
-                                    <p className="text-xs text-zinc-500 mt-1">Hasta 2 líneas</p>
+                                    <p className="text-xs text-zinc-500 mt-1">Máximo 10 caracteres</p>
                                 </div>
                             </div>
                         </AddonSection>
@@ -526,6 +613,119 @@ export default function PersonalizarLlaveroPage() {
                             </div>
                         </AddonSection>
 
+                        {/* Fotograbado */}
+                        <AddonSection
+                            title="Fotograbado"
+                            price={PRICE_PHOTO}
+                            checked={photoEngraving}
+                            onChecked={(v) => setPhotoEngraving(v)}
+                            isExpanded={expandedSection === 'photo'}
+                            onToggle={() => setExpandedSection(expandedSection === 'photo' ? null : 'photo')}
+                            preview={
+                                <div className="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center">
+                                    📷
+                                </div>
+                            }
+                        >
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                        Subir imagen
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="w-full text-sm text-zinc-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    />
+                                    <p className="text-xs text-zinc-500 mt-2">
+                                        Formatos: JPG, PNG. Máx 5MB
+                                    </p>
+                                </div>
+
+                                {photoImage && (
+                                    <div className="mt-3">
+                                        <p className="text-sm font-medium text-zinc-700 mb-2">Vista previa:</p>
+                                        <img
+                                            src={photoImage}
+                                            alt="Preview"
+                                            className="w-full h-32 object-contain rounded-lg border border-zinc-200 bg-zinc-50"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </AddonSection>
+
+                    </div>
+                </div>
+
+                {/* Diseños Sugeridos - ABAJO DE TODO */}
+                <div className="bg-white rounded-2xl border-2 border-zinc-200 p-6 md:p-8">
+                    <h2 className="text-2xl font-bold text-zinc-900 mb-6">Diseños Sugeridos</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        <button
+                            onClick={() => applyTemplate(1)}
+                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                        >
+                            <img
+                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo1.jpg"
+                                alt="Diseño 1"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    Aplicar diseño
+                                </span>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => applyTemplate(2)}
+                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                        >
+                            <img
+                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo2.jpg"
+                                alt="Diseño 2"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    Aplicar diseño
+                                </span>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => applyTemplate(3)}
+                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                        >
+                            <img
+                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo4.jpg"
+                                alt="Diseño 3"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    Aplicar diseño
+                                </span>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => applyTemplate(4)}
+                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                        >
+                            <img
+                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo5.jpg"
+                                alt="Diseño 4"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    Aplicar diseño
+                                </span>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
