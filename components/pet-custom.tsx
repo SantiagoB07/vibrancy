@@ -80,35 +80,38 @@ export function PetCustom({ product, children }: PetCustomProps) {
 
             {/* HEADER DEL MODAL */}
             <div className="bg-white border-b">
-              <div className="px-6 py-4 flex items-center justify-between pr-16">
-                <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                  Personaliza tu placa
-                </h1>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                      ${" "}{nf.format(total)}
+              <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                {/* Mobile: stack vertical, Desktop: horizontal */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                    Personaliza tu placa
+                  </h1>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <div className="text-left sm:text-right">
+                      <div className="text-xs text-zinc-600">Total</div>
+                      <div className="text-base md:text-2xl font-bold text-zinc-900">
+                        ${" "}{nf.format(total)}
+                      </div>
                     </div>
+                    <button
+                        onClick={handlePay}
+                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition text-sm md:text-base"
+                    >
+                      Pagar ahora
+                    </button>
                   </div>
-                  <button
-                      onClick={handlePay}
-                      className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition"
-                  >
-                    Pagar ahora
-                  </button>
                 </div>
               </div>
             </div>
 
             {/* CONTENIDO DEL MODAL (CON SCROLL) */}
-            <div className="flex-1 overflow-y-auto px-8 pb-10 pt-6">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-10 pt-6">
               {/* Pet Tag Preview */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-6 md:mb-8">
                 <div className="relative">
                   {/* Bone-shaped Pet Tag IMAGE */}
                   <div
-                      className="relative w-72 transition-transform duration-500"
+                      className="relative w-48 md:w-72 transition-transform duration-500"
                       style={{
                         transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
                         transformStyle: 'preserve-3d'
@@ -117,12 +120,12 @@ export function PetCustom({ product, children }: PetCustomProps) {
                     <img
                         src="/images/pet-tag-removebg-preview.png"
                         alt="Placa para mascota en forma de hueso"
-                        className="block w-72 h-auto select-none pointer-events-none drop-shadow"
+                        className="block w-48 md:w-72 h-auto select-none pointer-events-none drop-shadow"
                     />
 
                     {/* Text overlay */}
                     <div
-                        className="absolute inset-0 flex items-center justify-center px-10 text-center"
+                        className="absolute inset-0 flex items-center justify-center px-6 md:px-10 text-center"
                         style={{
                           opacity: isRotating ? 0 : 1,
                           transition: 'opacity 0.1s ease-in-out',
@@ -137,7 +140,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                             textRendering: 'optimizeLegibility',
                             letterSpacing: '0.2px',
                             // Slightly smaller when using two lines
-                            fontSize: currentLines.length > 1 ? 'clamp(11px, 4.8vw, 18px)' : 'clamp(13px, 6vw, 22px)',
+                            fontSize: currentLines.length > 1 ? 'clamp(9px, 4vw, 18px)' : 'clamp(11px, 5vw, 22px)',
                             lineHeight: 1.1,
                             whiteSpace: 'pre-wrap',
                             wordBreak: 'break-word',
@@ -152,17 +155,17 @@ export function PetCustom({ product, children }: PetCustomProps) {
               </div>
 
               {/* Face Switch Button */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-4 md:mb-6">
                 <button
                     onClick={() => {
                       setIsRotating(true);
                       setCurrentFace(currentFace === 1 ? 2 : 1);
                       setTimeout(() => setIsRotating(false), 500);
                     }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  <span className="text-sm font-medium">
+                  <span className="text-xs md:text-sm font-medium">
                   {currentFace === 1 ? 'Ver cara 2' : 'Ver cara 1'}
                 </span>
                 </button>

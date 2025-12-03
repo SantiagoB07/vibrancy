@@ -146,33 +146,35 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
 
             {/* HEADER DEL MODAL */}
             <div className="bg-white border-b">
-              <div className="px-6 py-4 flex items-center justify-between pr-16">
-                <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                  Personaliza tu relicario
-                </h1>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                      ${" "}{nf.format(total)}
+              <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                    Personaliza tu relicario
+                  </h1>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <div className="text-left sm:text-right">
+                      <div className="text-xs text-zinc-600">Total</div>
+                      <div className="text-base md:text-2xl font-bold text-zinc-900">
+                        ${" "}{nf.format(total)}
+                      </div>
                     </div>
+                    <button
+                        onClick={handlePay}
+                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition text-sm md:text-base"
+                    >
+                      Pagar ahora
+                    </button>
                   </div>
-                  <button
-                      onClick={handlePay}
-                      className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition"
-                  >
-                    Pagar ahora
-                  </button>
                 </div>
               </div>
             </div>
 
             {/* CONTENIDO CON SCROLL */}
-            <div className="flex-1 overflow-y-auto p-8 pb-10 pt-6">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-6 md:pb-10 pt-4 md:pt-6">
               {/* Preview del relicario */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-6 md:mb-8">
                 <div
-                    className="relative w-[520px] h-[280px] perspective-1000"
+                    className="relative w-full max-w-[320px] md:max-w-[520px] aspect-[520/280] perspective-1000"
                     style={{ transformStyle: 'preserve-3d' }}
                 >
                   {/* Frente */}
@@ -195,7 +197,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         }}
                     >
                     <span
-                        className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                        className="text-base md:text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
                         style={{
                           fontFamily,
                           textShadow: `
@@ -229,7 +231,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         }}
                     >
                     <span
-                        className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                        className="text-base md:text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
                         style={{
                           fontFamily,
                           textShadow: `
@@ -246,20 +248,20 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
               </div>
 
               {/* Botones de cara y variante */}
-              <div className="flex justify-center mb-6 space-x-4">
+              <div className="flex flex-wrap justify-center mb-4 md:mb-6 gap-2 md:gap-4">
                 <button
                     onClick={handleRotate}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  <span className="text-sm font-medium">
+                  <span className="text-xs md:text-sm font-medium">
                   {currentFace === 1 ? 'Ver reverso' : 'Ver anverso'}
                 </span>
                 </button>
 
                 <button
                     onClick={toggleVariant}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
+                    className="px-3 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors text-xs md:text-sm"
                 >
                   {variant === 'gold' ? 'Cambiar a Silver' : 'Cambiar a Gold'}
                 </button>
@@ -332,24 +334,24 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
               </div>
 
               {/* Sección subir imagen */}
-              <div className="px-0 pb-0 mt-6">
+              <div className="px-0 pb-0 mt-4 md:mt-6">
                 <div className="border-t border-gray-200 pt-4 mt-2">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
+                  <h3 className="text-xs md:text-sm font-medium text-gray-900 mb-2">
                     Sube tu imagen personalizada para añadir al relicario.
                   </h3>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
                     <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageUpload}
-                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0 file:text-sm file:font-semibold
+                        className="text-xs md:text-sm text-gray-500 file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-3 md:file:px-4
+                      file:rounded-full file:border-0 file:text-xs md:file:text-sm file:font-semibold
                       file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                     />
                   </div>
                   {uploadedImage && (
                       <div className="mt-4">
-                        <div className="relative w-32 h-32 rounded-lg overflow-hidden">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden">
                           <Image
                               src={uploadedImage}
                               alt="Imagen cargada"

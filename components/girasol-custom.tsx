@@ -237,39 +237,42 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
 
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
-                        <div className="px-6 py-4 flex items-center justify-between pr-16">
-                            <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                                Personaliza tu dije de girasol
-                            </h1>
-                            <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                                        ${" "}{nf.format(total)}
+                        <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                            {/* Mobile: stack vertical, Desktop: horizontal */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                                <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                                    Personaliza tu dije de girasol
+                                </h1>
+                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-xs text-zinc-600">Total</div>
+                                        <div className="text-base md:text-2xl font-bold text-zinc-900">
+                                            ${" "}{nf.format(total)}
+                                        </div>
                                     </div>
+                                    <button
+                                        onClick={handlePay}
+                                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition text-sm md:text-base"
+                                    >
+                                        Pagar ahora
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={handlePay}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition"
-                                >
-                                    Pagar ahora
-                                </button>
                             </div>
                         </div>
                     </div>
 
                     {/* contenido scrollable */}
-                    <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8 pt-4">
+                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 pt-4">
 
-                    {/* layout principal */}
-                        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center justify-between mb-8">
+                    {/* layout principal - siempre vertical en móvil */}
+                        <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center mb-8">
                             {/* LADO IZQUIERDO: imágenes + botones */}
-                            <div className="flex flex-col items-center justify-center w-full lg:w-auto lg:pl-20">
+                            <div className="flex flex-col items-center justify-center w-full lg:w-auto">
                                 {/* Vista de los 2 girasoles */}
-                                <div className="flex flex-col justify-center gap-6 mb-6 items-center">
+                                <div className="flex flex-col justify-center gap-4 md:gap-6 mb-4 md:mb-6 items-center w-full">
                                     {/* Girasol abierto (con rotación) */}
                                     <div
-                                        className="relative w-[400px] h-[340px] perspective-1000"
+                                        className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[400/340] perspective-1000"
                                         style={{ transformStyle: 'preserve-3d' }}
                                     >
                                         {/* cara 1: imagen + texto cara 1 */}
@@ -358,7 +361,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                     </div>
 
                                     {/* Girasol cerrado (estático) */}
-                                    <div className="relative w-[400px] h-[340px]">
+                                    <div className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[400/340]">
                                         <Image
                                             src={
                                                 variant === 'gold'
@@ -373,7 +376,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                 </div>
 
                                 {/* Botones de control */}
-                                <div className="flex flex-wrap justify-center gap-3">
+                                <div className="flex flex-wrap justify-center gap-2 md:gap-3">
                                     <button
                                         onClick={handleRotate}
                                         className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
@@ -394,9 +397,9 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                             </div>
 
                             {/* LADO DERECHO: Inputs y selector de fuente */}
-                            <div className="flex-1 flex flex-col justify-center items-end w-full">
+                            <div className="flex-1 flex flex-col justify-center items-center lg:items-end w-full">
                                 {/* Inputs de frases para ambas caras */}
-                                <div className="space-y-4 max-w-md w-full">
+                                <div className="space-y-4 w-full max-w-md">
                                     {/* Campo para cara 1 */}
                                     <div>
                                         <label
@@ -463,7 +466,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                 </div>
 
                                 {/* Selector de fuente */}
-                                <div className="mt-4 flex justify-center max-w-md ml-auto w-full">
+                                <div className="mt-4 flex justify-center w-full max-w-md">
                                     <select
                                         value={fontFamily}
                                         onChange={(e) => {
@@ -487,11 +490,11 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                         </div>
 
                         {/* SECCIÓN DE DISEÑOS SUGERIDOS */}
-                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-6 md:p-8 mt-4">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-4 md:p-8 mt-4">
+                            <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 text-center">
                                 Diseños Sugeridos
                             </h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                                 {/* Diseño 1: Te amo ❤️ - Dorado */}
                                 <button
                                     onClick={() => applyTemplate(1)}
