@@ -440,7 +440,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                 {/* layout principal - siempre vertical en móvil */}
                                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center mb-8">
                                     {/* LADO IZQUIERDO: imágenes + botones */}
-                                    <div className="flex flex-col items-center justify-center w-full lg:w-auto">
+                                    <div className="flex flex-col items-center justify-center w-full lg:w-1/2">
                                         {/* Vista de los 2 girasoles */}
                                         <div className="flex flex-col justify-center gap-4 md:gap-6 mb-4 md:mb-6 items-center w-full">
                                             {/* Girasol abierto (con rotación) */}
@@ -570,7 +570,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                     </div>
 
                                     {/* LADO DERECHO: Inputs y selector de fuente */}
-                                    <div className="flex-1 flex flex-col justify-center items-center lg:items-end w-full">
+                                    <div className="flex flex-col justify-center items-center lg:items-end w-full lg:w-1/2">
                                         {/* Inputs de frases para ambas caras */}
                                         <div className="space-y-4 w-full max-w-md">
                                             {/* Campo para cara 1 */}
