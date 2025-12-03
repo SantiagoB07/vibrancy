@@ -54,6 +54,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
 
     // cara 1 o cara 2
     const [currentFace, setCurrentFace] = useState<1 | 2>(1);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isRotating, setIsRotating] = useState(false);
 
     // texto personalizado para cada cara
@@ -392,348 +393,349 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
 
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
-                        <div className="px-6 py-4 flex items-center justify-between pr-16">
-                            <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                                Personaliza tu dije de girasol
-                            </h1>
-                            <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                                        ${" "}{nf.format(total)}
-                                    </div>
+                        <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                            {/* Mobile: stack vertical, Desktop: horizontal */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                                <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                                    Personaliza tu dije de girasol
+                                </h1>
+                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                            <div className="text-left sm:text-right">
+                                <div className="text-xs text-zinc-600">Total</div>
+                                <div className="text-base md:text-2xl font-bold text-zinc-900">
+                                    ${" "}{nf.format(total)}
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        if (step === 1) {
-                                            setStep(2);
-                                            return;
-                                        }
-                                        handlePay();
-                                    }}
-                                    disabled={step === 2 && (!isCustomerFormValid || isPaying || !selectedVariant)}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
-                                >
-                                    {step === 1
-                                        ? "Continuar"
-                                        : isPaying
-                                            ? "Redirigiendo..."
-                                            : "Confirmar y pagar"}
-                                </button>
-
                             </div>
+                            <button
+                                onClick={() => {
+                                    if (step === 1) {
+                                        setStep(2);
+                                        return;
+                                    }
+                                    handlePay();
+                                }}
+                                disabled={
+                                    step === 2 &&
+                                    (!isCustomerFormValid || isPaying || !selectedVariant)
+                                }
+                                className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                            >
+                                {step === 1
+                                    ? "Continuar"
+                                    : isPaying
+                                        ? "Redirigiendo..."
+                                        : "Confirmar y pagar"}
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    {/* contenido scrollable */}
-                    <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8 pt-4">
 
+                                       {/* contenido scrollable */}
+                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 pt-4">
                         {/* Paso 1: personalización */}
                         {step === 1 && (
                             <>
-
-
-
-                    {/* layout principal */}
-                        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center justify-between mb-8">
-                            {/* LADO IZQUIERDO: imágenes + botones */}
-                            <div className="flex flex-col items-center justify-center w-full lg:w-auto lg:pl-20">
-                                {/* Vista de los 2 girasoles */}
-                                <div className="flex flex-col justify-center gap-6 mb-6 items-center">
-                                    {/* Girasol abierto (con rotación) */}
-                                    <div
-                                        className="relative w-[400px] h-[340px] perspective-1000"
-                                        style={{ transformStyle: 'preserve-3d' }}
-                                    >
-                                        {/* cara 1: imagen + texto cara 1 */}
-                                        <div
-                                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                                currentFace === 1 ? 'rotate-y-0' : 'rotate-y-180'
-                                            }`}
-                                        >
-                                            <Image
-                                                src={
-                                                    variant === 'gold'
-                                                        ? imageUrls.openGold || "/placeholder-girasol-abierto-gold.png"
-                                                        : imageUrls.openSilver || "/placeholder-girasol-abierto-silver.png"
-                                                }
-                                                alt="Girasol abierto (cara 1)"
-                                                fill
-                                                className="object-contain"
-                                            />
-                                            {/* overlay de texto cara 1 */}
+                                {/* layout principal - siempre vertical en móvil */}
+                                <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center justify-center mb-8">
+                                    {/* LADO IZQUIERDO: imágenes + botones */}
+                                    <div className="flex flex-col items-center justify-center w-full lg:w-auto">
+                                        {/* Vista de los 2 girasoles */}
+                                        <div className="flex flex-col justify-center gap-4 md:gap-6 mb-4 md:mb-6 items-center w-full">
+                                            {/* Girasol abierto (con rotación) */}
                                             <div
-                                                className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                style={{
-                                                    transform: 'translate(-50%, 7%)',
-                                                    width: '130px',
-                                                    height: '150px',
-                                                }}
+                                                className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[400/340] perspective-1000"
+                                                style={{ transformStyle: "preserve-3d" }}
                                             >
-                                                <span
-                                                    className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
-                                                    style={{
-                                                        fontFamily,
-                                                        textShadow: `
-                                                            0 1px 1px rgba(255,255,255,0.9),
-                                                            0 2px 3px rgba(0,0,0,0.12)
-                                                        `,
-                                                        wordBreak: 'break-word',
-                                                        fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
-                                                    }}
+                                                {/* cara 1: imagen + texto cara 1 */}
+                                                <div
+                                                    className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                                        currentFace === 1 ? "rotate-y-0" : "rotate-y-180"
+                                                    }`}
                                                 >
-                                                    {formatTextForCircle(phraseFace1)}
-                                                </span>
+                                                    <Image
+                                                        src={
+                                                            variant === "gold"
+                                                                ? imageUrls.openGold || "/placeholder-girasol-abierto-gold.png"
+                                                                : imageUrls.openSilver || "/placeholder-girasol-abierto-silver.png"
+                                                        }
+                                                        alt="Girasol abierto (cara 1)"
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                    {/* overlay de texto cara 1 */}
+                                                    <div
+                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{
+                                                            transform: "translate(-50%, 7%)",
+                                                            width: "130px",
+                                                            height: "150px",
+                                                        }}
+                                                    >
+                                                        <span
+                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            style={{
+                                                                fontFamily,
+                                                                textShadow: `
+                                                                    0 1px 1px rgba(255,255,255,0.9),
+                                                                    0 2px 3px rgba(0,0,0,0.12)
+                                                                `,
+                                                                wordBreak: "break-word",
+                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                            }}
+                                                        >
+                                                            {formatTextForCircle(phraseFace1)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* cara 2: imagen + texto cara 2 */}
+                                                <div
+                                                    className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                                        currentFace === 2 ? "rotate-y-0" : "-rotate-y-180"
+                                                    }`}
+                                                >
+                                                    <Image
+                                                        src={
+                                                            variant === "gold"
+                                                                ? imageUrls.openGold || "/placeholder-girasol-abierto-gold.png"
+                                                                : imageUrls.openSilver || "/placeholder-girasol-abierto-silver.png"
+                                                        }
+                                                        alt="Girasol abierto (cara 2)"
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                    {/* overlay de texto cara 2 */}
+                                                    <div
+                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{
+                                                            transform: "translate(-50%, 7%)",
+                                                            width: "130px",
+                                                            height: "150px",
+                                                        }}
+                                                    >
+                                                        <span
+                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            style={{
+                                                                fontFamily,
+                                                                textShadow: `
+                                                                    0 1px 1px rgba(255,255,255,0.9),
+                                                                    0 2px 3px rgba(0,0,0,0.12)
+                                                                `,
+                                                                wordBreak: "break-word",
+                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                            }}
+                                                        >
+                                                            {formatTextForCircle(phraseFace2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Girasol cerrado (estático) */}
+                                            <div className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[400/340]">
+                                                <Image
+                                                    src={
+                                                        variant === "gold"
+                                                            ? imageUrls.closedGold || "/placeholder-girasol-cerrado-gold.png"
+                                                            : imageUrls.closedSilver || "/placeholder-girasol-cerrado-silver.png"
+                                                    }
+                                                    alt="Girasol cerrado"
+                                                    fill
+                                                    className="object-contain"
+                                                />
                                             </div>
                                         </div>
 
-                                        {/* cara 2: imagen + texto cara 2 */}
-                                        <div
-                                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                                currentFace === 2 ? 'rotate-y-0' : '-rotate-y-180'
-                                            }`}
-                                        >
-                                            <Image
-                                                src={
-                                                    variant === 'gold'
-                                                        ? imageUrls.openGold || "/placeholder-girasol-abierto-gold.png"
-                                                        : imageUrls.openSilver || "/placeholder-girasol-abierto-silver.png"
-                                                }
-                                                alt="Girasol abierto (cara 2)"
-                                                fill
-                                                className="object-contain"
-                                            />
-                                            {/* overlay de texto cara 2 */}
-                                            <div
-                                                className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                style={{
-                                                    transform: 'translate(-50%, 7%)',
-                                                    width: '130px',
-                                                    height: '150px',
-                                                }}
+                                        {/* Botones de control */}
+                                        <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+                                            <button
+                                                onClick={handleRotate}
+                                                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                                             >
-                                                <span
-                                                    className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
-                                                    style={{
-                                                        fontFamily,
-                                                        textShadow: `
-                                                            0 1px 1px rgba(255,255,255,0.9),
-                                                            0 2px 3px rgba(0,0,0,0.12)
-                                                        `,
-                                                        wordBreak: 'break-word',
-                                                        fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
-                                                    }}
-                                                >
-                                                    {formatTextForCircle(phraseFace2)}
+                                                <RotateCcw className="h-4 w-4" />
+                                                <span className="text-sm font-medium">
+                                                    Rotar dije (Cara {currentFace === 1 ? "2" : "1"})
                                                 </span>
-                                            </div>
+                                            </button>
+
+                                            <button
+                                                onClick={toggleVariant}
+                                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors text-sm font-medium"
+                                            >
+                                                {variant === "gold" ? "Cambiar a Silver" : "Cambiar a Gold"}
+                                            </button>
                                         </div>
                                     </div>
 
-                                    {/* Girasol cerrado (estático) */}
-                                    <div className="relative w-[400px] h-[340px]">
-                                        <Image
-                                            src={
-                                                variant === 'gold'
-                                                    ? imageUrls.closedGold || "/placeholder-girasol-cerrado-gold.png"
-                                                    : imageUrls.closedSilver || "/placeholder-girasol-cerrado-silver.png"
-                                            }
-                                            alt="Girasol cerrado"
-                                            fill
-                                            className="object-contain"
-                                        />
+                                    {/* LADO DERECHO: Inputs y selector de fuente */}
+                                    <div className="flex-1 flex flex-col justify-center items-center lg:items-end w-full">
+                                        {/* Inputs de frases para ambas caras */}
+                                        <div className="space-y-4 w-full max-w-md">
+                                            {/* Campo para cara 1 */}
+                                            <div>
+                                                <label
+                                                    htmlFor="girasol-text-face1"
+                                                    className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                                >
+                                                    Texto Cara 1
+                                                </label>
+                                                <input
+                                                    id="girasol-text-face1"
+                                                    type="text"
+                                                    value={phraseFace1}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.slice(0, 95);
+                                                        setPhraseFace1(val);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem("girasol_phraseFace1", val);
+                                                        }
+                                                    }}
+                                                    placeholder="Frase para cara 1"
+                                                    maxLength={95}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                                                />
+                                                <p
+                                                    className={`text-xs mt-1 text-center ${
+                                                        phraseFace1.length >= 95 ? "text-red-500" : "text-gray-500"
+                                                    }`}
+                                                >
+                                                    {phraseFace1.length}/95 caracteres
+                                                </p>
+                                            </div>
+
+                                            {/* Campo para cara 2 */}
+                                            <div>
+                                                <label
+                                                    htmlFor="girasol-text-face2"
+                                                    className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                                >
+                                                    Texto Cara 2
+                                                </label>
+                                                <input
+                                                    id="girasol-text-face2"
+                                                    type="text"
+                                                    value={phraseFace2}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.slice(0, 95);
+                                                        setPhraseFace2(val);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem("girasol_phraseFace2", val);
+                                                        }
+                                                    }}
+                                                    placeholder="Frase para cara 2"
+                                                    maxLength={95}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                                                />
+                                                <p
+                                                    className={`text-xs mt-1 text-center ${
+                                                        phraseFace2.length >= 95 ? "text-red-500" : "text-gray-500"
+                                                    }`}
+                                                >
+                                                    {phraseFace2.length}/95 caracteres
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Selector de fuente */}
+                                        <div className="mt-4 flex justify-center w-full max-w-md">
+                                            <select
+                                                value={fontFamily}
+                                                onChange={(e) => {
+                                                    const newFont = e.target.value;
+                                                    setFontFamily(newFont);
+                                                    if (typeof window !== "undefined") {
+                                                        localStorage.setItem("girasol_fontFamily", newFont);
+                                                    }
+                                                }}
+                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                            >
+                                                <option value="'Inter', sans-serif">Inter (moderno)</option>
+                                                <option value="'Lobster', cursive">Lobster (decorativo)</option>
+                                                <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
+                                                <option value="'Coming Soon', cursive">Coming Soon (casual)</option>
+                                                <option value="monospace">Monospace (teclado)</option>
+                                                <option value="'Tangerine', cursive">Tangerine (clásico)</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Botones de control */}
-                                <div className="flex flex-wrap justify-center gap-3">
-                                    <button
-                                        onClick={handleRotate}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                        <span className="text-sm font-medium">
-                                            Rotar dije (Cara {currentFace === 1 ? '2' : '1'})
-                                        </span>
-                                    </button>
+                                {/* SECCIÓN DE DISEÑOS SUGERIDOS */}
+                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-4 md:p-8 mt-4">
+                                    <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 text-center">
+                                        Diseños Sugeridos
+                                    </h2>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                                        {/* Diseño 1: Te amo ❤️ - Dorado */}
+                                        <button
+                                            onClick={() => applyTemplate(1)}
+                                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-amber-300 hover:border-yellow-500 transition group bg-gradient-to-br from-yellow-400 to-amber-500"
+                                        >
+                                            <img
+                                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower1.jpg"
+                                                alt="Diseño 1"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                                    Aplicar diseño
+                                                </span>
+                                            </div>
+                                        </button>
 
-                                    <button
-                                        onClick={toggleVariant}
-                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors text-sm font-medium"
-                                    >
-                                        {variant === 'gold' ? 'Cambiar a Silver' : 'Cambiar a Gold'}
-                                    </button>
-                                </div>
-                            </div>
+                                        {/* Diseño 2: Mamá cielo - Dorado */}
+                                        <button
+                                            onClick={() => applyTemplate(2)}
+                                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-amber-300 hover:border-yellow-500 transition group bg-gradient-to-br from-yellow-400 to-amber-500"
+                                        >
+                                            <img
+                                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower2.jpg"
+                                                alt="Diseño 2"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                                    Aplicar diseño
+                                                </span>
+                                            </div>
+                                        </button>
 
-                            {/* LADO DERECHO: Inputs y selector de fuente */}
-                            <div className="flex-1 flex flex-col justify-center items-end w-full">
-                                {/* Inputs de frases para ambas caras */}
-                                <div className="space-y-4 max-w-md w-full">
-                                    {/* Campo para cara 1 */}
-                                    <div>
-                                        <label
-                                            htmlFor="girasol-text-face1"
-                                            className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                        {/* Diseño 3: Te extraño - Plateado */}
+                                        <button
+                                            onClick={() => applyTemplate(3)}
+                                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-300 hover:border-gray-500 transition group bg-gradient-to-br from-gray-300 to-gray-400"
                                         >
-                                            Texto Cara 1
-                                        </label>
-                                        <input
-                                            id="girasol-text-face1"
-                                            type="text"
-                                            value={phraseFace1}
-                                            onChange={(e) => {
-                                                const val = e.target.value.slice(0, 95);
-                                                setPhraseFace1(val);
-                                                if (typeof window !== 'undefined') {
-                                                    localStorage.setItem('girasol_phraseFace1', val);
-                                                }
-                                            }}
-                                            placeholder="Frase para cara 1"
-                                            maxLength={95}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                                        />
-                                        <p
-                                            className={`text-xs mt-1 text-center ${
-                                                phraseFace1.length >= 95 ? 'text-red-500' : 'text-gray-500'
-                                            }`}
-                                        >
-                                            {phraseFace1.length}/95 caracteres
-                                        </p>
-                                    </div>
+                                            <img
+                                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower3.jpg"
+                                                alt="Diseño 3"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                                <span className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                                    Aplicar diseño
+                                                </span>
+                                            </div>
+                                        </button>
 
-                                    {/* Campo para cara 2 */}
-                                    <div>
-                                        <label
-                                            htmlFor="girasol-text-face2"
-                                            className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                        {/* Diseño 4: Mamá te amamos - Plateado */}
+                                        <button
+                                            onClick={() => applyTemplate(4)}
+                                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-300 hover:border-gray-500 transition group bg-gradient-to-br from-gray-300 to-gray-400"
                                         >
-                                            Texto Cara 2
-                                        </label>
-                                        <input
-                                            id="girasol-text-face2"
-                                            type="text"
-                                            value={phraseFace2}
-                                            onChange={(e) => {
-                                                const val = e.target.value.slice(0, 95);
-                                                setPhraseFace2(val);
-                                                if (typeof window !== 'undefined') {
-                                                    localStorage.setItem('girasol_phraseFace2', val);
-                                                }
-                                            }}
-                                            placeholder="Frase para cara 2"
-                                            maxLength={95}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                                        />
-                                        <p
-                                            className={`text-xs mt-1 text-center ${
-                                                phraseFace2.length >= 95 ? 'text-red-500' : 'text-gray-500'
-                                            }`}
-                                        >
-                                            {phraseFace2.length}/95 caracteres
-                                        </p>
+                                            <img
+                                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower4.jpg"
+                                                alt="Diseño 4"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                                                <span className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                                    Aplicar diseño
+                                                </span>
+                                            </div>
+                                        </button>
                                     </div>
                                 </div>
-
-                                {/* Selector de fuente */}
-                                <div className="mt-4 flex justify-center max-w-md ml-auto w-full">
-                                    <select
-                                        value={fontFamily}
-                                        onChange={(e) => {
-                                            const newFont = e.target.value;
-                                            setFontFamily(newFont);
-                                            if (typeof window !== 'undefined') {
-                                                localStorage.setItem('girasol_fontFamily', newFont);
-                                            }
-                                        }}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                    >
-                                        <option value="'Inter', sans-serif">Inter (moderno)</option>
-                                        <option value="'Lobster', cursive">Lobster (decorativo)</option>
-                                        <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
-                                        <option value="'Coming Soon', cursive">Coming Soon (casual)</option>
-                                        <option value="monospace">Monospace (teclado)</option>
-                                        <option value="'Tangerine', cursive">Tangerine (clásico)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* SECCIÓN DE DISEÑOS SUGERIDOS */}
-                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-6 md:p-8 mt-4">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                                Diseños Sugeridos
-                            </h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                                {/* Diseño 1: Te amo ❤️ - Dorado */}
-                                <button
-                                    onClick={() => applyTemplate(1)}
-                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-amber-300 hover:border-yellow-500 transition group bg-gradient-to-br from-yellow-400 to-amber-500"
-                                >
-                                    <img
-                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower1.jpg"
-                                        alt="Diseño 1"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                        <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                            Aplicar diseño
-                                        </span>
-                                    </div>
-                                </button>
-
-                                {/* Diseño 2: Mamá cielo - Dorado */}
-                                <button
-                                    onClick={() => applyTemplate(2)}
-                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-amber-300 hover:border-yellow-500 transition group bg-gradient-to-br from-yellow-400 to-amber-500"
-                                >
-                                    <img
-                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower2.jpg"
-                                        alt="Diseño 2"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                        <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                            Aplicar diseño
-                                        </span>
-                                    </div>
-                                </button>
-
-                                {/* Diseño 3: Te extraño - Plateado */}
-                                <button
-                                    onClick={() => applyTemplate(3)}
-                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-300 hover:border-gray-500 transition group bg-gradient-to-br from-gray-300 to-gray-400"
-                                >
-                                    <img
-                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower3.jpg"
-                                        alt="Diseño 3"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                        <span className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                            Aplicar diseño
-                                        </span>
-                                    </div>
-                                </button>
-
-                                {/* Diseño 4: Mamá te amamos - Plateado */}
-                                <button
-                                    onClick={() => applyTemplate(4)}
-                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-300 hover:border-gray-500 transition group bg-gradient-to-br from-gray-300 to-gray-400"
-                                >
-                                    <img
-                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-sunflowers-images/sunflower4.jpg"
-                                        alt="Diseño 4"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                        <span className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                            Aplicar diseño
-                                        </span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
                             </>
                         )}
 
@@ -745,10 +747,10 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                 />
                             </div>
                         )}
-
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
     );
 }
+

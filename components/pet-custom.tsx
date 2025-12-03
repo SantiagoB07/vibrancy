@@ -16,21 +16,24 @@ interface PetCustomProps {
 
 export function PetCustom({ product, children }: PetCustomProps) {
     const [isOpen, setIsOpen] = useState(false);
+
     const [petName, setPetName] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('petTag_petName') || '';
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("petTag_petName") || "";
         }
-        return '';
+        return "";
     });
+
     const [ownerInfo, setOwnerInfo] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('petTag_ownerInfo') || '';
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("petTag_ownerInfo") || "";
         }
-        return '';
+        return "";
     });
+
     const [currentFace, setCurrentFace] = useState(1);
     const [isRotating, setIsRotating] = useState(false);
-    const [isPaying, setIsPaying] = useState(false); // opcional, para deshabilitar botón
+    const [isPaying, setIsPaying] = useState(false); // para deshabilitar botón mientras redirige
 
     // Constraints
     const MAX_PER_LINE = 15;
@@ -43,7 +46,10 @@ export function PetCustom({ product, children }: PetCustomProps) {
     }
 
     const currentValue = currentFace === 1 ? petName : ownerInfo;
-    const currentLines = useMemo(() => currentValue.split(/\r?\n/), [currentValue]);
+    const currentLines = useMemo(
+        () => currentValue.split(/\r?\n/),
+        [currentValue]
+    );
 
     // ====== HEADER: nf, total, handlePay ======
     const nf = new Intl.NumberFormat("es-CO");
@@ -52,7 +58,6 @@ export function PetCustom({ product, children }: PetCustomProps) {
     const handlePay = async () => {
         try {
             setIsPaying(true);
-
 
             const customerId = null;
 
@@ -89,9 +94,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                 return;
             }
 
-            // Si quieres usar order_id para algo (tracking), lo tienes en data.order_id
             console.log("Order creada con id:", data.order_id);
-
             window.location.href = data.init_point;
         } catch (error) {
             console.error("Error en handlePay:", error);
@@ -123,67 +126,76 @@ export function PetCustom({ product, children }: PetCustomProps) {
 
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
-                        <div className="px-6 py-4 flex items-center justify-between pr-16">
-                            <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                                Personaliza tu placa
-                            </h1>
-                            <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                                        ${" "}{nf.format(total)}
+                        <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                            {/* Mobile: stack vertical, Desktop: horizontal */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                                <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                                    Personaliza tu placa
+                                </h1>
+                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-xs text-zinc-600">Total</div>
+                                        <div className="text-base md:text-2xl font-bold text-zinc-900">
+                                            ${" "}{nf.format(total)}
+                                        </div>
                                     </div>
+                                    <button
+                                        onClick={handlePay}
+                                        disabled={isPaying}
+                                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                    >
+                                        {isPaying ? "Redirigiendo..." : "Pagar ahora"}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={handlePay}
-                                    disabled={isPaying}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
-                                >
-                                    {isPaying ? "Redirigiendo..." : "Pagar ahora"}
-                                </button>
                             </div>
                         </div>
                     </div>
 
                     {/* CONTENIDO DEL MODAL (CON SCROLL) */}
-                    <div className="flex-1 overflow-y-auto px-8 pb-10 pt-6">
+                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-10 pt-6">
                         {/* Pet Tag Preview */}
-                        <div className="flex justify-center mb-8">
+                        <div className="flex justify-center mb-6 md:mb-8">
                             <div className="relative">
+                                {/* Bone-shaped Pet Tag IMAGE */}
                                 <div
-                                    className="relative w-72 transition-transform duration-500"
+                                    className="relative w-48 md:w-72 transition-transform duration-500"
                                     style={{
-                                        transform: currentFace === 2 ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                                        transformStyle: 'preserve-3d'
+                                        transform:
+                                            currentFace === 2 ? "rotateY(180deg)" : "rotateY(0deg)",
+                                        transformStyle: "preserve-3d",
                                     }}
                                 >
                                     <img
                                         src="/images/pet-tag-removebg-preview.png"
                                         alt="Placa para mascota en forma de hueso"
-                                        className="block w-72 h-auto select-none pointer-events-none drop-shadow"
+                                        className="block w-48 md:w-72 h-auto select-none pointer-events-none drop-shadow"
                                     />
 
                                     {/* Text overlay */}
                                     <div
-                                        className="absolute inset-0 flex items-center justify-center px-10 text-center"
+                                        className="absolute inset-0 flex items-center justify-center px-6 md:px-10 text-center"
                                         style={{
                                             opacity: isRotating ? 0 : 1,
-                                            transition: 'opacity 0.1s ease-in-out',
-                                            transform: currentFace === 2 ? 'scaleX(-1)' : 'scaleX(1)'
+                                            transition: "opacity 0.1s ease-in-out",
+                                            transform:
+                                                currentFace === 2 ? "scaleX(-1)" : "scaleX(1)",
                                         }}
                                     >
                                         <div
                                             className="font-bold text-gray-900 tracking-wide"
                                             style={{
-                                                WebkitFontSmoothing: 'antialiased',
-                                                MozOsxFontSmoothing: 'grayscale',
-                                                textRendering: 'optimizeLegibility',
-                                                letterSpacing: '0.2px',
-                                                fontSize: currentLines.length > 1 ? 'clamp(11px, 4.8vw, 18px)' : 'clamp(13px, 6vw, 22px)',
+                                                WebkitFontSmoothing: "antialiased",
+                                                MozOsxFontSmoothing: "grayscale",
+                                                textRendering: "optimizeLegibility",
+                                                letterSpacing: "0.2px",
+                                                fontSize:
+                                                    currentLines.length > 1
+                                                        ? "clamp(9px, 4vw, 18px)"
+                                                        : "clamp(11px, 5vw, 22px)",
                                                 lineHeight: 1.1,
-                                                whiteSpace: 'pre-wrap',
-                                                wordBreak: 'break-word',
-                                                maxWidth: '100%'
+                                                whiteSpace: "pre-wrap",
+                                                wordBreak: "break-word",
+                                                maxWidth: "100%",
                                             }}
                                         >
                                             {currentFace === 1 ? petName : ownerInfo}
@@ -194,49 +206,56 @@ export function PetCustom({ product, children }: PetCustomProps) {
                         </div>
 
                         {/* Face Switch Button */}
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center mb-4 md:mb-6">
                             <button
                                 onClick={() => {
                                     setIsRotating(true);
                                     setCurrentFace(currentFace === 1 ? 2 : 1);
                                     setTimeout(() => setIsRotating(false), 500);
                                 }}
-                                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                             >
                                 <RotateCcw className="h-4 w-4" />
-                                <span className="text-sm font-medium">
-                  {currentFace === 1 ? 'Ver cara 2' : 'Ver cara 1'}
-                </span>
+                                <span className="text-xs md:text-sm font-medium">
+                                    {currentFace === 1 ? "Ver cara 2" : "Ver cara 1"}
+                                </span>
                             </button>
                         </div>
 
                         {/* Customization Input */}
                         <div className="space-y-4">
                             <div>
-                <textarea
-                    value={currentValue}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            const lines = currentValue.split(/\r?\n/);
-                            if (lines.length >= MAX_LINES) {
-                                e.preventDefault();
-                            }
-                        }
-                    }}
-                    onChange={(e) => {
-                        const clamped = clampMultiline(e.target.value);
-                        if (currentFace === 1) {
-                            setPetName(clamped);
-                            localStorage.setItem('petTag_petName', clamped);
-                        } else {
-                            setOwnerInfo(clamped);
-                            localStorage.setItem('petTag_ownerInfo', clamped);
-                        }
-                    }}
-                    placeholder="Personaliza tu placa (Enter para nueva línea)"
-                    rows={Math.min(MAX_LINES, Math.max(1, currentLines.length))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
-                />
+                                <textarea
+                                    value={currentValue}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            const lines = currentValue.split(/\r?\n/);
+                                            if (lines.length >= MAX_LINES) {
+                                                e.preventDefault();
+                                            }
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        const clamped = clampMultiline(e.target.value);
+                                        if (currentFace === 1) {
+                                            setPetName(clamped);
+                                            if (typeof window !== "undefined") {
+                                                localStorage.setItem("petTag_petName", clamped);
+                                            }
+                                        } else {
+                                            setOwnerInfo(clamped);
+                                            if (typeof window !== "undefined") {
+                                                localStorage.setItem("petTag_ownerInfo", clamped);
+                                            }
+                                        }
+                                    }}
+                                    placeholder="Personaliza tu placa (Enter para nueva línea)"
+                                    rows={Math.min(
+                                        MAX_LINES,
+                                        Math.max(1, currentLines.length)
+                                    )}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                />
                                 <div className="mt-1 text-center text-xs text-gray-500">
                                     {currentLines.map((l, i) => (
                                         <div key={i}>{`L${i + 1}: ${l.length}/${MAX_PER_LINE} caracteres`}</div>

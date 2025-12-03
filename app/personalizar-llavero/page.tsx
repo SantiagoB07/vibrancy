@@ -42,6 +42,7 @@ export function useSupabaseImages() {
             const categories = ['base', 'small', 'helmet', 'moto'];
             const colors = ['silver', 'black'];
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const urls: any = {};
 
             for (const cat of categories) {
