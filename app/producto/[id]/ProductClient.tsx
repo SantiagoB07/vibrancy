@@ -30,9 +30,16 @@ interface Product {
     img?: string;
 }
 
+interface RelatedProduct {
+    id: string;
+    title: string;
+    price: number;
+    img?: string;
+}
+
 interface ProductClientProps {
     producto: Product;
-    relacionados: Product[];
+    relacionados: RelatedProduct[];
 }
 
 export default function ProductClient({ producto, relacionados }: ProductClientProps) {

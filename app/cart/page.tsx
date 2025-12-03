@@ -43,9 +43,9 @@ export default function CartPage() {
                 .eq("cart_id", cartId);
 
             if (error) {
-                console.error("❌ Error cargando carrito:", error.message);
+                console.error("Error cargando carrito:", error.message);
             } else {
-                setItems(data as CartItem[]);
+                setItems(data as unknown as CartItem[]);
             }
 
             setLoading(false);

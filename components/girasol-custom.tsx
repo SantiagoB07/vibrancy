@@ -31,6 +31,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
 
     // cara 1 o cara 2
     const [currentFace, setCurrentFace] = useState<1 | 2>(1);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isRotating, setIsRotating] = useState(false);
 
     // texto personalizado para cada cara

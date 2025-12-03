@@ -23,6 +23,7 @@ interface RelicarioCustomProps {
   children: React.ReactNode;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageUrls, setImageUrls] = useState({ gold: '', silver: '' });

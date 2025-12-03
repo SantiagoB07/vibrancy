@@ -1,15 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Inter, Lobster,  Coming_Soon , Pacifico, Tangerine } from 'next/font/google';
-
-export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
-export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
-export const robotoSlab = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
-export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
-export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
-
-import { ThemeProvider } from "next-themes";
+import { Geist } from 'next/font/google';
 import "./globals.css";
-import { AppLayout } from '@/components/layout/AppLayout'
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -17,8 +9,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "ShopMate - Next.js and Supabase Starter Kit",
-  description: "Encuentra los mejores productos al mejor precio",
+  title: "Vibrancy - Accesorios Personalizados",
+  description: "Llaveros, relicarios, placas de mascota y dijes personalizados. Hechos con amor en Colombia.",
 };
 
 const geistSans = Geist({
@@ -33,17 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es">
       <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
-          <AppLayout>
-            {children}
-          </AppLayout>
-        </ThemeProvider>
+        <AppLayout>
+          {children}
+        </AppLayout>
       </body>
     </html>
   );
