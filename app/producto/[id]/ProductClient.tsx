@@ -8,6 +8,9 @@ import { GirasolCustom } from "@/components/girasol-custom";
 
 import { PetCustom } from "@/components/pet-custom";
 import { RelicarioCircCustom } from "@/components/relicarioCirc-custom";
+import { LetterCharmCustom } from "@/components/letter-charm-custom";
+
+
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -136,6 +139,14 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                                             Comprar ahora
                                         </button>
                                     </RelicarioCircCustom>
+
+                                    ) : /** 🔵 Dije de carta */
+                                    nombre.includes("carta") && nombre.includes("sobre") ? (
+                                        <LetterCharmCustom product={producto}>
+                                            <button className="mt-6 bg-pink-500 text-white py-3 rounded-lg hover:bg-pink-600 transition w-full">
+                                                Personalizar carta
+                                            </button>
+                                        </LetterCharmCustom>
 
                                 ) : (
                                     /** 🔑 Otros productos → redirección genérica */
