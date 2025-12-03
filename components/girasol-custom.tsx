@@ -6,6 +6,7 @@ import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
 import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
 import { createClient } from "@supabase/supabase-js";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
 export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
 export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
@@ -22,12 +23,34 @@ interface GirasolCustomProps {
     };
     children: React.ReactNode;
 }
+interface ProductVariant {
+    id: number;
+    product_id: number;
+    name: string;
+    color: string | null;
+    material: string | null;
+    price_override: number | null;
+    img: string | null;
+    active: boolean | null;
+    created_at: string | null;
+}
+
+type VariantKey = "gold" | "silver";
+
+function mapVariantNameToKey(name: string): VariantKey {
+    const n = name.toLowerCase();
+    if (n.includes("silver") || n.includes("plateado")) return "silver";
+    return "gold";
+}
+
 
 export function GirasolCustom({ product, children }: GirasolCustomProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     // gold/silver
-    const [variant, setVariant] = useState<'gold' | 'silver'>('gold');
+    const [variant, setVariant] = useState<VariantKey>("gold");
+    const [variants, setVariants] = useState<ProductVariant[]>([]);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
     // cara 1 o cara 2
     const [currentFace, setCurrentFace] = useState<1 | 2>(1);
@@ -46,20 +69,95 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
         openSilver: ''
     });
 
+    const [step, setStep] = useState<1 | 2>(1);
+
+    const [customerData, setCustomerData] = useState<CustomerData>({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+        neighborhood: "",
+        locality: "",
+    });
+
+    const isCustomerFormValid =
+        customerData.name.trim().length > 2 &&
+        customerData.phone.trim().length >= 7 &&
+        customerData.address.trim().length > 5 &&
+        customerData.locality.trim().length > 2;
+
+    const [isPaying, setIsPaying] = useState(false);
+
+
     // formateador de número (COP)
     const nf = new Intl.NumberFormat("es-CO");
-    const total = product.price; // luego puedes cambiarlo a cantidad * precio, etc.
+    const total = selectedVariant?.price_override ?? product.price;
 
-    const handlePay = () => {
-        // por ahora solo loguea, aquí luego metes tu lógica real
-        console.log("Pagar ahora clickeado", {
-            product,
-            variant,
-            phraseFace1,
-            phraseFace2,
-            fontFamily,
-        });
-    }
+    const handlePay = async () => {
+        if (!selectedVariant) {
+            alert("Selecciona un color antes de continuar.");
+            return;
+        }
+
+        if (!isCustomerFormValid) {
+            alert("Por favor completa tus datos de envío.");
+            return;
+        }
+
+        try {
+            setIsPaying(true);
+
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    customerData: {
+                        name: customerData.name,
+                        phone: customerData.phone,
+                        email: customerData.email || null,
+                        address: customerData.address,
+                        neighborhood: customerData.neighborhood || null,
+                        locality: customerData.locality || null,
+                    },
+                    items: [
+                        {
+                            productId: Number(product.id),
+                            productVariantId: selectedVariant.id,
+                            quantity: 1,
+                            unitPrice: total,
+                            title: `${product.title} - ${selectedVariant.name}`,
+                            personalizationFront: phraseFace1,
+                            personalizationBack: phraseFace2,
+                        },
+                    ],
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.error("Error desde /api/checkout:", data);
+                alert(data.error || "No se pudo iniciar el pago.");
+                return;
+            }
+
+            if (!data.init_point) {
+                console.error("Respuesta sin init_point:", data);
+                alert("No se recibió la URL de pago.");
+                return;
+            }
+
+            console.log("Orden de girasol creada con id:", data.order_id);
+
+            window.location.href = data.init_point;
+        } catch (error) {
+            console.error("Error en handlePay (girasol):", error);
+            alert("Error al conectar con Mercado Pago.");
+        } finally {
+            setIsPaying(false);
+        }
+    };
+
 
     // Tamaño de fuente dinámico según longitud del texto
     const getFontSizeForCircle = (text: string) => {
@@ -119,13 +217,71 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
 
     }, []);
 
+    useEffect(() => {
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!
+        );
+
+        const loadVariants = async () => {
+            const { data, error } = await supabase
+                .from("product_variants")
+                .select("*")
+                .eq("product_id", Number(product.id))
+                .eq("active", true)
+                .order("id", { ascending: true });
+
+            if (error) {
+                console.error("Error cargando variantes de girasol:", error);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn("No hay variantes activas para este girasol.");
+                return;
+            }
+
+            setVariants(data as ProductVariant[]);
+
+            // Intentar respetar el último color guardado en localStorage
+            const savedVariantKey = (typeof window !== "undefined"
+                ? (localStorage.getItem("girasol_variant") as VariantKey | null)
+                : null);
+
+            let initialVariant: ProductVariant = data[0] as ProductVariant;
+
+            if (savedVariantKey) {
+                const match = (data as ProductVariant[]).find(
+                    v => mapVariantNameToKey(v.name) === savedVariantKey
+                );
+                if (match) {
+                    initialVariant = match;
+                }
+            }
+
+            setSelectedVariant(initialVariant);
+            setVariant(mapVariantNameToKey(initialVariant.name));
+        };
+
+        loadVariants();
+    }, [product.id]);
+
+
     const toggleVariant = () => {
-        const next = variant === 'gold' ? 'silver' : 'gold';
-        setVariant(next);
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('girasol_variant', next);
+        if (!variants.length || !selectedVariant) return;
+
+        const currentIndex = variants.findIndex(v => v.id === selectedVariant.id);
+        const nextVariant = variants[(currentIndex + 1) % variants.length];
+
+        setSelectedVariant(nextVariant);
+        const key = mapVariantNameToKey(nextVariant.name);
+        setVariant(key);
+
+        if (typeof window !== "undefined") {
+            localStorage.setItem("girasol_variant", key);
         }
     };
+
 
     const handleRotate = () => {
         setIsRotating(true);
@@ -248,17 +404,35 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={handlePay}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition"
+                                    onClick={() => {
+                                        if (step === 1) {
+                                            setStep(2);
+                                            return;
+                                        }
+                                        handlePay();
+                                    }}
+                                    disabled={step === 2 && (!isCustomerFormValid || isPaying || !selectedVariant)}
+                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
                                 >
-                                    Pagar ahora
+                                    {step === 1
+                                        ? "Continuar"
+                                        : isPaying
+                                            ? "Redirigiendo..."
+                                            : "Confirmar y pagar"}
                                 </button>
+
                             </div>
                         </div>
                     </div>
 
                     {/* contenido scrollable */}
                     <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8 pt-4">
+
+                        {/* Paso 1: personalización */}
+                        {step === 1 && (
+                            <>
+
+
 
                     {/* layout principal */}
                         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center justify-between mb-8">
@@ -560,6 +734,18 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                 </button>
                             </div>
                         </div>
+                            </>
+                        )}
+
+                        {step === 2 && (
+                            <div className="mt-4 mb-8">
+                                <CustomerForm
+                                    data={customerData}
+                                    onChange={setCustomerData}
+                                />
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </DialogContent>
