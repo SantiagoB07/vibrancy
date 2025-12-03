@@ -106,6 +106,8 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
     // texto personalizado para adentro
     const [message, setMessage] = useState('');
     const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
+    const isTangerine = fontFamily.includes("Tangerine");
+
 
     // ===== Cargar mensaje y fuente desde localStorage =====
     useEffect(() => {
@@ -334,13 +336,13 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                     <div
                                         className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
                                         style={{
-                                            transform: 'translate(-50%, -40%)',
+                                            transform: 'translate(-50%, -85%)',
                                             width: '160px',
                                             height: '100px',
                                         }}
                                     >
                     <span
-                        className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                        className="text-xl leading-tight tracking-wide text-[#3b3b3b]"
                         style={{
                             fontFamily,
                             wordBreak: 'break-word',
