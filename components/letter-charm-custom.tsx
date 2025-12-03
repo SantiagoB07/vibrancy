@@ -5,6 +5,8 @@ import { X, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
+import { createClient } from "@supabase/supabase-js";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
 export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
 export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
@@ -22,8 +24,27 @@ interface LetterCharmCustomProps {
     children: React.ReactNode;
 }
 
+// === Supabase client (frontend) ===
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Tipo de la variante en BD
+interface ProductVariant {
+    id: number;
+    product_id: number;
+    name: string;
+    color: string | null;
+    material: string | null;
+    price_override: number | null;
+    img: string | null;
+    active: boolean;
+}
+
+type VariantKey = 'gold' | 'silver' | 'rose';
+
 const imagesByVariant: Record<
-    'gold' | 'silver' | 'rose',
+    VariantKey,
     { sobre: string; adentro: string }
 > = {
     gold: {
@@ -40,11 +61,43 @@ const imagesByVariant: Record<
     },
 };
 
+// Mapea el nombre de la variante de BD a la key visual
+function mapVariantNameToKey(name: string): VariantKey {
+    const n = name.toLowerCase();
+    if (n.includes("rose")) return "rose";
+    if (n.includes("silver") || n.includes("plateado")) return "silver";
+    return "gold";
+}
+
 export function LetterCharmCustom({ product, children }: LetterCharmCustomProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
 
-    // gold/silver/rose
-    const [variant, setVariant] = useState<'gold' | 'silver' | 'rose'>('gold');
+    const [step, setStep] = useState<1 | 2>(1);
+
+    const [customerData, setCustomerData] = useState<CustomerData>({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+        neighborhood: "",
+        locality: "",
+    });
+
+    const isCustomerFormValid =
+        customerData.name.trim().length > 2 &&
+        customerData.phone.trim().length >= 7 &&
+        customerData.address.trim().length > 5 &&
+        customerData.locality.trim().length > 2;
+
+
+
+    // gold/silver/rose (para las imágenes)
+    const [variantKey, setVariantKey] = useState<VariantKey>('gold');
+
+    // variante real en BD
+    const [variants, setVariants] = useState<ProductVariant[]>([]);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
     // cara 1 (sobre) o cara 2 (adentro)
     const [currentFace, setCurrentFace] = useState<1 | 2>(1);
@@ -54,26 +107,76 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
     const [message, setMessage] = useState('');
     const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
 
-    // cargar valores guardados
+    // ===== Cargar mensaje y fuente desde localStorage =====
     useEffect(() => {
         if (typeof window === 'undefined') return;
-
-        const savedVariant = localStorage.getItem('letter_variant') as 'gold' | 'silver' | 'rose' | null;
         const savedMessage = localStorage.getItem('letter_message');
         const savedFont = localStorage.getItem('letter_fontFamily');
+        const savedVariantKey = localStorage.getItem('letter_variant_key') as VariantKey | null;
 
-        if (savedVariant) setVariant(savedVariant);
         if (savedMessage) setMessage(savedMessage);
         if (savedFont) setFontFamily(savedFont);
+        if (savedVariantKey) setVariantKey(savedVariantKey);
     }, []);
 
+    // ===== Cargar variantes desde Supabase =====
+    useEffect(() => {
+        const loadVariants = async () => {
+            const { data, error } = await supabase
+                .from("product_variants")
+                .select("*")
+                .eq("product_id", Number(product.id))
+                .eq("active", true)
+                .order("id", { ascending: true });
+
+            if (error) {
+                console.error("Error cargando variantes de dije de carta:", error);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn("No hay variantes para este producto (dije de carta).");
+                return;
+            }
+
+            setVariants(data as ProductVariant[]);
+
+            // Determinar variante inicial: intento usar la guardada, si no, la primera
+            let initialVariant: ProductVariant | null = null;
+            if (typeof window !== 'undefined') {
+                const savedVariantKey = localStorage.getItem('letter_variant_key') as VariantKey | null;
+                if (savedVariantKey) {
+                    const match = data.find(v => mapVariantNameToKey(v.name) === savedVariantKey);
+                    if (match) {
+                        initialVariant = match as ProductVariant;
+                        setVariantKey(savedVariantKey);
+                    }
+                }
+            }
+
+            if (!initialVariant) {
+                initialVariant = data[0] as ProductVariant;
+                setVariantKey(mapVariantNameToKey(initialVariant.name));
+            }
+
+            setSelectedVariant(initialVariant);
+        };
+
+        loadVariants();
+    }, [product.id]);
+
     const toggleVariant = () => {
-        const variants: ('gold' | 'silver' | 'rose')[] = ['gold', 'silver', 'rose'];
-        const currentIndex = variants.indexOf(variant);
-        const next = variants[(currentIndex + 1) % variants.length];
-        setVariant(next);
+        if (!variants.length || !selectedVariant) return;
+
+        const currentIndex = variants.findIndex(v => v.id === selectedVariant.id);
+        const nextVariant = variants[(currentIndex + 1) % variants.length];
+
+        setSelectedVariant(nextVariant);
+        const key = mapVariantNameToKey(nextVariant.name);
+        setVariantKey(key);
+
         if (typeof window !== 'undefined') {
-            localStorage.setItem('letter_variant', next);
+            localStorage.setItem('letter_variant_key', key);
         }
     };
 
@@ -85,20 +188,60 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
         }, 250);
     };
 
-    const currentImages = imagesByVariant[variant];
+    const currentImages = imagesByVariant[variantKey];
 
     // ===== HEADER: nf, total, handlePay =====
     const nf = new Intl.NumberFormat("es-CO");
-    const total = product.price;
+    const total = selectedVariant?.price_override ?? product.price;
 
-    const handlePay = () => {
-        console.log("Pagar ahora (letter charm)", {
-            product,
-            variant,
-            message,
-            fontFamily,
-        });
+    const handlePay = async () => {
+        if (!selectedVariant) {
+            alert("Selecciona un color.");
+            return;
+        }
+
+        if (!isCustomerFormValid) {
+            alert("Por favor completa tus datos de envío.");
+            return;
+        }
+
+        try {
+
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    customerData,
+                    items: [
+                        {
+                            productId: Number(product.id),
+                            productVariantId: selectedVariant.id,
+                            quantity: 1,
+                            unitPrice: total,
+                            title: `${product.title} - ${selectedVariant.name}`,
+                            personalizationFront: message,
+                            personalizationBack: null,
+                        },
+                    ],
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert("Error al iniciar el pago.");
+                return;
+            }
+
+            window.location.href = data.init_point;
+
+        } catch (error) {
+            console.error(error);
+            alert("No se pudo conectar con Mercado Pago.");
+        }
     };
+
+
     // ========================================
 
     return (
@@ -131,17 +274,30 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                     </div>
                                 </div>
                                 <button
-                                    onClick={handlePay}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 transition"
+                                    onClick={() => {
+                                        if (step === 1) {
+                                            setStep(2);
+                                            return;
+                                        }
+                                        handlePay();
+                                    }}
+                                    disabled={step === 2 && !isCustomerFormValid}
+                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
                                 >
-                                    Pagar ahora
+                                    {step === 1 ? "Continuar" : "Confirmar y pagar"}
                                 </button>
+
+
                             </div>
                         </div>
                     </div>
 
                     {/* CONTENIDO CON SCROLL */}
                     <div className="flex-1 overflow-y-auto p-8 pb-10 pt-6">
+                        {/* Paso 1: personalización */}
+                        {step === 1 && (
+                            <>
+
                         {/* Vista del dije */}
                         <div className="flex justify-center gap-6 mb-8 items-center">
                             <div
@@ -213,8 +369,9 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                             <button
                                 onClick={toggleVariant}
                                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors capitalize"
+                                disabled={!selectedVariant}
                             >
-                                Color: {variant === 'rose' ? 'Rose Gold' : variant}
+                                Color: {selectedVariant?.name ?? 'Cargando...'}
                             </button>
                         </div>
 
@@ -273,6 +430,15 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                 <option value="'Tangerine', cursive">Tangerine (clásico)</option>
                             </select>
                         </div>
+                            </>
+                        )}
+                        {step === 2 && (
+                            <CustomerForm
+                                data={customerData}
+                                onChange={(updated) => setCustomerData(updated)}
+                            />
+                        )}
+
                     </div>
                 </div>
             </DialogContent>
