@@ -1,14 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode, JSX } from 'react';
+import {
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
+    type JSX,
+} from 'react';
 
-import {ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!
 );
+
 type Color = 'silver' | 'black';
 
 type ImagePaths = {
@@ -16,6 +24,14 @@ type ImagePaths = {
     small: { silver: string; black: string };
     helmet: { silver: string; black: string };
     moto: { silver: string; black: string };
+};
+
+type ProductVariant = {
+    id: number;
+    name: string;
+    color: string | null;
+    price_override: number | null;
+    img: string | null;
 };
 
 export function useSupabaseImages() {
@@ -37,7 +53,6 @@ export function useSupabaseImages() {
                         .getPublicUrl(filePath);
 
                     urls[cat][color] = data?.publicUrl ?? '';
-
                 }
             }
 
@@ -49,8 +64,6 @@ export function useSupabaseImages() {
 
     return images;
 }
-
-
 
 const PRICE = {
     base: 45000,
@@ -65,6 +78,9 @@ const nf = new Intl.NumberFormat('es-CO', {
     maximumFractionDigits: 0,
 });
 
+
+const PRODUCT_ID = 3;
+const PRODUCT_TITLE = 'Llavero de moto personalizable';
 
 function computeFontSize(
     value: string,
@@ -81,7 +97,7 @@ function computeFontSize(
         const fitsH = lines.length * f * lineHeight <= boxH;
         if (fitsW && fitsH) return f;
     }
-    return Math.max(10, Math.min(maxPx, 14))
+    return Math.max(10, Math.min(maxPx, 14));
 }
 
 function EngravedText({
@@ -136,12 +152,15 @@ function EngravedText({
 }
 
 export default function PersonalizarLlaveroPage() {
-
-
-    const [photoEngraving, setPhotoEngraving] = useState(false);
-    const [photoImage, setPhotoImage] = useState<string | null>(null);
     const IMAGES = useSupabaseImages();
 
+    // configuraciones de llavero
+    const [photoEngraving, setPhotoEngraving] = useState(false);
+    const [photoImage, setPhotoImage] = useState<string | null>(null);
+    const [photoUpload, setPhotoUpload] = useState<{
+        storagePath: string;
+        publicUrl: string;
+    } | null>(null);
 
     const [baseColor, setBaseColor] = useState<Color>('silver');
     const [baseText, setBaseText] = useState<string>('Tu mensaje');
@@ -160,78 +179,29 @@ export default function PersonalizarLlaveroPage() {
     const [expandedSection, setExpandedSection] = useState<string | null>('base');
     const [activeView, setActiveView] = useState<'base' | 'helmet' | 'small' | 'moto'>('base');
 
-    function applyTemplate(templateId: number) {
-        switch (templateId) {
-            case 1:
-                // Diseño 1: Placa grande negra + Moto negra
-                setBaseColor('black');
-                setBaseText('Mi amor,\nA donde quiero que\nvayas maneja con cuidado,\nuna parte de mi siempre\nte acompaña,\nDios y la virgen te bendigan.\nTe amo con todo mi corazón\n17-01-2022');
-                setAddMoto(true);
-                setMotoColor('black');
-                setAddHelmet(false);
-                setAddSmall(false);
-                setActiveView('base');
-                setExpandedSection('base');
-                break;
+    // variantes en BD (para la placa grande)
+    const [variants, setVariants] = useState<ProductVariant[]>([]);
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
-            case 2:
-                // Diseño 2: Placa pequeña plateada + Casco negro + Moto negra
-                setBaseColor('silver');
-                setBaseText('Harold Parodi');
-                setAddSmall(true);
-                setSmallColor('silver');
-                setSmallText('Harold Parodi');
-                setAddHelmet(true);
-                setHelmetColor('black');
-                setHelmetText('Harold');
-                setAddMoto(true);
-                setMotoColor('black');
-                setActiveView('small');
-                setExpandedSection('small');
-                break;
+    // flujo checkout
+    const [step, setStep] = useState<1 | 2>(1);
+    const [isPaying, setIsPaying] = useState(false);
+    const [customerData, setCustomerData] = useState<CustomerData>({
+        name: '',
+        phone: '',
+        email: '',
+        address: '',
+        neighborhood: '',
+        locality: '',
+    });
 
-            case 3:
-                // Diseño 3: Placa grande plateada + Casco negro
-                setBaseColor('silver');
-                setBaseText('Mi amor\nConduce con Cuidado\nQue Dios guíe tu camino\nTe Quiero Mucho');
-                setAddHelmet(true);
-                setHelmetColor('black');
-                setHelmetText('Biker Super');
-                setAddMoto(false);
-                setAddSmall(false);
-                setActiveView('base');
-                setExpandedSection('base');
-                break;
+    const isCustomerFormValid =
+        customerData.name.trim().length > 2 &&
+        customerData.phone.trim().length >= 7 &&
+        customerData.address.trim().length > 5 &&
+        customerData.locality.trim().length > 2;
 
-            case 4:
-                // Diseño 4: Placa grande plateada + Placa pequeña plateada + Casco negro + Moto negra
-                setBaseColor('silver');
-                setBaseText('A la velocidad\nque vayas y cada\nkilómetro que recorras\nte lleve tan lejos\nque superes tus límites.\nConduce siempre\nhacia tu felicidad.\n¡Te Quiero Mucho!');
-                setAddSmall(true);
-                setSmallColor('silver');
-                setSmallText('Nancy Parra');
-                setAddHelmet(true);
-                setHelmetColor('black');
-                setHelmetText('Nancy');
-                setAddMoto(true);
-                setMotoColor('black');
-                setActiveView('base');
-                setExpandedSection('base');
-                break;
-        }
-    }
-
-    function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
+    // precio total del llavero
     const total =
         PRICE.base +
         (addHelmet ? PRICE.addon : 0) +
@@ -245,7 +215,7 @@ export default function PersonalizarLlaveroPage() {
             helmet: addHelmet ? { color: helmetColor, text: helmetText } : null,
             small: addSmall ? { color: smallColor, text: smallText } : null,
             moto: addMoto ? { color: motoColor } : null,
-            photoEngraving: photoEngraving ? { image: photoImage } : null,
+            photoEngraving: photoEngraving ? { hasPhoto: !!photoImage } : null,
             total,
         }),
         [
@@ -265,469 +235,815 @@ export default function PersonalizarLlaveroPage() {
         ]
     );
 
+    // cargar variantes del llavero (silver/black) desde Supabase
+    useEffect(() => {
+        const loadVariants = async () => {
+            const { data, error } = await supabase
+                .from('product_variants')
+                .select('id, name, color, price_override, img')
+                .eq('product_id', PRODUCT_ID)
+                .eq('active', true);
+
+            if (error) {
+                console.error('Error cargando variantes de llavero:', error);
+                return;
+            }
+
+            const typed = (data || []) as ProductVariant[];
+            setVariants(typed);
+
+            const current = typed.find(
+                (v) =>
+                    v.color?.toLowerCase() === baseColor ||
+                    v.name.toLowerCase().includes(baseColor)
+            ) || typed[0] || null;
+
+            setSelectedVariant(current);
+        };
+
+        loadVariants();
+    }, [baseColor]);
+
+    // cambio de color base → sincronizar variante
+    const handleBaseColorChange = (c: Color) => {
+        setBaseColor(c);
+
+        if (variants.length > 0) {
+            const found =
+                variants.find(
+                    (v) =>
+                        v.color?.toLowerCase() === c ||
+                        v.name.toLowerCase().includes(c)
+                ) || variants[0];
+
+            setSelectedVariant(found);
+        }
+    };
+
+    function applyTemplate(templateId: number) {
+        switch (templateId) {
+            case 1:
+                setBaseColor('black');
+                setBaseText(
+                    'Mi amor,\nA donde quiero que\nvayas maneja con cuidado,\nuna parte de mi siempre\nte acompaña,\nDios y la virgen te bendigan.\nTe amo con todo mi corazón\n17-01-2022'
+                );
+                setAddMoto(true);
+                setMotoColor('black');
+                setAddHelmet(false);
+                setAddSmall(false);
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+
+            case 2:
+                setBaseColor('silver');
+                setBaseText('Harold Parodi');
+                setAddSmall(true);
+                setSmallColor('silver');
+                setSmallText('Harold Parodi');
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Harold');
+                setAddMoto(true);
+                setMotoColor('black');
+                setActiveView('small');
+                setExpandedSection('small');
+                break;
+
+            case 3:
+                setBaseColor('silver');
+                setBaseText(
+                    'Mi amor\nConduce con Cuidado\nQue Dios guíe tu camino\nTe Quiero Mucho'
+                );
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Biker Super');
+                setAddMoto(false);
+                setAddSmall(false);
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+
+            case 4:
+                setBaseColor('silver');
+                setBaseText(
+                    'A la velocidad\nque vayas y cada\nkilómetro que recorras\nte lleve tan lejos\nque superes tus límites.\nConduce siempre\nhacia tu felicidad.\n¡Te Quiero Mucho!'
+                );
+                setAddSmall(true);
+                setSmallColor('silver');
+                setSmallText('Nancy Parra');
+                setAddHelmet(true);
+                setHelmetColor('black');
+                setHelmetText('Nancy');
+                setAddMoto(true);
+                setMotoColor('black');
+                setActiveView('base');
+                setExpandedSection('base');
+                break;
+        }
+    }
+
+    async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            // (opcional) validación de tamaño: máx ~5MB
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('La imagen es muy pesada (máx 5MB).');
+                return;
+            }
+
+            // armamos un nombre único
+            const ext = file.name.split('.').pop() || 'jpg';
+            const fileName = `${crypto.randomUUID()}.${ext}`;
+            const filePath = `llaveros/${fileName}`;
+
+            const { error: uploadError } = await supabase
+                .storage
+                .from('keychains-uploads')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false,
+                });
+
+            if (uploadError) {
+                console.error('Error subiendo imagen del llavero:', uploadError);
+                alert('No se pudo subir la imagen. Intenta de nuevo.');
+                return;
+            }
+
+            // obtener URL pública
+            const { data: publicData } = supabase
+                .storage
+                .from('keychains-uploads')
+                .getPublicUrl(filePath);
+
+            const publicUrl = publicData?.publicUrl;
+
+            if (!publicUrl) {
+                console.error('No se pudo obtener la URL pública del llavero');
+                alert('No se pudo obtener la URL de la imagen.');
+                return;
+            }
+
+            // guardar para preview y para el checkout
+            setPhotoImage(publicUrl);
+            setPhotoUpload({
+                storagePath: filePath,
+                publicUrl,
+            });
+        } catch (err) {
+            console.error('Error subiendo imagen del llavero:', err);
+            alert('Ocurrió un error subiendo la imagen.');
+        }
+    }
+
+
     if (!IMAGES) {
         return <div className="p-10 text-center">Cargando imágenes...</div>;
     }
 
-    function handlePay() {
-        alert(
-            'Pagar ahora: próximamente.\n\nSe enviaría esta configuración:\n' +
-            JSON.stringify(payload, null, 2)
-        );
-    }
+    const unitPrice = total;
+
+    const handlePay = async () => {
+        if (!isCustomerFormValid) {
+            alert('Por favor completa tus datos de envío.');
+            return;
+        }
+
+        try {
+            setIsPaying(true);
+
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerData: {
+                        name: customerData.name,
+                        phone: customerData.phone,
+                        email: customerData.email || null,
+                        address: customerData.address,
+                        neighborhood: customerData.neighborhood || null,
+                        locality: customerData.locality || null,
+                    },
+                    items: [
+                        {
+                            productId: PRODUCT_ID,
+                            productVariantId: selectedVariant?.id ?? null,
+                            quantity: 1,
+                            unitPrice: unitPrice,
+                            title: selectedVariant
+                                ? `${PRODUCT_TITLE} - ${selectedVariant.name}`
+                                : PRODUCT_TITLE,
+                            personalizationFront: baseText || null,
+                            personalizationBack: JSON.stringify(payload),
+                            photos: photoUpload
+                                ? [
+                                    {
+                                        storagePath: photoUpload.storagePath,
+                                        publicUrl: photoUpload.publicUrl,
+                                        position: 1,
+                                    },
+                                ]
+                                : [],
+
+                        },
+                    ],
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.error('Error desde /api/checkout (llavero):', data);
+                alert(data.error || 'No se pudo iniciar el pago.');
+                return;
+            }
+
+            if (!data.init_point) {
+                console.error('Respuesta sin init_point (llavero):', data);
+                alert('No se recibió la URL de pago.');
+                return;
+            }
+
+            window.location.href = data.init_point;
+        } catch (error) {
+            console.error('Error en handlePay (llavero):', error);
+            alert('Error al conectar con Mercado Pago.');
+        } finally {
+            setIsPaying(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-zinc-50">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10">
                 <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-zinc-900">Personaliza tu Llavero</h1>
+                    <h1 className="text-xl font-bold text-zinc-900">
+                        Personaliza tu Llavero
+                    </h1>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
                             <div className="text-sm text-zinc-600">Total</div>
-                            <div className="text-2xl font-bold text-zinc-900">{nf.format(total)}</div>
+                            <div className="text-2xl font-bold text-zinc-900">
+                                {nf.format(total)}
+                            </div>
                         </div>
                         <button
-                            onClick={handlePay}
-                            className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-zinc-800 transition"
+                            onClick={() => {
+                                if (step === 1) {
+                                    setStep(2);
+                                    return;
+                                }
+                                handlePay();
+                            }}
+                            disabled={step === 2 && (!isCustomerFormValid || isPaying)}
+                            className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-zinc-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            Pagar ahora
+                            {step === 1
+                                ? 'Continuar'
+                                : isPaying
+                                    ? 'Redirigiendo...'
+                                    : 'Confirmar y pagar'}
                         </button>
                     </div>
                 </div>
             </div>
 
+            {/* CONTENIDO */}
             <div className="mx-auto max-w-7xl p-4 md:p-8 space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr,1fr] gap-8 items-start">
+                {step === 1 && (
+                    <>
+                        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr,1fr] gap-8 items-start">
+                            {/* Vista previa - IZQUIERDA */}
+                            <div className="lg:sticky lg:top-24">
+                                <div className="bg-white rounded-3xl p-8 shadow-lg">
+                                    <div className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden">
+                                        {/* Placa grande */}
+                                        {activeView === 'base' && (
+                                            <div
+                                                className="absolute"
+                                                style={{
+                                                    width: '120%',
+                                                    height: '80%',
+                                                    top: '10%',
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%) scale(1.1)',
+                                                }}
+                                            >
+                                                <div className="relative w-full h-full">
+                                                    <img
+                                                        src={IMAGES.base[baseColor]}
+                                                        alt="Placa grande"
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                    <div
+                                                        className="absolute inset-0 flex items-center justify-center p-4 translate-y-6"
+                                                        style={{
+                                                            transform: 'translateY(65px)',
+                                                        }}
+                                                    >
+                                                        <EngravedText
+                                                            value={baseText}
+                                                            boxW={130}
+                                                            boxH={100}
+                                                            maxPx={12}
+                                                            maxLines={3}
+                                                            color={baseColor}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
-                    {/* Vista previa - IZQUIERDA */}
-                    <div className="lg:sticky lg:top-24">
-                        <div className="bg-white rounded-3xl p-8 shadow-lg">
-                            <div className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden">
+                                        {/* Casco */}
+                                        {activeView === 'helmet' && addHelmet && (
+                                            <div
+                                                className="absolute"
+                                                style={{
+                                                    width: '60%',
+                                                    height: '60%',
+                                                    top: '20%',
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                }}
+                                            >
+                                                <div className="relative w-full h-full">
+                                                    <img
+                                                        src={IMAGES.helmet[helmetColor]}
+                                                        alt="Casco"
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                    <div
+                                                        className="absolute inset-0 flex items-center justify-center"
+                                                        style={{ paddingTop: '15%' }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                transform:
+                                                                    'rotate(28deg) translateX(-30px)  translateY(15px)',
+                                                            }}
+                                                        >
+                                                            <EngravedText
+                                                                value={helmetText}
+                                                                boxW={160}
+                                                                boxH={80}
+                                                                maxPx={24}
+                                                                maxLines={2}
+                                                                color={helmetColor}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
-                                {/* Placa grande */}
-                                {activeView === 'base' && (
-                                    <div className="absolute" style={{
-                                        width: '120%',
-                                        height: '80%',
-                                        top: '10%',
-                                        left: '50%',
-                                        transform: 'translateX(-50%) scale(1.1)'
-                                    }}>
-                                        <div className="relative w-full h-full">
+                                        {/* Placa pequeña */}
+                                        {activeView === 'small' && addSmall && (
+                                            <div
+                                                className="absolute"
+                                                style={{
+                                                    width: '70%',
+                                                    height: '50%',
+                                                    top: '25%',
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                }}
+                                            >
+                                                <div className="relative w-full h-full">
+                                                    <img
+                                                        src={IMAGES.small[smallColor]}
+                                                        alt="Placa pequeña"
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <EngravedText
+                                                            value={smallText}
+                                                            boxW={200}
+                                                            boxH={80}
+                                                            maxPx={24}
+                                                            maxLines={2}
+                                                            color={smallColor}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Moto */}
+                                        {activeView === 'moto' && addMoto && (
+                                            <div
+                                                className="absolute"
+                                                style={{
+                                                    width: '80%',
+                                                    height: '80%',
+                                                    top: '10%',
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                }}
+                                            >
+                                                <img
+                                                    src={IMAGES.moto[motoColor]}
+                                                    alt="Moto"
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Miniaturas de navegación */}
+                                    <div className="flex gap-3 mt-6 justify-center flex-wrap">
+                                        <button
+                                            onClick={() => setActiveView('base')}
+                                            className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                                activeView === 'base'
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                            }`}
+                                        >
                                             <img
                                                 src={IMAGES.base[baseColor]}
                                                 alt="Placa grande"
                                                 className="w-full h-full object-contain"
                                             />
-                                            <div className="absolute inset-0 flex items-center justify-center p-4 translate-y-6"
-                                                 style={{
-                                                     transform: "translateY(65px)",
-                                                 }}>
-                                                <EngravedText
-                                                    value={baseText}
-                                                    boxW={130}
-                                                    boxH={100}
-                                                    maxPx={12}
-                                                    maxLines={3}
-                                                    color={baseColor}
+                                            {activeView === 'base' && (
+                                                <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                            )}
+                                        </button>
+
+                                        {addHelmet && (
+                                            <button
+                                                onClick={() => setActiveView('helmet')}
+                                                className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                                    activeView === 'helmet'
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={IMAGES.helmet[helmetColor]}
+                                                    alt="Casco"
+                                                    className="w-full h-full object-contain"
                                                 />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                                {activeView === 'helmet' && (
+                                                    <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                                )}
+                                            </button>
+                                        )}
 
-                                {/* Casco */}
-                                {activeView === 'helmet' && addHelmet && (
-                                    <div className="absolute" style={{
-                                        width: '60%',
-                                        height: '60%',
-                                        top: '20%',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)'
-                                    }}>
-                                        <div className="relative w-full h-full">
-                                            <img
-                                                src={IMAGES.helmet[helmetColor]}
-                                                alt="Casco"
-                                                className="w-full h-full object-contain"
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: '15%' }}>
-                                                <div style={{ transform: 'rotate(28deg) translateX(-30px)  translateY(15px)' }}>
-
-                                                <EngravedText
-                                                    value={helmetText}
-                                                    boxW={160}
-                                                    boxH={80}
-                                                    maxPx={24}
-                                                    maxLines={2}
-                                                    color={helmetColor}
+                                        {addSmall && (
+                                            <button
+                                                onClick={() => setActiveView('small')}
+                                                className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                                    activeView === 'small'
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={IMAGES.small[smallColor]}
+                                                    alt="Placa pequeña"
+                                                    className="w-full h-full object-contain"
                                                 />
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                                {activeView === 'small' && (
+                                                    <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                                )}
+                                            </button>
+                                        )}
 
-                                {/* Placa pequeña */}
-                                {activeView === 'small' && addSmall && (
-                                    <div className="absolute" style={{
-                                        width: '70%',
-                                        height: '50%',
-                                        top: '25%',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)'
-                                    }}>
-                                        <div className="relative w-full h-full">
-                                            <img
-                                                src={IMAGES.small[smallColor]}
-                                                alt="Placa pequeña"
-                                                className="w-full h-full object-contain"
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <EngravedText
-                                                    value={smallText}
-                                                    boxW={200}
-                                                    boxH={80}
-                                                    maxPx={24}
-                                                    maxLines={2}
-                                                    color={smallColor}
+                                        {addMoto && (
+                                            <button
+                                                onClick={() => setActiveView('moto')}
+                                                className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
+                                                    activeView === 'moto'
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-zinc-300 bg-white hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={IMAGES.moto[motoColor]}
+                                                    alt="Moto"
+                                                    className="w-full h-full object-contain"
                                                 />
-                                            </div>
-                                        </div>
+                                                {activeView === 'moto' && (
+                                                    <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                                )}
+                                            </button>
+                                        )}
                                     </div>
-                                )}
-
-                                {/* Moto */}
-                                {activeView === 'moto' && addMoto && (
-                                    <div className="absolute" style={{
-                                        width: '80%',
-                                        height: '80%',
-                                        top: '10%',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)'
-                                    }}>
-                                        <img
-                                            src={IMAGES.moto[motoColor]}
-                                            alt="Moto"
-                                            className="w-full h-full object-contain"
-                                        />
-                                    </div>
-                                )}
+                                </div>
                             </div>
 
-
-
-                            {/* Miniaturas de navegación */}
-                            <div className="flex gap-3 mt-6 justify-center flex-wrap">
-                                <button
-                                    onClick={() => setActiveView('base')}
-                                    className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
-                                        activeView === 'base'
-                                            ? 'border-blue-500 bg-blue-50'
-                                            : 'border-zinc-300 bg-white hover:border-zinc-400'
-                                    }`}
+                            {/* Controles - DERECHA */}
+                            <div className="space-y-4">
+                                {/* Placa grande */}
+                                <CollapsibleSection
+                                    title="Placa grande"
+                                    subtitle="Incluida - Obligatoria"
+                                    isExpanded={expandedSection === 'base'}
+                                    onToggle={() =>
+                                        setExpandedSection(
+                                            expandedSection === 'base' ? null : 'base'
+                                        )
+                                    }
                                 >
-                                    <img
-                                        src={IMAGES.base[baseColor]}
-                                        alt="Placa grande"
-                                        className="w-full h-full object-contain"
-                                    />
-                                    {activeView === 'base' && (
-                                        <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
-                                    )}
-                                </button>
+                                    <div className="space-y-4">
+                                        <ColorToggle
+                                            value={baseColor}
+                                            onChange={handleBaseColorChange}
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                                Texto a grabar
+                                            </label>
+                                            <textarea
+                                                value={baseText}
+                                                onChange={(e) =>
+                                                    setBaseText(e.target.value.slice(0, 165))
+                                                }
+                                                rows={3}
+                                                className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Escribe tu mensaje aquí..."
+                                            />
+                                            <p className="text-xs text-zinc-500 mt-1">
+                                                Hasta 3 líneas
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CollapsibleSection>
 
-                                {addHelmet && (
-                                    <button
-                                        onClick={() => setActiveView('helmet')}
-                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
-                                            activeView === 'helmet'
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
-                                        }`}
-                                    >
+                                {/* Casco */}
+                                <AddonSection
+                                    title="Casco"
+                                    price={PRICE.addon}
+                                    checked={addHelmet}
+                                    onChecked={(v) => {
+                                        setAddHelmet(v);
+                                        if (v) setActiveView('helmet');
+                                        else if (activeView === 'helmet') setActiveView('base');
+                                    }}
+                                    isExpanded={expandedSection === 'helmet'}
+                                    onToggle={() =>
+                                        setExpandedSection(
+                                            expandedSection === 'helmet' ? null : 'helmet'
+                                        )
+                                    }
+                                    preview={
                                         <img
                                             src={IMAGES.helmet[helmetColor]}
                                             alt="Casco"
-                                            className="w-full h-full object-contain"
+                                            className="w-12 h-12 object-contain"
                                         />
-                                        {activeView === 'helmet' && (
-                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
-                                        )}
-                                    </button>
-                                )}
+                                    }
+                                >
+                                    <div className="space-y-4">
+                                        <ColorToggle
+                                            value={helmetColor}
+                                            onChange={setHelmetColor}
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                                Texto a grabar
+                                            </label>
+                                            <textarea
+                                                value={helmetText}
+                                                onChange={(e) =>
+                                                    setHelmetText(e.target.value.slice(0, 10))
+                                                }
+                                                rows={2}
+                                                className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Inicial o nombre..."
+                                            />
+                                            <p className="text-xs text-zinc-500 mt-1">
+                                                Máximo 10 caracteres
+                                            </p>
+                                        </div>
+                                    </div>
+                                </AddonSection>
 
-                                {addSmall && (
-                                    <button
-                                        onClick={() => setActiveView('small')}
-                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
-                                            activeView === 'small'
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
-                                        }`}
-                                    >
+                                {/* Placa pequeña */}
+                                <AddonSection
+                                    title="Placa pequeña"
+                                    price={PRICE.addon}
+                                    checked={addSmall}
+                                    onChecked={(v) => {
+                                        setAddSmall(v);
+                                        if (v) setActiveView('small');
+                                        else if (activeView === 'small') setActiveView('base');
+                                    }}
+                                    isExpanded={expandedSection === 'small'}
+                                    onToggle={() =>
+                                        setExpandedSection(
+                                            expandedSection === 'small' ? null : 'small'
+                                        )
+                                    }
+                                    preview={
                                         <img
                                             src={IMAGES.small[smallColor]}
                                             alt="Placa pequeña"
-                                            className="w-full h-full object-contain"
+                                            className="w-12 h-12 object-contain"
                                         />
-                                        {activeView === 'small' && (
-                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
-                                        )}
-                                    </button>
-                                )}
+                                    }
+                                >
+                                    <div className="space-y-4">
+                                        <ColorToggle
+                                            value={smallColor}
+                                            onChange={setSmallColor}
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                                Texto a grabar
+                                            </label>
+                                            <textarea
+                                                value={smallText}
+                                                onChange={(e) =>
+                                                    setSmallText(e.target.value.slice(0, 120))
+                                                }
+                                                rows={2}
+                                                className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Fecha o iniciales..."
+                                            />
+                                            <p className="text-xs text-zinc-500 mt-1">
+                                                Hasta 2 líneas
+                                            </p>
+                                        </div>
+                                    </div>
+                                </AddonSection>
 
-                                {addMoto && (
-                                    <button
-                                        onClick={() => setActiveView('moto')}
-                                        className={`relative w-20 h-20 rounded-xl border-2 transition p-2 ${
-                                            activeView === 'moto'
-                                                ? 'border-blue-500 bg-blue-50'
-                                                : 'border-zinc-300 bg-white hover:border-zinc-400'
-                                        }`}
-                                    >
+                                {/* Moto */}
+                                <AddonSection
+                                    title="Moto"
+                                    price={PRICE.addon}
+                                    checked={addMoto}
+                                    onChecked={(v) => {
+                                        setAddMoto(v);
+                                        if (v) setActiveView('moto');
+                                        else if (activeView === 'moto') setActiveView('base');
+                                    }}
+                                    isExpanded={expandedSection === 'moto'}
+                                    onToggle={() =>
+                                        setExpandedSection(
+                                            expandedSection === 'moto' ? null : 'moto'
+                                        )
+                                    }
+                                    preview={
                                         <img
                                             src={IMAGES.moto[motoColor]}
                                             alt="Moto"
-                                            className="w-full h-full object-contain"
+                                            className="w-12 h-12 object-contain"
                                         />
-                                        {activeView === 'moto' && (
-                                            <div className="absolute inset-0 ring-2 ring-blue-500 rounded-xl pointer-events-none"></div>
+                                    }
+                                >
+                                    <div className="space-y-4">
+                                        <ColorToggle
+                                            value={motoColor}
+                                            onChange={setMotoColor}
+                                        />
+                                        <p className="text-sm text-zinc-600">
+                                            Este dije no permite grabado de texto.
+                                        </p>
+                                    </div>
+                                </AddonSection>
+
+                                {/* Fotograbado */}
+                                <AddonSection
+                                    title="Fotograbado"
+                                    price={PRICE_PHOTO}
+                                    checked={photoEngraving}
+                                    onChecked={(v) => {
+                                        setPhotoEngraving(v);
+                                        if (!v) {
+                                            setPhotoImage(null);
+                                            setPhotoUpload(null);
+                                        }
+                                    }}
+                                    isExpanded={expandedSection === 'photo'}
+                                    onToggle={() =>
+                                        setExpandedSection(
+                                            expandedSection === 'photo' ? null : 'photo'
+                                        )
+                                    }
+                                    preview={
+                                        <div className="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center">
+                                            📷
+                                        </div>
+                                    }
+                                >
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                                Subir imagen
+                                            </label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="w-full text-sm text-zinc-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                            />
+                                            <p className="text-xs text-zinc-500 mt-2">
+                                                Formatos: JPG, PNG. Máx 5MB
+                                            </p>
+                                        </div>
+
+                                        {photoImage && (
+                                            <div className="mt-3">
+                                                <p className="text-sm font-medium text-zinc-700 mb-2">
+                                                    Vista previa:
+                                                </p>
+                                                <img
+                                                    src={photoImage}
+                                                    alt="Preview"
+                                                    className="w-full h-32 object-contain rounded-lg border border-zinc-200 bg-zinc-50"
+                                                />
+                                            </div>
                                         )}
-                                    </button>
-                                )}
+                                    </div>
+                                </AddonSection>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Controles - DERECHA */}
-                    <div className="space-y-4">
-
-                        {/* Placa grande */}
-                        <CollapsibleSection
-                            title="Placa grande"
-                            subtitle="Incluida - Obligatoria"
-                            isExpanded={expandedSection === 'base'}
-                            onToggle={() => setExpandedSection(expandedSection === 'base' ? null : 'base')}
-                        >
-                            <div className="space-y-4">
-                                <ColorToggle value={baseColor} onChange={setBaseColor} />
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                                        Texto a grabar
-                                    </label>
-                                    <textarea
-                                        value={baseText}
-                                        onChange={(e) => setBaseText(e.target.value.slice(0, 165))}
-                                        rows={3}
-                                        className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Escribe tu mensaje aquí..."
+                        {/* Diseños Sugeridos - ABAJO DE TODO */}
+                        <div className="bg-white rounded-2xl border-2 border-zinc-200 p-6 md:p-8">
+                            <h2 className="text-2xl font-bold text-zinc-900 mb-6">
+                                Diseños Sugeridos
+                            </h2>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                                <button
+                                    onClick={() => applyTemplate(1)}
+                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                                >
+                                    <img
+                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo1.jpg"
+                                        alt="Diseño 1"
+                                        className="w-full h-full object-cover"
                                     />
-                                    <p className="text-xs text-zinc-500 mt-1">Hasta 3 líneas</p>
-                                </div>
-                            </div>
-                        </CollapsibleSection>
-
-                        {/* Casco */}
-                        <AddonSection
-                            title="Casco"
-                            price={PRICE.addon}
-                            checked={addHelmet}
-                            onChecked={(v) => {
-                                setAddHelmet(v);
-                                if (v) setActiveView('helmet');
-                                else if (activeView === 'helmet') setActiveView('base');
-                            }}
-                            isExpanded={expandedSection === 'helmet'}
-                            onToggle={() => setExpandedSection(expandedSection === 'helmet' ? null : 'helmet')}
-                            preview={<img src={IMAGES.helmet[helmetColor]} alt="Casco" className="w-12 h-12 object-contain" />}
-                        >
-                            <div className="space-y-4">
-                                <ColorToggle value={helmetColor} onChange={setHelmetColor} />
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                                        Texto a grabar
-                                    </label>
-                                    <textarea
-                                        value={helmetText}
-                                        onChange={(e) => setHelmetText(e.target.value.slice(0, 10))}
-                                        rows={2}
-                                        className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Inicial o nombre..."
-                                    />
-                                    <p className="text-xs text-zinc-500 mt-1">Máximo 10 caracteres</p>
-                                </div>
-                            </div>
-                        </AddonSection>
-
-                        {/* Placa pequeña */}
-                        <AddonSection
-                            title="Placa pequeña"
-                            price={PRICE.addon}
-                            checked={addSmall}
-                            onChecked={(v) => {
-                                setAddSmall(v);
-                                if (v) setActiveView('small');
-                                else if (activeView === 'small') setActiveView('base');
-                            }}
-                            isExpanded={expandedSection === 'small'}
-                            onToggle={() => setExpandedSection(expandedSection === 'small' ? null : 'small')}
-                            preview={<img src={IMAGES.small[smallColor]} alt="Placa pequeña" className="w-12 h-12 object-contain" />}
-                        >
-                            <div className="space-y-4">
-                                <ColorToggle value={smallColor} onChange={setSmallColor} />
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                                        Texto a grabar
-                                    </label>
-                                    <textarea
-                                        value={smallText}
-                                        onChange={(e) => setSmallText(e.target.value.slice(0, 120))}
-                                        rows={2}
-                                        className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Fecha o iniciales..."
-                                    />
-                                    <p className="text-xs text-zinc-500 mt-1">Hasta 2 líneas</p>
-                                </div>
-                            </div>
-                        </AddonSection>
-
-                        {/* Moto */}
-                        <AddonSection
-                            title="Moto"
-                            price={PRICE.addon}
-                            checked={addMoto}
-                            onChecked={(v) => {
-                                setAddMoto(v);
-                                if (v) setActiveView('moto');
-                                else if (activeView === 'moto') setActiveView('base');
-                            }}
-                            isExpanded={expandedSection === 'moto'}
-                            onToggle={() => setExpandedSection(expandedSection === 'moto' ? null : 'moto')}
-                            preview={<img src={IMAGES.moto[motoColor]} alt="Moto" className="w-12 h-12 object-contain" />}
-                        >
-                            <div className="space-y-4">
-                                <ColorToggle value={motoColor} onChange={setMotoColor} />
-                                <p className="text-sm text-zinc-600">Este dije no permite grabado de texto.</p>
-                            </div>
-                        </AddonSection>
-
-                        {/* Fotograbado */}
-                        <AddonSection
-                            title="Fotograbado"
-                            price={PRICE_PHOTO}
-                            checked={photoEngraving}
-                            onChecked={(v) => setPhotoEngraving(v)}
-                            isExpanded={expandedSection === 'photo'}
-                            onToggle={() => setExpandedSection(expandedSection === 'photo' ? null : 'photo')}
-                            preview={
-                                <div className="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center">
-                                    📷
-                                </div>
-                            }
-                        >
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                                        Subir imagen
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="w-full text-sm text-zinc-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                    />
-                                    <p className="text-xs text-zinc-500 mt-2">
-                                        Formatos: JPG, PNG. Máx 5MB
-                                    </p>
-                                </div>
-
-                                {photoImage && (
-                                    <div className="mt-3">
-                                        <p className="text-sm font-medium text-zinc-700 mb-2">Vista previa:</p>
-                                        <img
-                                            src={photoImage}
-                                            alt="Preview"
-                                            className="w-full h-32 object-contain rounded-lg border border-zinc-200 bg-zinc-50"
-                                        />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                    <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                      Aplicar diseño
+                    </span>
                                     </div>
-                                )}
-                            </div>
-                        </AddonSection>
+                                </button>
 
+                                <button
+                                    onClick={() => applyTemplate(2)}
+                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                                >
+                                    <img
+                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo2.jpg"
+                                        alt="Diseño 2"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                    <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                      Aplicar diseño
+                    </span>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => applyTemplate(3)}
+                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                                >
+                                    <img
+                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo4.jpg"
+                                        alt="Diseño 3"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                    <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                      Aplicar diseño
+                    </span>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => applyTemplate(4)}
+                                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
+                                >
+                                    <img
+                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo5.jpg"
+                                        alt="Diseño 4"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                    <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
+                      Aplicar diseño
+                    </span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {step === 2 && (
+                    <div className="max-w-xl mx-auto bg-white rounded-2xl shadow p-6 md:p-8">
+                                                <CustomerForm data={customerData} onChange={setCustomerData} />
                     </div>
-                </div>
-
-                {/* Diseños Sugeridos - ABAJO DE TODO */}
-                <div className="bg-white rounded-2xl border-2 border-zinc-200 p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-zinc-900 mb-6">Diseños Sugeridos</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                        <button
-                            onClick={() => applyTemplate(1)}
-                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
-                        >
-                            <img
-                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo1.jpg"
-                                alt="Diseño 1"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                    Aplicar diseño
-                                </span>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => applyTemplate(2)}
-                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
-                        >
-                            <img
-                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo2.jpg"
-                                alt="Diseño 2"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                    Aplicar diseño
-                                </span>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => applyTemplate(3)}
-                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
-                        >
-                            <img
-                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo4.jpg"
-                                alt="Diseño 3"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                    Aplicar diseño
-                                </span>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => applyTemplate(4)}
-                            className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
-                        >
-                            <img
-                                src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo5.jpg"
-                                alt="Diseño 4"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
-                                <span className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition shadow-lg">
-                                    Aplicar diseño
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );
@@ -742,7 +1058,9 @@ function ColorToggle({
 }) {
     return (
         <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-2">Color</label>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Color
+            </label>
             <div className="flex gap-3">
                 <button
                     type="button"
@@ -792,15 +1110,17 @@ function CollapsibleSection({
             >
                 <div className="text-left">
                     <div className="font-semibold text-zinc-900">{title}</div>
-                    {subtitle && <div className="text-sm text-zinc-500">{subtitle}</div>}
+                    {subtitle && (
+                        <div className="text-sm text-zinc-500">{subtitle}</div>
+                    )}
                 </div>
-                {isExpanded ? <ChevronUp className="text-zinc-400" /> : <ChevronDown className="text-zinc-400" />}
+                {isExpanded ? (
+                    <ChevronUp className="text-zinc-400" />
+                ) : (
+                    <ChevronDown className="text-zinc-400" />
+                )}
             </button>
-            {isExpanded && (
-                <div className="p-4 border-t border-zinc-200">
-                    {children}
-                </div>
-            )}
+            {isExpanded && <div className="p-4 border-t border-zinc-200">{children}</div>}
         </div>
     );
 }
@@ -825,9 +1145,11 @@ function AddonSection({
     children: ReactNode;
 }) {
     return (
-        <div className={`bg-white rounded-2xl border-2 overflow-hidden transition ${
-            checked ? 'border-blue-400' : 'border-zinc-200'
-        }`}>
+        <div
+            className={`bg-white rounded-2xl border-2 overflow-hidden transition ${
+                checked ? 'border-blue-400' : 'border-zinc-200'
+            }`}
+        >
             <div className="p-4">
                 <label className="flex items-center gap-3 cursor-pointer">
                     <input
