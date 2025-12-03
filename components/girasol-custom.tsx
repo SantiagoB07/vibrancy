@@ -429,6 +429,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                         </div>
                     </div>
                 </div>
+                    </div>
 
 
                                        {/* contenido scrollable */}
@@ -749,6 +750,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                         )}
                     </div>
                 </div>
+
             </DialogContent>
         </Dialog>
     );
