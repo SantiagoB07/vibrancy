@@ -15,6 +15,7 @@ interface Product {
   status?: boolean;
 }
 
+export const revalidate = 60;
 // Helper para determinar qué modal usar según el nombre del producto
 function getProductModal(product: Product) {
   const nombre = product.title?.toLowerCase() || "";
@@ -84,19 +85,25 @@ function getProductModal(product: Product) {
 export default async function ProductsPage() {
   const supabase = await createClient();
 
-  const { data: products, error } = await supabase
-    .from("products")
-    .select("id, title, price, img, status")
-    .eq("status", true)
-    .order("created_at", { ascending: false });
+  let products: Product[] = [];
+  let loadError: string | null = null;
 
-  if (error) {
-    console.error(error);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 text-lg">Error cargando productos: {error.message}</p>
-      </div>
-    );
+  try {
+    const { data, error } = await supabase
+        .from("products")
+        .select("id, title, price, img, status")
+        .eq("status", true)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error cargando productos desde Supabase:", error);
+      loadError = "No pudimos cargar los productos en este momento.";
+    } else {
+      products = data ?? [];
+    }
+  } catch (err) {
+    console.error("Error de red al llamar a Supabase:", err);
+    loadError = "Problema de conexión al cargar los productos.";
   }
 
   return (

@@ -15,6 +15,7 @@ const categories = [
   { name: "Dijes", icon: "✨", description: "Accesorios únicos" },
 ];
 
+export const revalidate = 60;
 // Features/beneficios
 const features = [
   {
@@ -111,16 +112,26 @@ function getProductModal(product: Product) {
 export default async function Home() {
   const supabase = await createClient();
 
-  const { data: products, error } = await supabase
-    .from("products")
-    .select("id, title, price, img, status")
-    .eq("status", true)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  let products: Product[] = [];
+  let loadError: string | null = null;
 
-  if (error) {
-    console.error(error);
-    return <p>Error cargando productos: {error.message}</p>;
+  try {
+    const { data, error } = await supabase
+        .from("products")
+        .select("id, title, price, img, status")
+        .eq("status", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+    if (error) {
+      console.error("Error cargando productos desde Supabase:", error);
+      loadError = "No pudimos cargar los productos en este momento.";
+    } else {
+      products = data ?? [];
+    }
+  } catch (err) {
+    console.error("Error de red al llamar a Supabase:", err);
+    loadError = "Problema de conexión al cargar los productos.";
   }
 
   return (
