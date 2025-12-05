@@ -9,7 +9,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Vibrancy - Accesorios Personalizados",
+  title: "Vibrancy Accesorios",
   description: "Llaveros, relicarios, placas de mascota y dijes personalizados. Hechos con amor en Colombia.",
 };
 

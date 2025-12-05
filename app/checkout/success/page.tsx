@@ -242,7 +242,7 @@ export default function CheckoutSuccessPage() {
                 )}
 
                 <Link
-                    href="/products"
+                    href="#productos"
                     className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#5E3A1E] text-[#F9E3C8] text-sm font-medium hover:bg-[#4C2F18] transition"
                 >
                     Volver a la tienda
