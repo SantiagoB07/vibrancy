@@ -12,10 +12,15 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
 
+
+
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!
 );
+
+
+
 
 type Color = 'silver' | 'black';
 
@@ -173,6 +178,8 @@ export default function PersonalizarLlaveroPage() {
     const [addSmall, setAddSmall] = useState(false);
     const [smallColor, setSmallColor] = useState<Color>('silver');
     const [smallText, setSmallText] = useState('');
+
+
 
     const [addMoto, setAddMoto] = useState(false);
     const [motoColor, setMotoColor] = useState<Color>('silver');
@@ -762,16 +769,23 @@ export default function PersonalizarLlaveroPage() {
                                             </label>
                                             <textarea
                                                 value={baseText}
-                                                onChange={(e) =>
-                                                    setBaseText(e.target.value.slice(0, 165))
-                                                }
+                                                onChange={(e) => {
+                                                    const raw = e.target.value;
+                                                    // máximo 3 líneas
+                                                    const limitedLines = raw.split("\n").slice(0, 3).join("\n");
+                                                    // máximo 165 caracteres
+                                                    const trimmed = limitedLines.slice(0, 165);
+                                                    setBaseText(trimmed);
+                                                }}
                                                 rows={3}
                                                 className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="Escribe tu mensaje aquí..."
                                             />
+
                                             <p className="text-xs text-zinc-500 mt-1">
-                                                Hasta 3 líneas
+                                                {baseText.length}/165 caracteres
                                             </p>
+
                                         </div>
                                     </div>
                                 </CollapsibleSection>
@@ -811,15 +825,18 @@ export default function PersonalizarLlaveroPage() {
                                             </label>
                                             <textarea
                                                 value={helmetText}
-                                                onChange={(e) =>
-                                                    setHelmetText(e.target.value.slice(0, 10))
-                                                }
+                                                onChange={(e) => {
+                                                    const raw = e.target.value;
+                                                    const limitedLines = raw.split("\n").slice(0, 1).join("\n");
+                                                    setHelmetText(limitedLines.slice(0, 20));
+                                                }}
                                                 rows={2}
                                                 className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="Inicial o nombre..."
                                             />
+
                                             <p className="text-xs text-zinc-500 mt-1">
-                                                Máximo 10 caracteres
+                                                Máximo 20 caracteres
                                             </p>
                                         </div>
                                     </div>
@@ -860,15 +877,18 @@ export default function PersonalizarLlaveroPage() {
                                             </label>
                                             <textarea
                                                 value={smallText}
-                                                onChange={(e) =>
-                                                    setSmallText(e.target.value.slice(0, 120))
-                                                }
+                                                onChange={(e) => {
+                                                    const raw = e.target.value;
+                                                    const limitedLines = raw.split("\n").slice(0, 1).join("\n");
+                                                    setSmallText(limitedLines.slice(0, 60));
+                                                }}
                                                 rows={2}
                                                 className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="Fecha o iniciales..."
                                             />
+
                                             <p className="text-xs text-zinc-500 mt-1">
-                                                Hasta 2 líneas
+                                                Hasta 60 caracteres
                                             </p>
                                         </div>
                                     </div>
