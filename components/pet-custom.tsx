@@ -1,9 +1,12 @@
 "use client";
 
+
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { Cookie, Courgette } from "next/font/google";
+
 
 interface PetCustomProps {
     product: {
@@ -15,6 +18,9 @@ interface PetCustomProps {
     children: React.ReactNode;
 }
 
+const cookie = Cookie({ subsets: ["latin"], weight: "400" });
+const courgette = Courgette({ subsets: ["latin"], weight: "400" });
+
 export function PetCustom({ product, children }: PetCustomProps) {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -25,6 +31,16 @@ export function PetCustom({ product, children }: PetCustomProps) {
         return "";
     });
 
+    const [fontFamily, setFontFamily] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("petTag_fontFamily") || cookie.style.fontFamily;
+        }
+        return cookie.style.fontFamily;
+    });
+
+    const isCookie = fontFamily === cookie.style.fontFamily;
+
+
     const [ownerInfo, setOwnerInfo] = useState(() => {
         if (typeof window !== "undefined") {
             return localStorage.getItem("petTag_ownerInfo") || "";
@@ -34,6 +50,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
 
     const [currentFace, setCurrentFace] = useState(1);
     const [isRotating, setIsRotating] = useState(false);
+
 
     // ====== flujo checkout (igual que relicario/girasol) ======
     const [step, setStep] = useState<1 | 2>(1);
@@ -232,10 +249,11 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                                         MozOsxFontSmoothing: "grayscale",
                                                         textRendering: "optimizeLegibility",
                                                         letterSpacing: "0.2px",
+                                                        fontFamily,
                                                         fontSize:
                                                             currentLines.length > 1
-                                                                ? "clamp(9px, 4vw, 18px)"
-                                                                : "clamp(11px, 5vw, 22px)",
+                                                                ? (isCookie ? "clamp(11px, 5vw, 24px)" : "clamp(9px, 4vw, 18px)")
+                                                                : (isCookie ? "clamp(13px, 6vw, 26px)" : "clamp(11px, 5vw, 22px)"),
                                                         lineHeight: 1.1,
                                                         whiteSpace: "pre-wrap",
                                                         wordBreak: "break-word",
@@ -244,6 +262,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                                 >
                                                     {currentFace === 1 ? petName : ownerInfo}
                                                 </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -304,8 +323,30 @@ export function PetCustom({ product, children }: PetCustomProps) {
                             MAX_LINES,
                             Math.max(1, currentLines.length)
                         )}
+
+
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
                     />
+                                        <div className="mt-4 flex justify-center">
+                                            <select
+                                                value={fontFamily}
+                                                onChange={(e) => {
+                                                    const newFont = e.target.value;
+                                                    setFontFamily(newFont);
+                                                    if (typeof window !== "undefined") {
+                                                        localStorage.setItem("petTag_fontFamily", newFont);
+                                                    }
+                                                }}
+                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                            >
+                                                <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                                                <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                                                <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                                                <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                                                    Lucida Calligraphy (elegante)
+                                                </option>
+                                            </select>
+                                        </div>
                                         <div className="mt-1 text-center text-xs text-gray-500">
                                             {currentLines.map((l, i) => (
                                                 <div key={i}>{`L${i + 1}: ${l.length}/${MAX_PER_LINE} caracteres`}</div>
@@ -314,6 +355,9 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                                 <div>{`Puedes añadir otra línea (máx. ${MAX_LINES}).`}</div>
                                             )}
                                         </div>
+
+
+
                                     </div>
                                 </div>
                             </>
