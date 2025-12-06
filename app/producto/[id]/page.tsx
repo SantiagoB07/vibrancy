@@ -2,13 +2,15 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProductClient from "./ProductClient";
 
-export default async function ProductoPage({ params }: { params: { id: string } }) {
+export default async function ProductoPage(props: { params: Promise<{ id: string }> }) {
+    const { id } = await props.params;
+
     const supabase = await createClient();
 
     const { data: producto, error } = await supabase
         .from("products")
         .select("id, title, description, price, img, status")
-        .eq("id", params.id)
+        .eq("id", id)
         .single();
 
     if (error || !producto) {
@@ -16,11 +18,10 @@ export default async function ProductoPage({ params }: { params: { id: string } 
         notFound();
     }
 
-    // Productos relacionados
     const { data: relacionados } = await supabase
         .from("products")
         .select("id, title, description, price, img")
-        .neq("id", params.id)
+        .neq("id", id)
         .order("created_at", { ascending: false })
         .limit(3);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
-import {X, ChevronLeft, ChevronRight, ShoppingCart} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatCOP } from "@/lib/utils";
@@ -53,24 +53,28 @@ export function ProductModal({ product, children }: ProductModalProps) {
         <DialogTitle className="sr-only">
           {product.title} - {formatCOP(product.price)}
         </DialogTitle>
-        <div className="bg-white rounded-2xl overflow-hidden relative"> {/* Añadido relative aquí */}
-          <div className="absolute right-4 top-4 z-20"> {/* Aumentado z-index para asegurar que esté por encima de todo */}
+
+        <div className="bg-white rounded-2xl overflow-hidden relative">
+          {/* Botón cerrar */}
+          <div className="absolute right-4 top-4 z-20">
             <DialogTrigger asChild>
               <button className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
                 <X className="h-5 w-5 text-amber-900" />
               </button>
             </DialogTrigger>
           </div>
-          
-          {/* Carrusel de imágenes y ahora también información superpuesta */}
-          <div className="relative h-80 md:h-96 group"> {/* Este contenedor ya era relative */}
-            <Image
-              src={imgUrl(allImages[currentImageIndex])}
-              alt={product.title}
-              fill
-              className="object-cover rounded-lg"
-            />
-            
+
+          {/* Carrusel de imágenes + info superpuesta */}
+          <div className="relative h-80 md:h-96 group">
+            {allImages.length > 0 && (
+              <Image
+                src={imgUrl(allImages[currentImageIndex] as string)}
+                alt={product.title}
+                fill
+                className="object-cover rounded-lg"
+              />
+            )}
+
             {/* Controles del carrusel */}
             {allImages.length > 1 && (
               <>
@@ -88,7 +92,7 @@ export function ProductModal({ product, children }: ProductModalProps) {
                 </button>
               </>
             )}
-            
+
             {/* Indicadores de imágenes */}
             {allImages.length > 1 && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
@@ -97,7 +101,7 @@ export function ProductModal({ product, children }: ProductModalProps) {
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                      index === currentImageIndex ? "bg-white" : "bg-white/50"
                     }`}
                   />
                 ))}
@@ -106,19 +110,14 @@ export function ProductModal({ product, children }: ProductModalProps) {
 
             {/* Información del producto superpuesta sobre la imagen */}
             <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/60 to-transparent rounded-lg text-white">
-              <h2 className="text-2xl font-bold mb-2">
-                {product.title}
-              </h2>
-              
-              <p className="text-3xl font-bold mb-4">
-                {formatCOP(product.price)}
-              </p>
-              
+              <h2 className="text-2xl font-bold mb-2">{product.title}</h2>
+
+              <p className="text-3xl font-bold mb-4">{formatCOP(product.price)}</p>
+
               <p className="mb-6 text-sm opacity-90">
-                {/* Aquí puedes agregar más información del producto si la tienes */}
                 Producto exclusivo de Vibrancy. Calidad premium garantizada.
               </p>
-              
+
               <div className="space-y-3">
                 <Link
                   href={`/producto/${product.id}`}
@@ -127,57 +126,32 @@ export function ProductModal({ product, children }: ProductModalProps) {
                 >
                   Comprar
                 </Link>
-              {/* Información del producto */}
-              <div className="flex flex-col justify-center">
-                <h2 className="text-2xl font-bold text-amber-900 mb-4">
-                  {product.title}
-                </h2>
-                
-                <p className="text-3xl font-bold text-orange-600 mb-6">
-                  {formatCOP(product.price)}
-                </p>
-                
-                <p className="text-amber-700 mb-6">
-                  {/* Aquí puedes agregar más información del producto si la tienes */}
-                  Producto exclusivo de Vibrancy. Calidad premium garantizada.
-                </p>
 
-                <div className="space-y-3">
-                  <Link
-                      href={`/producto/${product.id}`}
-                      prefetch={true}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center block"
-                  >
-                    Comprar
-                  </Link>
-
-                  {/* Botón Añadir al carrito */}
-                  <Button
-                      variant="secondary"
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center gap-2"
-                      onClick={async () => {
-                        const ok = await addToCart(Number(product.id));
-                        if (ok) {
-                          toast.success("Producto añadido", {
-                            description: product.title,
-                            action: {
-                              label: "Ver carrito",
-                              onClick: () => (window.location.href = "/cart"),
-                            },
-                            duration: 2500,
-                          });
-                        } else {
-                          toast.error("No se pudo añadir", {
-                            description: "Intenta de nuevo en unos segundos",
-                          });
-                        }
-                      }}
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Añadir al carrito
-                  </Button>
-                </div>
-              </div>
+                {/* Botón Añadir al carrito */}
+                <Button
+                  variant="secondary"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center gap-2"
+                  onClick={async () => {
+                    const ok = await addToCart(Number(product.id));
+                    if (ok) {
+                      toast.success("Producto añadido", {
+                        description: product.title,
+                        action: {
+                          label: "Ver carrito",
+                          onClick: () => (window.location.href = "/cart"),
+                        },
+                        duration: 2500,
+                      });
+                    } else {
+                      toast.error("No se pudo añadir", {
+                        description: "Intenta de nuevo en unos segundos",
+                      });
+                    }
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Añadir al carrito
+                </Button>
               </div>
             </div>
           </div>
