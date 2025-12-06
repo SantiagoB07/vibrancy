@@ -5,17 +5,14 @@ import { X, RotateCcw } from "lucide-react";
 import { useState, useEffect, type ChangeEvent, type ReactNode, type ReactElement } from "react";
 
 import Image from "next/image";
-import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
+import { Cookie, Courgette } from "next/font/google";
 import PresetDesignModal, { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
 
-export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
-export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
-export const comingSoon = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
-export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
-export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
+const cookie = Cookie({ subsets: ["latin"], weight: "400" });
+const courgette = Courgette({ subsets: ["latin"], weight: "400" });
 
 interface RelicarioCustomProps {
   product: {
@@ -43,10 +40,14 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageUrls, setImageUrls] = useState({ gold: "", silver: "" });
 
+
   // texto / estilo
-  const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
+  const [fontFamily, setFontFamily] = useState(cookie.style.fontFamily);
+  const isCookie = fontFamily === cookie.style.fontFamily;
+
   const [petName, setPetName] = useState("");
   const [ownerInfo, setOwnerInfo] = useState("");
+
   const [variant, setVariant] = useState<"gold" | "silver">("gold");
   const [currentFace, setCurrentFace] = useState<1 | 2>(1);
   const [isRotating, setIsRotating] = useState(false);
@@ -167,7 +168,7 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    setFontFamily(localStorage.getItem("petTag_fontFamily") || "'Inter', sans-serif");
+    setFontFamily(localStorage.getItem("petTag_fontFamily") || cookie.style.fontFamily);
     setPetName(localStorage.getItem("petTag_petName") || "");
     setOwnerInfo(localStorage.getItem("petTag_ownerInfo") || "");
     setVariant((localStorage.getItem("petTag_variant") as "gold" | "silver") || "gold");
@@ -490,9 +491,13 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
           >
             {(() => {
               const txt = formatTextWithBreak(petName || effectiveDesign.defaultText || "");
-              const rawFontSize = effectiveDesign.fontSize ?? designFontSize;
+              let baseSize = effectiveDesign.fontSize ?? designFontSize;
+              if (isCookie) {
+                baseSize += 2;
+              }
               const computedFontSize =
-                effectiveDesign.position === "right" ? Math.round(rawFontSize * 0.85) : rawFontSize;
+                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.85) : baseSize;
+
               const baseStyle = {
                 fontFamily: effectiveDesign.fontFamily || fontFamily,
                 color: effectiveDesign.color || textColor,
@@ -648,7 +653,7 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
               0 1px 1px rgba(255,255,255,0.8),
               0 2px 2px rgba(0,0,0,0.2)
             `,
-            fontSize: `${designFontSize}px`,
+            fontSize: `${designFontSize + (isCookie ? 2 : 0)}px`,
             color: textColor,
           }}
         >
@@ -693,9 +698,13 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
           >
             {(() => {
               const txt = formatTextWithBreak(ownerInfo || effectiveDesign.defaultText || "");
-              const rawFontSize = effectiveDesign.fontSize ?? designFontSize;
+              let baseSize = effectiveDesign.fontSize ?? designFontSize;
+              if (isCookie) {
+                baseSize += 2;
+              }
               const computedFontSize =
-                effectiveDesign.position === "right" ? Math.round(rawFontSize * 0.7) : rawFontSize;
+                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.7) : baseSize;
+
               const baseStyle = {
                 fontFamily: effectiveDesign.fontFamily || fontFamily,
                 color: effectiveDesign.color || textColor,
@@ -986,27 +995,28 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   </div>
 </div>
 
-{/* Selector de fuente */}
-<div className="mt-2 mb-6 flex justify-center">
-  <select
-    value={fontFamily}
-    onChange={(e) => {
-      const newFont = e.target.value;
-      setFontFamily(newFont);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("petTag_fontFamily", newFont);
-      }
-    }}
-    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-  >
-    <option value="'Inter', sans-serif">Inter (moderno)</option>
-    <option value="'Lobster', cursive">Lobster (decorativo)</option>
-    <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
-    <option value="'Coming Soon', cursive">Coming Soon (casual)</option>
-    <option value="monospace">Monospace (teclado)</option>
-    <option value="'Tangerine', cursive">Tangerine (clásico)</option>
-  </select>
-</div>
+                {/* Selector de fuente */}
+                <div className="mt-2 mb-6 flex justify-center">
+                  <select
+                      value={fontFamily}
+                      onChange={(e) => {
+                        const newFont = e.target.value;
+                        setFontFamily(newFont);
+                        if (typeof window !== "undefined") {
+                          localStorage.setItem("petTag_fontFamily", newFont);
+                        }
+                      }}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                  >
+                    <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                    <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                    <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                    <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                      Lucida Calligraphy (elegante)
+                    </option>
+                  </select>
+                </div>
+
 
 {/* Upload de imágenes (rama nueva, con múltiples fotos) */}
 <div className="px-2 md:px-8 pb-6">
