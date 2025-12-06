@@ -4,13 +4,10 @@ import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
+import { Cookie, Courgette } from "next/font/google";
 
-export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
-export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
-export const robotoSlab = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
-export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
-export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
+const cookie = Cookie({ subsets: ["latin"], weight: "400" });
+const courgette = Courgette({ subsets: ["latin"], weight: "400" });
 
 interface RelicarioCircCustomProps {
   product: {
@@ -29,11 +26,14 @@ const REL_TAG_SILVER_IMG = '/images/relicario_2p.png';
 export function RelicarioCircCustom({ product, children }: RelicarioCircCustomProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [fontFamily, setFontFamily] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('petTag_fontFamily') || "'Inter', sans-serif";
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("petTag_fontFamily") || cookie.style.fontFamily;
     }
-    return "'Inter', sans-serif";
+    return cookie.style.fontFamily;
   });
+
+  const isCookie = fontFamily === cookie.style.fontFamily;
+
   const [petName, setPetName] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('petTag_petName') || '';
@@ -197,17 +197,20 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         }}
                     >
                     <span
-                        className="text-base md:text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                        className={`${
+                            isCookie ? "text-lg md:text-2xl" : "text-base md:text-xl"
+                        } font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]`}
                         style={{
                           fontFamily,
                           textShadow: `
                           0 1px 1px rgba(255,255,255,0.8),
                           0 2px 2px rgba(0,0,0,0.2)
                         `,
-                        }}
-                    >
+                                            }}
+                                        >
                       {formatTextWithBreak(petName)}
                     </span>
+
                     </div>
                   </div>
 
@@ -231,17 +234,20 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         }}
                     >
                     <span
-                        className="text-base md:text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                        className={`${
+                            isCookie ? "text-lg md:text-2xl" : "text-base md:text-xl"
+                        } font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]`}
                         style={{
                           fontFamily,
                           textShadow: `
                           0 1px 1px rgba(255,255,255,0.8),
                           0 2px 2px rgba(0,0,0,0.2)
                         `,
-                        }}
-                    >
-                      {formatTextWithBreak(ownerInfo)}
+                                            }}
+                                        >
+                      {formatTextWithBreak(petName)}
                     </span>
+
                     </div>
                   </div>
                 </div>
@@ -318,19 +324,20 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                     onChange={(e) => {
                       const newFont = e.target.value;
                       setFontFamily(newFont);
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('petTag_fontFamily', newFont);
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("petTag_fontFamily", newFont);
                       }
                     }}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
                 >
-                  <option value="'Inter', sans-serif">Inter (moderno)</option>
-                  <option value="'Lobster', cursive">Lobster (decorativo)</option>
-                  <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
-                  <option value="'Roboto Slab', serif">Roboto Slab (serif elegante)</option>
-                  <option value="monospace">Monospace (teclado)</option>
-                  <option value="tangerine">Tangerine (clásico)</option>
+                  <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                  <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                  <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                  <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                    Lucida Calligraphy (elegante)
+                  </option>
                 </select>
+
               </div>
 
               {/* Sección subir imagen */}
