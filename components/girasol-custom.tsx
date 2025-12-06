@@ -4,15 +4,12 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
-import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
+import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
-export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
-export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
-export const comingSoon = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
-export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
-export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
+const cookie = Cookie({ subsets: ["latin"], weight: "400" });
+const courgette = Courgette({ subsets: ["latin"], weight: "400" });
 
 interface GirasolCustomProps {
     product: {
@@ -61,7 +58,9 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
     const [phraseFace1, setPhraseFace1] = useState('');
     const [phraseFace2, setPhraseFace2] = useState('');
 
-    const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
+    const [fontFamily, setFontFamily] = useState(cookie.style.fontFamily);
+    const isCookie = fontFamily === cookie.style.fontFamily;
+
     // urls desde supabase
     const [imageUrls, setImageUrls] = useState({
         closedGold: '',
@@ -164,11 +163,20 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
     const getFontSizeForCircle = (text: string) => {
         const len = text.length;
 
-        if (len <= 20) return 18;     // muy corto → fuente grande
-        if (len <= 50) return 15;    // medio
-        if (len <= 95) return 13;    // un poco más pequeño
-        return 11;                   // casi al límite → pequeño
+
+        let size: number;
+        if (len <= 20) size = 18;
+        else if (len <= 50) size = 15;
+        else if (len <= 95) size = 13;
+        else size = 11;
+
+        if (isCookie) {
+            size += 5;
+        }
+
+        return size;
     };
+
 
 
     // cargar valores guardados
@@ -651,13 +659,14 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                 }}
                                                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
                                             >
-                                                <option value="'Inter', sans-serif">Inter (moderno)</option>
-                                                <option value="'Lobster', cursive">Lobster (decorativo)</option>
-                                                <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
-                                                <option value="'Coming Soon', cursive">Coming Soon (casual)</option>
-                                                <option value="monospace">Monospace (teclado)</option>
-                                                <option value="'Tangerine', cursive">Tangerine (clásico)</option>
+                                                <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                                                <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                                                <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                                                <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                                                    Lucida Calligraphy (elegante)
+                                                </option>
                                             </select>
+
                                         </div>
                                     </div>
                                 </div>
