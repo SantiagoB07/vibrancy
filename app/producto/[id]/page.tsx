@@ -20,11 +20,10 @@ export default async function ProductoPage(props: { params: Promise<{ id: string
 
     const { data: relacionados } = await supabase
         .from("products")
-        .select("id, title, price, img")
+        .select("id, title, description, price, img")
         .neq("id", id)
         .order("created_at", { ascending: false })
         .limit(3);
 
     return <ProductClient producto={producto} relacionados={relacionados ?? []} />;
 }
-
