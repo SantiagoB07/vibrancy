@@ -4,15 +4,12 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
+import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
-export const inter = Inter({ subsets: ['latin'], weight: ['400', '700'] });
-export const lobster = Lobster({ subsets: ['latin'], weight: ['400'] });
-export const comingSoon = Coming_Soon({ subsets: ['latin'], weight: ['400'] });
-export const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'] });
-export const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] });
+const cookie = Cookie({ subsets: ["latin"], weight: "400" });
+const courgette = Courgette({ subsets: ["latin"], weight: "400" });
 
 interface LetterCharmCustomProps {
     product: {
@@ -75,6 +72,8 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
 
     const [step, setStep] = useState<1 | 2>(1);
 
+
+
     const [customerData, setCustomerData] = useState<CustomerData>({
         name: "",
         phone: "",
@@ -105,8 +104,11 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
 
     // texto personalizado para adentro
     const [message, setMessage] = useState('');
-    const [fontFamily, setFontFamily] = useState("'Inter', sans-serif");
-    const isTangerine = fontFamily.includes("Tangerine");
+    const [fontFamily, setFontFamily] = useState(cookie.style.fontFamily);
+
+    const isCookie = fontFamily === cookie.style.fontFamily;
+
+
 
 
     // ===== Cargar mensaje y fuente desde localStorage =====
@@ -342,15 +344,16 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                         }}
                                     >
                     <span
-                        className="text-xl leading-tight tracking-wide text-[#3b3b3b]"
+                        className={`${isCookie ? "text-2xl" : "text-xl"} leading-tight tracking-wide text-[#3b3b3b]`}
                         style={{
                             fontFamily,
                             wordBreak: 'break-word',
                             whiteSpace: 'pre-wrap',
                         }}
                     >
-                      {message}
-                    </span>
+  {message}
+</span>
+
                                     </div>
                                 </div>
                             </div>
@@ -411,27 +414,28 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                             </div>
                         </div>
 
-                        {/* Selector de fuente */}
-                        <div className="mt-4 flex justify-center">
-                            <select
-                                value={fontFamily}
-                                onChange={(e) => {
-                                    const newFont = e.target.value;
-                                    setFontFamily(newFont);
-                                    if (typeof window !== 'undefined') {
-                                        localStorage.setItem('letter_fontFamily', newFont);
-                                    }
-                                }}
-                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                            >
-                                <option value="'Inter', sans-serif">Inter (moderno)</option>
-                                <option value="'Lobster', cursive">Lobster (decorativo)</option>
-                                <option value="'Pacifico', cursive">Pacifico (caligráfico)</option>
-                                <option value="'Coming Soon', cursive">Coming Soon (casual)</option>
-                                <option value="monospace">Monospace (teclado)</option>
-                                <option value="'Tangerine', cursive">Tangerine (clásico)</option>
-                            </select>
-                        </div>
+                                {/* Selector de fuente */}
+                                <div className="mt-4 flex justify-center">
+                                    <select
+                                        value={fontFamily}
+                                        onChange={(e) => {
+                                            const newFont = e.target.value;
+                                            setFontFamily(newFont);
+                                            if (typeof window !== 'undefined') {
+                                                localStorage.setItem('letter_fontFamily', newFont);
+                                            }
+                                        }}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                    >
+                                        <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                                        <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                                        <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                                        <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                                            Lucida Calligraphy (elegante)
+                                        </option>
+                                    </select>
+                                </div>
+
                             </>
                         )}
                         {step === 2 && (

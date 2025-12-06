@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
-import { useState, useEffect, type ChangeEvent, type ReactNode } from "react";
+import { useState, useEffect, type ChangeEvent, type ReactNode, type ReactElement } from "react";
 
 import Image from "next/image";
 import { Inter, Lobster, Coming_Soon, Pacifico, Tangerine } from 'next/font/google';
@@ -658,7 +658,6 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
     </div>
   </div>
 
-   </div>
 
   {/* Reverso */}
   <div
@@ -890,13 +889,13 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
       Diseños predeterminados
     </h4>
     <PresetDesignModal
-      designs={PRESET_DESIGNS}
-      trigger={
-        <button className="px-3 py-2 bg-gray-100 rounded-md text-sm">
-          Editar diseños
-        </button>
-      }
-      onConfirm={(d) => chooseDesign(d)}
+        designs={PRESET_DESIGNS}
+        trigger={
+          <button className="px-3 py-2 bg-gray-100 rounded-md text-sm">
+            Editar diseños
+          </button> as ReactElement
+        }
+        onConfirm={(d) => chooseDesign(d)}
     />
   </div>
 
@@ -1022,10 +1021,7 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
         multiple
         disabled={uploadedImages.length >= 2}
         onChange={handleImageUpload}
-        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-file:rounded-full file:border-0 file:text-sm file:font-semibold
-file:bg-green-50 file:text-green-700 hover:file:bg-green-100
-disabled:opacity-50 disabled:cursor-not-allowed"
+        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
       />
     </div>
 
@@ -1064,9 +1060,6 @@ disabled:opacity-50 disabled:cursor-not-allowed"
     )}
   </div>
 </div>
-
-                  </div>
-                </div>
               </>
             )}
 
