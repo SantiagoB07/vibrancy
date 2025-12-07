@@ -29,6 +29,8 @@ type CheckoutItem = {
         publicUrl?: string | null;
         position: number;        // 1,2,3
     }[];
+
+    engravingFont?: string | null;
 };
 
 
@@ -134,6 +136,7 @@ export async function POST(request: Request) {
             line_total: item.unitPrice * item.quantity,
             personalization_front: item.personalizationFront ?? null,
             personalization_back: item.personalizationBack ?? null,
+            engraving_font: item.engravingFont ?? null,
         }));
 
         const { data: createdItems, error: itemsError } = await supabase
