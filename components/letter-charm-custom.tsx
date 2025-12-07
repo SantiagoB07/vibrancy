@@ -209,6 +209,24 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
             return;
         }
 
+        const getSelectedFontForDb = () => {
+            if (fontFamily === cookie.style.fontFamily) {
+                return "COOKIE";
+            }
+            if (fontFamily === courgette.style.fontFamily) {
+                return "COURGETTE";
+            }
+            if (fontFamily === "Georgia, 'Times New Roman', serif") {
+                return "GEORGIA";
+            }
+            if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+                return "LUCIDA_CALLIGRAPHY";
+            }
+
+            // Mas fuentes...
+            return "UNKNOWN";
+        };
+
         try {
 
             const res = await fetch("/api/checkout", {
@@ -225,6 +243,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                             title: `${product.title} - ${selectedVariant.name}`,
                             personalizationFront: message,
                             personalizationBack: null,
+                            engravingFont: getSelectedFontForDb()
                         },
                     ],
                 }),
@@ -243,6 +262,10 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
             console.error(error);
             alert("No se pudo conectar con Mercado Pago.");
         }
+
+
+
+
     };
 
 
