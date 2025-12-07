@@ -104,6 +104,24 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
             return;
         }
 
+        const getSelectedFontForDb = () => {
+            if (fontFamily === cookie.style.fontFamily) {
+                return "COOKIE";
+            }
+            if (fontFamily === courgette.style.fontFamily) {
+                return "COURGETTE";
+            }
+            if (fontFamily === "Georgia, 'Times New Roman', serif") {
+                return "GEORGIA";
+            }
+            if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+                return "LUCIDA_CALLIGRAPHY";
+            }
+
+            // Por si en el futuro agregas más opciones y se te olvida actualizar aquí
+            return "UNKNOWN";
+        };
+
         try {
             setIsPaying(true);
 
@@ -128,6 +146,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                             title: `${product.title} - ${selectedVariant.name}`,
                             personalizationFront: phraseFace1,
                             personalizationBack: phraseFace2,
+                            engravingFont: getSelectedFontForDb(),
                         },
                     ],
                 }),
