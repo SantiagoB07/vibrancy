@@ -71,6 +71,87 @@ export function useSupabaseImages() {
     return images;
 }
 
+type KeychainVectorDesign = {
+    name: string;
+    path: string;
+    publicUrl: string;
+};
+
+const VECTOR_BUCKET = 'designs_keychain';
+
+export function useKeychainVectorDesigns() {
+    const [designs, setDesigns] = useState<KeychainVectorDesign[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchDesigns() {
+            try {
+                setLoading(true);
+
+                // 1) TEST: obtener la URL pública de un archivo concreto
+                const { data: testPublic } = supabase.storage
+                    .from(VECTOR_BUCKET)
+
+
+
+                // 2) LISTAR archivos en la raíz del bucket
+                const { data: listData, error } = await supabase.storage
+                    .from(VECTOR_BUCKET)
+                    // sin ruta => raíz del bucket
+                    .list(undefined, {
+                        limit: 100,
+                        sortBy: { column: 'name', order: 'asc' },
+                    });
+
+                console.log('RAW designs list:', listData, error);
+
+                if (error) {
+                    console.error('Error listing designs_keychain:', error);
+                    setDesigns([]);
+                    return;
+                }
+
+                if (!listData || listData.length === 0) {
+                    setDesigns([]);
+                    return;
+                }
+
+                const files = listData.filter(
+                    (item) => !!item.name && !item.name.startsWith('.')
+                );
+
+                const mapped: KeychainVectorDesign[] = files.map((file) => {
+                    const filePath = file.name; // raíz del bucket
+
+                    const { data: publicData } = supabase.storage
+                        .from(VECTOR_BUCKET)
+                        .getPublicUrl(filePath);
+
+                    return {
+                        name: file.name,
+                        path: filePath,
+                        publicUrl: publicData?.publicUrl ?? '',
+                    };
+                });
+
+                setDesigns(mapped);
+            } catch (e) {
+                console.error('Unexpected error loading vector designs:', e);
+                setDesigns([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchDesigns();
+    }, []);
+
+    return { designs, loading };
+}
+
+
+
+
 const PRICE = {
     base: 45000,
     addon: 10000,
@@ -159,6 +240,16 @@ function EngravedText({
 
 export default function PersonalizarLlaveroPage() {
     const IMAGES = useSupabaseImages();
+    const { designs: vectorDesigns, loading: loadingVectorDesigns } = useKeychainVectorDesigns();
+    const [selectedVectorDesign, setSelectedVectorDesign] = useState<string | null>(null);
+    const selectedVectorDesignData = useMemo(
+        () =>
+            vectorDesigns.find((design) => design.path === selectedVectorDesign) ?? null,
+        [vectorDesigns, selectedVectorDesign]
+    );
+
+    const hasVectorDesign = !!selectedVectorDesignData;
+
 
     // configuraciones de llavero
     const [photoEngraving, setPhotoEngraving] = useState(false);
@@ -242,6 +333,10 @@ export default function PersonalizarLlaveroPage() {
             total,
         ]
     );
+
+
+
+
 
     // cargar variantes del llavero (silver/black) desde Supabase
     useEffect(() => {
@@ -548,24 +643,64 @@ export default function PersonalizarLlaveroPage() {
                                                         alt="Placa grande"
                                                         className="w-full h-full object-contain"
                                                     />
+
+                                                    {/* ZONA DE TEXTO + DIBUJO, ANCLADA POR ARRIBA */}
                                                     <div
-                                                        className="absolute inset-0 flex items-center justify-center p-4 translate-y-6"
+                                                        className="absolute inset-0 flex items-center justify-center p-4"
                                                         style={{
+                                                            // esto mantiene el bloque texto+dibujo aproximadamente
+                                                            // donde ya se veía bien antes
                                                             transform: 'translateY(65px)',
                                                         }}
                                                     >
-                                                        <EngravedText
-                                                            value={baseText}
-                                                            boxW={130}
-                                                            boxH={100}
-                                                            maxPx={12}
-                                                            maxLines={3}
-                                                            color={baseColor}
-                                                        />
+                                                        {/* ZONA SEGURA: texto arriba, dibujo abajo */}
+                                                        <div
+                                                            className="flex flex-col items-center justify-between"
+                                                            style={{
+                                                                width: 130,
+                                                                height: hasVectorDesign ? 150 : 120, // alto total de la zona
+                                                            }}
+                                                        >
+                                                            {/* CONTENEDOR DEL TEXTO (parte superior de la zona) */}
+                                                            <div
+                                                                className="w-full flex items-start justify-center"
+                                                                style={{
+                                                                    height: hasVectorDesign ? 110 : 120, // alto máximo del texto
+                                                                }}
+                                                            >
+                                                                <EngravedText
+                                                                    value={baseText}
+                                                                    boxW={130}
+                                                                    boxH={hasVectorDesign ? 110 : 120} // mismo que arriba
+                                                                    maxPx={12}
+                                                                    maxLines={3}
+                                                                    color={baseColor}
+                                                                />
+                                                            </div>
+
+                                                            {/* CONTENEDOR DEL DIBUJO (parte inferior de la zona) */}
+                                                            {hasVectorDesign && (
+                                                                <div
+                                                                    className="w-full flex items-center justify-center"
+                                                                    style={{
+                                                                        height: 80,
+                                                                        transform: 'translateY(20px)'
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        src={selectedVectorDesignData!.publicUrl}
+                                                                        alt={selectedVectorDesignData!.name}
+                                                                        className="h-full w-auto object-contain"
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+
                                         )}
+
 
                                         {/* Casco */}
                                         {activeView === 'helmet' && addHelmet && (
@@ -785,6 +920,72 @@ export default function PersonalizarLlaveroPage() {
                                             <p className="text-xs text-zinc-500 mt-1">
                                                 {baseText.length}/165 caracteres
                                             </p>
+
+
+                                            {/* Imágenes vectorizadas (opcional) */}
+                                            <div className="mt-4">
+                                                <p className="block text-sm font-medium text-zinc-700 mb-2">
+                                                    Imágenes vectorizadas (opcional)
+                                                </p>
+
+                                                {loadingVectorDesigns && (
+                                                    <p className="text-xs text-zinc-500">
+                                                        Cargando diseños...
+                                                    </p>
+                                                )}
+
+                                                {!loadingVectorDesigns &&
+                                                    vectorDesigns.length === 0 && (
+                                                        <p className="text-xs text-zinc-500">
+                                                            No hay diseños disponibles por ahora.
+                                                        </p>
+                                                    )}
+
+                                                {!loadingVectorDesigns &&
+                                                    vectorDesigns.length > 0 && (
+                                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                                            {/* Opción sin dibujo */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setSelectedVectorDesign(null)
+                                                                }
+                                                                className={`border rounded-md flex items-center justify-center py-4 text-xs bg-white ${
+                                                                    selectedVectorDesign === null
+                                                                        ? 'border-blue-500 ring-1 ring-blue-500'
+                                                                        : 'border-zinc-200'
+                                                                }`}
+                                                            >
+                                                                Sin dibujo
+                                                            </button>
+
+                                                            {vectorDesigns.map((design) => (
+                                                                <button
+                                                                    key={design.path}
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setSelectedVectorDesign(
+                                                                            design.path
+                                                                        )
+                                                                    }
+                                                                    className={`border rounded-md p-1 flex items-center justify-center bg-white ${
+                                                                        selectedVectorDesign ===
+                                                                        design.path
+                                                                            ? 'border-blue-500 ring-1 ring-blue-500'
+                                                                            : 'border-zinc-200'
+                                                                    }`}
+                                                                >
+                                                                    <img
+                                                                        src={design.publicUrl}
+                                                                        alt={design.name}
+                                                                        className="w-full h-full object-contain"
+                                                                    />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                            </div>
+
 
                                         </div>
                                     </div>
