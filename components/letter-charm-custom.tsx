@@ -325,47 +325,47 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                         {step === 1 && (
                             <>
 
-                        {/* Vista del dije */}
-                        <div className="flex justify-center gap-6 mb-8 items-center">
-                            <div
-                                className="relative w-[300px] h-[300px] perspective-1000"
-                                style={{ transformStyle: 'preserve-3d' }}
-                            >
-                                {/* cara 1: sobre (dije cerrado) */}
-                                <div
-                                    className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                        currentFace === 1 ? 'rotate-y-0' : 'rotate-y-180'
-                                    }`}
-                                >
-                                    <Image
-                                        src={currentImages.sobre}
-                                        alt="Sobre carta"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-
-                                {/* cara 2: adentro + texto (dije abierto) */}
-                                <div
-                                    className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                        currentFace === 2 ? 'rotate-y-0' : '-rotate-y-180'
-                                    }`}
-                                >
-                                    <Image
-                                        src={currentImages.adentro}
-                                        alt="Carta adentro"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                    {/* overlay de texto */}
+                                {/* Vista del dije */}
+                                <div className="flex justify-center gap-6 mb-8 items-center">
                                     <div
-                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                        style={{
-                                            transform: 'translate(-50%, -85%)',
-                                            width: '160px',
-                                            height: '100px',
-                                        }}
+                                        className="relative w-[300px] h-[300px] perspective-1000"
+                                        style={{ transformStyle: 'preserve-3d' }}
                                     >
+                                        {/* cara 1: sobre (dije cerrado) */}
+                                        <div
+                                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                                currentFace === 1 ? 'rotate-y-0' : 'rotate-y-180'
+                                            }`}
+                                        >
+                                            <Image
+                                                src={currentImages.sobre}
+                                                alt="Sobre carta"
+                                                fill
+                                                className="object-contain"
+                                            />
+                                        </div>
+
+                                        {/* cara 2: adentro + texto (dije abierto) */}
+                                        <div
+                                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                                currentFace === 2 ? 'rotate-y-0' : '-rotate-y-180'
+                                            }`}
+                                        >
+                                            <Image
+                                                src={currentImages.adentro}
+                                                alt="Carta adentro"
+                                                fill
+                                                className="object-contain"
+                                            />
+                                            {/* overlay de texto */}
+                                            <div
+                                                className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
+                                                style={{
+                                                    transform: 'translate(-50%, -85%)',
+                                                    width: '160px',
+                                                    height: '100px',
+                                                }}
+                                            >
                     <span
                         className={`${isCookie ? "text-2xl" : "text-xl"} leading-tight tracking-wide text-[#3b3b3b]`}
                         style={{
@@ -377,65 +377,65 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
   {message}
 </span>
 
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Botones de control */}
-                        <div className="flex justify-center mb-6 space-x-4">
-                            <button
-                                onClick={handleRotate}
-                                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-                            >
-                                <RotateCcw className="h-4 w-4" />
-                                <span className="text-sm font-medium">
+                                {/* Botones de control */}
+                                <div className="flex justify-center mb-6 space-x-4">
+                                    <button
+                                        onClick={handleRotate}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                                    >
+                                        <RotateCcw className="h-4 w-4" />
+                                        <span className="text-sm font-medium">
                   Rotar dije ({currentFace === 1 ? 'Ver adentro' : 'Ver sobre'})
                 </span>
-                            </button>
+                                    </button>
 
-                            <button
-                                onClick={toggleVariant}
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors capitalize"
-                                disabled={!selectedVariant}
-                            >
-                                Color: {selectedVariant?.name ?? 'Cargando...'}
-                            </button>
-                        </div>
+                                    <button
+                                        onClick={toggleVariant}
+                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors capitalize"
+                                        disabled={!selectedVariant}
+                                    >
+                                        Color: {selectedVariant?.name ?? 'Cargando...'}
+                                    </button>
+                                </div>
 
-                        {/* Inputs de texto */}
-                        <div className="space-y-4 max-w-md mx-auto">
-                            <div>
-                                <label
-                                    htmlFor="letter-message"
-                                    className="block text-sm font-medium text-gray-700 mb-1 text-center"
-                                >
-                                    Mensaje de la carta
-                                </label>
-                                <textarea
-                                    id="letter-message"
-                                    value={message}
-                                    onChange={(e) => {
-                                        const val = e.target.value.slice(0, 50); // Limite de caracteres
-                                        setMessage(val);
-                                        if (typeof window !== 'undefined') {
-                                            localStorage.setItem('letter_message', val);
-                                        }
-                                    }}
-                                    placeholder="Escribe tu mensaje aquí..."
-                                    maxLength={50}
-                                    rows={3}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
-                                />
-                                <p
-                                    className={`text-xs mt-1 text-center ${
-                                        message.length >= 50 ? 'text-red-500' : 'text-gray-500'
-                                    }`}
-                                >
-                                    {message.length}/50 caracteres
-                                </p>
-                            </div>
-                        </div>
+                                {/* Inputs de texto */}
+                                <div className="space-y-4 max-w-md mx-auto">
+                                    <div>
+                                        <label
+                                            htmlFor="letter-message"
+                                            className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                        >
+                                            Mensaje de la carta
+                                        </label>
+                                        <textarea
+                                            id="letter-message"
+                                            value={message}
+                                            onChange={(e) => {
+                                                const val = e.target.value.slice(0, 50); // Limite de caracteres
+                                                setMessage(val);
+                                                if (typeof window !== 'undefined') {
+                                                    localStorage.setItem('letter_message', val);
+                                                }
+                                            }}
+                                            placeholder="Escribe tu mensaje aquí..."
+                                            maxLength={50}
+                                            rows={3}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                        />
+                                        <p
+                                            className={`text-xs mt-1 text-center ${
+                                                message.length >= 50 ? 'text-red-500' : 'text-gray-500'
+                                            }`}
+                                        >
+                                            {message.length}/50 caracteres
+                                        </p>
+                                    </div>
+                                </div>
 
                                 {/* Selector de fuente */}
                                 <div className="mt-4 flex justify-center">

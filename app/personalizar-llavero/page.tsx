@@ -159,6 +159,9 @@ const PRICE = {
 
 const PRICE_PHOTO = 15000;
 
+// Límite de caracteres para la placa grande
+const BASE_TEXT_MAX_CHARS = 165;
+
 const nf = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -282,6 +285,14 @@ export default function PersonalizarLlaveroPage() {
     const [variants, setVariants] = useState<ProductVariant[]>([]);
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
+// toast de advertencia
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+    const showToast = (message: string) => {
+        setToastMessage(message);
+        setTimeout(() => setToastMessage(null), 5000); // Auto-dismiss después de 5 segundos
+    };
+
     // flujo checkout
     const [step, setStep] = useState<1 | 2>(1);
     const [isPaying, setIsPaying] = useState(false);
@@ -308,13 +319,20 @@ export default function PersonalizarLlaveroPage() {
         (addMoto ? PRICE.addon : 0) +
         (photoEngraving ? PRICE_PHOTO : 0);
 
-    const payload = useMemo(
+const payload = useMemo(
         () => ({
             base: { color: baseColor, text: baseText },
             helmet: addHelmet ? { color: helmetColor, text: helmetText } : null,
             small: addSmall ? { color: smallColor, text: smallText } : null,
             moto: addMoto ? { color: motoColor } : null,
             photoEngraving: photoEngraving ? { hasPhoto: !!photoImage } : null,
+            vectorDesign: selectedVectorDesignData
+                ? {
+                    name: selectedVectorDesignData.name,
+                    path: selectedVectorDesignData.path,
+                    publicUrl: selectedVectorDesignData.publicUrl,
+                }
+                : null,
             total,
         }),
         [
@@ -330,6 +348,7 @@ export default function PersonalizarLlaveroPage() {
             motoColor,
             photoEngraving,
             photoImage,
+            selectedVectorDesignData,
             total,
         ]
     );
@@ -383,7 +402,7 @@ export default function PersonalizarLlaveroPage() {
         }
     };
 
-    function applyTemplate(templateId: number) {
+function applyTemplate(templateId: number) {
         switch (templateId) {
             case 1:
                 setBaseColor('black');
@@ -394,23 +413,22 @@ export default function PersonalizarLlaveroPage() {
                 setMotoColor('black');
                 setAddHelmet(false);
                 setAddSmall(false);
+                setSelectedVectorDesign(null);
                 setActiveView('base');
                 setExpandedSection('base');
                 break;
 
             case 2:
                 setBaseColor('silver');
-                setBaseText('Harold Parodi');
-                setAddSmall(true);
-                setSmallColor('silver');
-                setSmallText('Harold Parodi');
+                setBaseText('De tu copiloto favorita');
+                setAddSmall(false);
                 setAddHelmet(true);
                 setHelmetColor('black');
-                setHelmetText('Harold');
                 setAddMoto(true);
-                setMotoColor('black');
-                setActiveView('small');
-                setExpandedSection('small');
+                setMotoColor('silver');
+                setSelectedVectorDesign('design_keychain8 (1).png');
+                setActiveView('base');
+                setExpandedSection('base');
                 break;
 
             case 3:
@@ -423,6 +441,7 @@ export default function PersonalizarLlaveroPage() {
                 setHelmetText('Biker Super');
                 setAddMoto(false);
                 setAddSmall(false);
+                setSelectedVectorDesign('design_keychain19 (1).png');
                 setActiveView('base');
                 setExpandedSection('base');
                 break;
@@ -440,6 +459,7 @@ export default function PersonalizarLlaveroPage() {
                 setHelmetText('Nancy');
                 setAddMoto(true);
                 setMotoColor('black');
+                setSelectedVectorDesign(null);
                 setActiveView('base');
                 setExpandedSection('base');
                 break;
@@ -580,8 +600,24 @@ export default function PersonalizarLlaveroPage() {
         }
     };
 
-    return (
+return (
         <div className="min-h-screen bg-zinc-50">
+            {/* Toast de advertencia */}
+            {toastMessage && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 max-w-md">
+                        <span className="text-xl">⚠️</span>
+                        <p className="text-sm font-medium">{toastMessage}</p>
+                        <button
+                            onClick={() => setToastMessage(null)}
+                            className="ml-2 text-amber-600 hover:text-amber-800 transition"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10">
                 <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
@@ -899,26 +935,37 @@ export default function PersonalizarLlaveroPage() {
                                             onChange={handleBaseColorChange}
                                         />
                                         <div>
-                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
+<label className="block text-sm font-medium text-zinc-700 mb-2">
                                                 Texto a grabar
                                             </label>
+                                            {photoEngraving && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2">
+                                                    <p className="text-xs text-amber-700">
+                                                        <span className="font-semibold">⚠️ Campo desactivado:</span> No puedes agregar texto cuando el fotograbado está activado.
+                                                    </p>
+                                                </div>
+                                            )}
                                             <textarea
                                                 value={baseText}
                                                 onChange={(e) => {
                                                     const raw = e.target.value;
                                                     // máximo 3 líneas
-                                                    const limitedLines = raw.split("\n").slice(0, 3).join("\n");
-                                                    // máximo 165 caracteres
-                                                    const trimmed = limitedLines.slice(0, 165);
+                                                    const limitedLines = raw.split("\n").slice(0, 8).join("\n");
+                                                    const trimmed = limitedLines.slice(0, BASE_TEXT_MAX_CHARS);
                                                     setBaseText(trimmed);
                                                 }}
+                                                disabled={photoEngraving}
                                                 rows={3}
-                                                className="w-full rounded-xl border border-zinc-300 p-3 bg-white text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500"
-                                                placeholder="Escribe tu mensaje aquí..."
+                                                className={`w-full rounded-xl border border-zinc-300 p-3 text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                    photoEngraving 
+                                                        ? "bg-zinc-100 cursor-not-allowed opacity-60" 
+                                                        : "bg-white"
+                                                }`}
+                                                placeholder={photoEngraving ? "Desactivado por fotograbado" : "Escribe tu mensaje aquí..."}
                                             />
 
                                             <p className="text-xs text-zinc-500 mt-1">
-                                                {baseText.length}/165 caracteres
+                                                {baseText.length}/{BASE_TEXT_MAX_CHARS} caracteres
                                             </p>
 
 
@@ -1135,9 +1182,15 @@ export default function PersonalizarLlaveroPage() {
                                     title="Fotograbado"
                                     price={PRICE_PHOTO}
                                     checked={photoEngraving}
-                                    onChecked={(v) => {
+onChecked={(v) => {
                                         setPhotoEngraving(v);
-                                        if (!v) {
+                                        if (v) {
+                                            // Si activa fotograbado, limpiar el texto de la placa grande
+                                            if (baseText.trim().length > 0) {
+                                                showToast("El texto de la placa grande ha sido eliminado. Con fotograbado no se puede agregar texto.");
+                                                setBaseText("");
+                                            }
+                                        } else {
                                             setPhotoImage(null);
                                             setPhotoUpload(null);
                                         }
@@ -1154,7 +1207,14 @@ export default function PersonalizarLlaveroPage() {
                                         </div>
                                     }
                                 >
-                                    <div className="space-y-4">
+<div className="space-y-4">
+                                        {/* Aviso sobre restricción de texto */}
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                            <p className="text-xs text-amber-700">
+                                                <span className="font-semibold">⚠️ Importante:</span> Al activar el fotograbado, no podrás agregar texto en la placa grande. El campo de texto quedará desactivado.
+                                            </p>
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-medium text-zinc-700 mb-2">
                                                 Subir imagen
@@ -1214,7 +1274,7 @@ export default function PersonalizarLlaveroPage() {
                                     className="relative aspect-square rounded-xl overflow-hidden border-2 border-zinc-300 hover:border-yellow-500 transition group"
                                 >
                                     <img
-                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo2.jpg"
+                                        src="https://gjkmnrzeezoccbyqqeho.supabase.co/storage/v1/object/public/templates-keychains-images/combo2 (1).jpg"
                                         alt="Diseño 2"
                                         className="w-full h-full object-cover"
                                     />
