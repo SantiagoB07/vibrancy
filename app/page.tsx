@@ -5,6 +5,8 @@ import { GirasolCustom } from "@/components/girasol-custom";
 import { PetCustom } from "@/components/pet-custom";
 import { RelicarioCustom } from "@/components/relicario-custom";
 import { RelicarioCircCustom } from "@/components/relicarioCirc-custom";
+import { LetterCharmCustom } from "@/components/letter-charm-custom";
+import { AnimatedSection } from "@/components/animated-section";
 import Link from "next/link";
 
 // Categorías hardcoded
@@ -98,13 +100,23 @@ function getProductModal(product: Product) {
     );
   }
 
+  if (nombre.includes("dije") && nombre.includes("carta")) {
+    return (
+        <LetterCharmCustom product={product}>
+          <button className="w-full bg-amber-900 hover:bg-amber-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+            Personalizar
+          </button>
+        </LetterCharmCustom>
+    );
+  }
+
   // Default: link a página de producto
   return (
       <Link
           href={`/producto/${product.id}`}
           className="w-full bg-amber-900 hover:bg-amber-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center block"
       >
-        Ver Producto
+        Personalizar
       </Link>
   );
 }
@@ -146,25 +158,31 @@ export default async function Home() {
                  style={{clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)'}}></div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-10 pb-16 md:pb-24 relative">
             <div className="text-center">
-              {/* LOGO AQUÍ - Centrado en la parte superior del hero */}
-              {/*
-            <div className="flex justify-center mb-8">
-              <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center">
-                <img src="/logo.png" alt="Vibrancy" className="w-20 h-20 object-contain" />
+              {/* Logo con animación rotate in */}
+              <div className="flex justify-center mb-6 animate-rotate-in">
+                <img
+                  src="/images/vibrancy-logo.png"
+                  alt="Vibrancy"
+                  className="h-32 md:h-40 lg:h-48 w-auto object-contain"
+                />
               </div>
-            </div>
-            */}
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif italic text-amber-900 mb-6">
+              {/* Título con fade in up */}
+              <h1 
+                  className="text-4xl md:text-5xl lg:text-6xl font-serif italic text-amber-900 mb-6 animate-fade-in-up"
+                  style={{ animationDelay: '0.3s' }}
+              >
                 Vibrancy Accesorios
                 <span className="block text-orange-700 mt-2 text-2xl md:text-3xl lg:text-4xl">Arte hecho con amor</span>
               </h1>
 
+              {/* Botón con animación fade in up */}
               <a
                   href="#productos"
-                  className="inline-flex items-center gap-2 bg-amber-900 hover:bg-amber-800 text-white font-semibold py-4 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="inline-flex items-center gap-2 bg-amber-900 hover:bg-amber-800 text-white font-semibold py-4 px-8 rounded-full transition-all shadow-lg hover:shadow-xl hover:scale-105 animate-fade-in-up"
+                  style={{ animationDelay: '0.5s' }}
               >
                 Ver Colección
                 <span>↓</span>
@@ -190,41 +208,19 @@ export default async function Home() {
             </div>
           </div>
         </section>
-
-        {/* Categories Section */}
-        <section className="py-12 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-serif italic text-amber-900 text-center mb-8">
-              Compra por Categoría
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {categories.map((category) => (
-                  <div
-                      key={category.name}
-                      className="bg-amber-50 hover:bg-orange-100 border-2 border-amber-200 hover:border-orange-300 rounded-2xl p-6 text-center transition-all duration-300 cursor-pointer group"
-                  >
-                <span className="text-4xl mb-3 block group-hover:scale-110 transition-transform">
-                  {category.icon}
-                </span>
-                    <h3 className="font-semibold text-amber-900 group-hover:text-orange-800 transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-amber-700 mt-1">{category.description}</p>
-                  </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        
 
         {/* Products Section */}
         <section id="productos" className="py-16 bg-gradient-to-b from-amber-50 to-orange-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-serif italic text-amber-900 text-center mb-4">
-              Nuestra Colección
-            </h2>
-            <p className="text-amber-800 text-center mb-12 max-w-2xl mx-auto">
-              Todos nuestros productos son personalizables. Elige el tuyo y hazlo único.
-            </p>
+            <AnimatedSection animation="fade-up">
+              <h2 className="text-2xl md:text-3xl font-serif italic text-amber-900 text-center mb-4">
+                Nuestra Colección
+              </h2>
+              <p className="text-amber-800 text-center mb-12 max-w-2xl mx-auto">
+                Todos nuestros productos son personalizables. Elige el tuyo y hazlo único.
+              </p>
+            </AnimatedSection>
 
             {(!products || products.length === 0) ? (
                 <div className="text-center py-16">
@@ -242,7 +238,6 @@ export default async function Home() {
                       <div
                           key={product.id}
                           className={`${
-                              // Si es el último producto y hay número impar, centrarlo
                               products.length % 2 !== 0 && index === products.length - 1
                                   ? "md:col-span-2 md:max-w-md md:mx-auto"
                                   : ""
@@ -261,9 +256,11 @@ export default async function Home() {
         {/* Why Vibrancy Section */}
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-serif italic text-amber-900 text-center mb-12">
-              ¿Por qué elegir Vibrancy?
-            </h2>
+            <AnimatedSection animation="fade-up">
+              <h2 className="text-2xl md:text-3xl font-serif italic text-amber-900 text-center mb-12">
+                ¿Por qué elegir Vibrancy?
+              </h2>
+            </AnimatedSection>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {features.map((feature) => (
                   <div key={feature.title} className="text-center">
@@ -283,20 +280,24 @@ export default async function Home() {
         {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-amber-900 to-orange-900">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-serif italic text-white mb-4">
-              ¿Tienes algo especial en mente?
-            </h2>
-            <p className="text-amber-200 mb-8">
-              Contáctanos para diseños personalizados o pedidos especiales
-            </p>
-            <a
-                href="https://wa.me/573001234567"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white text-amber-900 font-semibold py-4 px-8 rounded-full hover:bg-amber-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Escríbenos por WhatsApp
-            </a>
+            <AnimatedSection animation="fade-up">
+              <h2 className="text-2xl md:text-3xl font-serif italic text-white mb-4">
+                ¿Tienes algo especial en mente?
+              </h2>
+              <p className="text-amber-200 mb-8">
+                Contáctanos para diseños personalizados o pedidos especiales
+              </p>
+            </AnimatedSection>
+            <AnimatedSection animation="scale-in" delay={0.2}>
+              <a
+                  href="https://wa.me/573001234567"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white text-amber-900 font-semibold py-4 px-8 rounded-full hover:bg-amber-50 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                Escríbenos por WhatsApp
+              </a>
+            </AnimatedSection>
           </div>
         </section>
       </div>
