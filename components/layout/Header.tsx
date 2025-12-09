@@ -21,20 +21,12 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3">
-              {/*
-              AQUÍ PUEDES PONER TU LOGO CIRCULAR
-              <div className="w-12 h-12 rounded-full bg-white shadow-md overflow-hidden">
-                <img src="/logo-vibrancy.png" alt="Vibrancy" className="w-full h-full object-cover" />
-              </div>
-            */}
-
-              <div className="flex flex-col">
-              <span className="text-2xl font-serif italic font-bold text-amber-900 leading-none">
-                Vibrancy
-              </span>
-                <span className="text-xs text-amber-800 tracking-wider">ACCESORIOS</span>
-              </div>
+            <Link href="/" className="flex items-center">
+              <img
+                src="/images/vibrancy-logo.png"
+                alt="Vibrancy"
+                className="h-12 w-auto object-contain"
+              />
             </Link>
 
             {/* Desktop Navigation */}
