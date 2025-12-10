@@ -1,13 +1,14 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { X, RotateCcw } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { Cookie, Courgette } from "next/font/google";
 
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { validateImageFile } from "@/lib/utils";
 
 // ===========================
 // Fonts
@@ -79,8 +80,21 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
   // ===========================
   // Customization fields
   // ===========================
-  const [message, setMessage] = useState("");
+  const [frontMessage, setFrontMessage] = useState("");
+  const [backMessage, setBackMessage] = useState("");
   const [fontFamily, setFontFamily] = useState(cookieFont.style.fontFamily);
+  const isCookie = fontFamily === cookieFont.style.fontFamily;
+
+  // ===========================
+  // Rotation state
+  // ===========================
+  const [currentFace, setCurrentFace] = useState<1 | 2>(1);
+  const [isRotating, setIsRotating] = useState(false);
+
+  // ===========================
+  // Character limit
+  // ===========================
+  const MAX_CHARS = 15;
 
   // ===========================
   // Images (max 2)
@@ -129,9 +143,55 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
   };
 
   // ===========================
+  // Handle rotation
+  // ===========================
+  const handleRotate = () => {
+    setIsRotating(true);
+    setTimeout(() => {
+      setCurrentFace((prev) => (prev === 1 ? 2 : 1));
+      setIsRotating(false);
+    }, 250);
+  };
+
+  // ===========================
+  // Format text with line break
+  // ===========================
+  const formatTextWithBreak = (text: string): React.ReactNode => {
+    if (!text) return text;
+    const normalized = text.trim();
+    const LIMIT = 8;
+    if (normalized.length <= LIMIT) return normalized;
+
+    let splitIndex = normalized.lastIndexOf(" ", LIMIT);
+    if (splitIndex <= 0) {
+      const after = normalized.indexOf(" ", LIMIT);
+      if (after > -1) splitIndex = after;
+      else splitIndex = LIMIT;
+    }
+
+    const first = normalized.slice(0, splitIndex).trimEnd();
+    const second = normalized.slice(splitIndex).trimStart();
+
+    return (
+        <>
+          {first}
+          <br />
+          {second}
+        </>
+    );
+  };
+
+  // ===========================
   // Upload to Supabase
   // ===========================
   const uploadPhoto = async (file: File, position: number) => {
+    // Validar tipo MIME y tamaño
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return null;
+    }
+
     const fileExt = file.name.split(".").pop();
     const filePath = `relicario-circular/${Date.now()}_${position}.${fileExt}`;
 
@@ -185,7 +245,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
 
     try {
       // Upload all photos
-      let photosForCheckout = [];
+      const photosForCheckout = [];
 
       for (let i = 0; i < images.length; i++) {
         const uploaded = await uploadPhoto(images[i], i + 1);
@@ -204,8 +264,8 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
               quantity: 1,
               unitPrice: selectedVariant.price_override ?? product.price,
               title: `${product.title} - ${selectedVariant.name}`,
-              personalizationFront: message || null,
-              personalizationBack: null,
+              personalizationFront: frontMessage || null,
+              personalizationBack: backMessage || null,
               engravingFont: getSelectedFontForDb(),
               photos: photosForCheckout,
             },
@@ -290,38 +350,144 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
               {/* STEP 1 */}
               {step === 1 && (
                   <>
-                    {/* Base relicario */}
-                    <div className="w-full flex justify-center mb-6">
-                      <Image
-                          src={baseImg}
-                          alt="Relicario circular"
-                          width={300}
-                          height={300}
-                          className="object-contain"
-                      />
+                    {/* Preview del relicario con rotación */}
+                    <div className="flex justify-center mb-6">
+                      <div
+                          className="relative w-[300px] h-[300px] perspective-1000"
+                          style={{ transformStyle: "preserve-3d" }}
+                      >
+                        {/* Frente (Anverso) */}
+                        <div
+                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                currentFace === 1 ? "rotate-y-0" : "rotate-y-180"
+                            }`}
+                        >
+                          <Image
+                              src={baseImg}
+                              alt="Relicario circular (frente)"
+                              fill
+                              className="object-contain"
+                          />
+
+                          {/* Overlay texto frente */}
+                          <div
+                              className="absolute inset-0 flex items-center justify-center"
+                              style={{
+                                opacity: currentFace === 1 && !isRotating ? 1 : 0,
+                                transition: "opacity 0.2s ease-in-out",
+                              }}
+                          >
+                            <span
+                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                                style={{
+                                  fontFamily,
+                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+                                  color: "#3b3b3b",
+                                  textShadow: `
+                                    0 1px 1px rgba(255,255,255,0.8),
+                                    0 2px 2px rgba(0,0,0,0.2)
+                                  `,
+                                }}
+                            >
+                              {formatTextWithBreak(frontMessage) || "Frase anverso"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Reverso */}
+                        <div
+                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                                currentFace === 2 ? "rotate-y-0" : "-rotate-y-180"
+                            }`}
+                        >
+                          <Image
+                              src={baseImg}
+                              alt="Relicario circular (reverso)"
+                              fill
+                              className="object-contain"
+                          />
+
+                          {/* Overlay texto reverso */}
+                          <div
+                              className="absolute inset-0 flex items-center justify-center"
+                              style={{
+                                opacity: currentFace === 2 && !isRotating ? 1 : 0,
+                                transition: "opacity 0.2s ease-in-out",
+                              }}
+                          >
+                            <span
+                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                                style={{
+                                  fontFamily,
+                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+                                  color: "#3b3b3b",
+                                  textShadow: `
+                                    0 1px 1px rgba(255,255,255,0.8),
+                                    0 2px 2px rgba(0,0,0,0.2)
+                                  `,
+                                }}
+                            >
+                              {formatTextWithBreak(backMessage) || "Frase reverso"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Variant selector */}
-                    <div className="flex justify-center mb-6">
+                    {/* Botones de control: Rotar y Cambiar color */}
+                    <div className="flex justify-center mb-6 space-x-4">
+                      <button
+                          onClick={handleRotate}
+                          className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {currentFace === 1 ? "Ver reverso" : "Ver anverso"}
+                        </span>
+                      </button>
+
                       <button
                           onClick={toggleVariant}
-                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
                       >
                         Color: {selectedVariant?.name ?? "Cargando..."}
                       </button>
                     </div>
 
-                    {/* Message */}
+                    {/* Campo de texto dinámico según cara */}
                     <div className="max-w-md mx-auto mb-6">
-                      <label className="block text-sm font-medium mb-1">Frase del relicario</label>
-                      <textarea
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value.slice(0, 100))}
-                          rows={3}
-                          className="w-full border border-gray-300 rounded-lg p-3"
-                          placeholder="Escribe una frase..."
+                      <label htmlFor="relicario-input" className="block text-sm font-medium mb-1">
+                        {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                      </label>
+                      <input
+                          id="relicario-input"
+                          type="text"
+                          value={currentFace === 1 ? frontMessage : backMessage}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            if (newValue.length <= MAX_CHARS) {
+                              if (currentFace === 1) {
+                                setFrontMessage(newValue);
+                              } else {
+                                setBackMessage(newValue);
+                              }
+                            }
+                          }}
+                          placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                          maxLength={MAX_CHARS}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
                       />
-                      <p className="text-xs text-gray-500 mt-1">{message.length}/100 caracteres</p>
+                      <p
+                          className={`text-xs mt-1 text-center ${
+                              (currentFace === 1 ? frontMessage.length : backMessage.length) >= MAX_CHARS
+                                  ? "text-red-500"
+                                  : "text-gray-500"
+                          }`}
+                      >
+                        {currentFace === 1
+                            ? `${frontMessage.length}/${MAX_CHARS} caracteres`
+                            : `${backMessage.length}/${MAX_CHARS} caracteres`}
+                      </p>
                     </div>
 
                     {/* Font selector */}
