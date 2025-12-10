@@ -68,6 +68,7 @@ function mapVariantNameToKey(name: string): VariantKey {
 
 export function LetterCharmCustom({ product, children }: LetterCharmCustomProps) {
     const [isOpen, setIsOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isPaying, setIsPaying] = useState(false);
 
     const [step, setStep] = useState<1 | 2>(1);
@@ -100,6 +101,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
 
     // cara 1 (sobre) o cara 2 (adentro)
     const [currentFace, setCurrentFace] = useState<1 | 2>(1);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isRotating, setIsRotating] = useState(false);
 
     // texto personalizado para adentro
