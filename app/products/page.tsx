@@ -5,6 +5,7 @@ import { GirasolCustom } from "@/components/girasol-custom";
 import { PetCustom } from "@/components/pet-custom";
 import { RelicarioCustom } from "@/components/relicario-custom";
 import { RelicarioCircCustom } from "@/components/relicarioCirc-custom";
+import { LetterCharmCustom } from "@/components/letter-charm-custom";
 import Link from "next/link";
 
 interface Product {
@@ -72,13 +73,23 @@ function getProductModal(product: Product) {
     );
   }
 
+  if (nombre.includes("dije") && nombre.includes("carta")) {
+    return (
+        <LetterCharmCustom product={product}>
+          <button className="w-full bg-amber-900 hover:bg-amber-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+            Personalizar
+          </button>
+        </LetterCharmCustom>
+    );
+  }
+
   // Default: link a página de producto
   return (
       <Link
           href={`/producto/${product.id}`}
           className="w-full bg-amber-900 hover:bg-amber-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center block"
       >
-        Ver Producto
+        Personalizar
       </Link>
   );
 }
@@ -87,7 +98,6 @@ export default async function ProductsPage() {
   const supabase = await createClient();
 
   let products: Product[] = [];
-  let loadError: string | null = null;
 
   try {
     const { data, error } = await supabase
@@ -98,13 +108,11 @@ export default async function ProductsPage() {
 
     if (error) {
       console.error("Error cargando productos desde Supabase:", error);
-      loadError = "No pudimos cargar los productos en este momento.";
     } else {
       products = data ?? [];
     }
   } catch (err) {
     console.error("Error de red al llamar a Supabase:", err);
-    loadError = "Problema de conexión al cargar los productos.";
   }
 
   return (
