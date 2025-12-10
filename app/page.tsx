@@ -8,14 +8,7 @@ import { RelicarioCircCustom } from "@/components/relicarioCirc-custom";
 import { LetterCharmCustom } from "@/components/letter-charm-custom";
 import { AnimatedSection } from "@/components/animated-section";
 import Link from "next/link";
-
-// Categorías hardcoded
-const categories = [
-  { name: "Llaveros", icon: "🔑", description: "Personaliza tu llavero" },
-  { name: "Relicarios", icon: "💍", description: "Guarda tus recuerdos" },
-  { name: "Placas Mascota", icon: "🐾", description: "Para tu mejor amigo" },
-  { name: "Dijes", icon: "✨", description: "Accesorios únicos" },
-];
+import { SOCIAL_LINKS } from "@/lib/constants";
 
 export const revalidate = 60;
 // Features/beneficios
@@ -125,7 +118,6 @@ export default async function Home() {
   const supabase = await createClient();
 
   let products: Product[] = [];
-  let loadError: string | null = null;
 
   try {
     const { data, error } = await supabase
@@ -137,13 +129,11 @@ export default async function Home() {
 
     if (error) {
       console.error("Error cargando productos desde Supabase:", error);
-      loadError = "No pudimos cargar los productos en este momento.";
     } else {
       products = data ?? [];
     }
   } catch (err) {
     console.error("Error de red al llamar a Supabase:", err);
-    loadError = "Problema de conexión al cargar los productos.";
   }
 
   return (
@@ -290,7 +280,7 @@ export default async function Home() {
             </AnimatedSection>
             <AnimatedSection animation="scale-in" delay={0.2}>
               <a
-                  href="https://wa.me/573001234567"
+                  href={SOCIAL_LINKS.WHATSAPP}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-white text-amber-900 font-semibold py-4 px-8 rounded-full hover:bg-amber-50 transition-all shadow-lg hover:shadow-xl hover:scale-105"
