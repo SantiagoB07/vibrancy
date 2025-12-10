@@ -11,6 +11,7 @@ import {
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
+import { validateImageFile } from '@/lib/utils';
 
 
 
@@ -39,7 +40,16 @@ type ProductVariant = {
     img: string | null;
 };
 
-export function useSupabaseImages() {
+type ProductAddon = {
+    id: number;
+    product_id: number;
+    addon_key: string;
+    name: string;
+    price: number;
+    active: boolean;
+};
+
+function useSupabaseImages() {
     const [images, setImages] = useState<ImagePaths | null>(null);
 
     useEffect(() => {
@@ -79,7 +89,7 @@ type KeychainVectorDesign = {
 
 const VECTOR_BUCKET = 'designs_keychain';
 
-export function useKeychainVectorDesigns() {
+function useKeychainVectorDesigns() {
     const [designs, setDesigns] = useState<KeychainVectorDesign[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -88,13 +98,7 @@ export function useKeychainVectorDesigns() {
             try {
                 setLoading(true);
 
-                // 1) TEST: obtener la URL pública de un archivo concreto
-                const { data: testPublic } = supabase.storage
-                    .from(VECTOR_BUCKET)
-
-
-
-                // 2) LISTAR archivos en la raíz del bucket
+                // LISTAR archivos en la raíz del bucket
                 const { data: listData, error } = await supabase.storage
                     .from(VECTOR_BUCKET)
                     // sin ruta => raíz del bucket
@@ -149,15 +153,66 @@ export function useKeychainVectorDesigns() {
     return { designs, loading };
 }
 
+// Hook para cargar addons desde la BD
+function useProductAddons(productId: number) {
+    const [addons, setAddons] = useState<ProductAddon[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [basePrice, setBasePrice] = useState<number>(45000); // fallback
 
+    useEffect(() => {
+        async function fetchAddons() {
+            try {
+                setLoading(true);
 
+                // Cargar precio base del producto
+                const { data: productData, error: productError } = await supabase
+                    .from("products")
+                    .select("price")
+                    .eq("id", productId)
+                    .single();
 
-const PRICE = {
-    base: 45000,
-    addon: 10000,
-};
+                if (!productError && productData) {
+                    setBasePrice(productData.price);
+                }
 
-const PRICE_PHOTO = 15000;
+                // Cargar addons del producto
+                const { data, error } = await supabase
+                    .from("product_addons")
+                    .select("id, product_id, addon_key, name, price, active")
+                    .eq("product_id", productId)
+                    .eq("active", true);
+
+                if (error) {
+                    console.error("Error cargando addons:", error);
+                    setAddons([]);
+                    return;
+                }
+
+                setAddons(data || []);
+            } catch (e) {
+                console.error("Error inesperado cargando addons:", e);
+                setAddons([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchAddons();
+    }, [productId]);
+
+    // Helper para obtener precio de un addon por key
+    const getAddonPrice = (key: string): number => {
+        const addon = addons.find(a => a.addon_key === key);
+        return addon?.price ?? 0;
+    };
+
+    // Helper para obtener addon por key
+    const getAddon = (key: string): ProductAddon | undefined => {
+        return addons.find(a => a.addon_key === key);
+    };
+
+    return { addons, loading, basePrice, getAddonPrice, getAddon };
+}
 
 // Límite de caracteres para la placa grande
 const BASE_TEXT_MAX_CHARS = 165;
@@ -244,6 +299,7 @@ function EngravedText({
 export default function PersonalizarLlaveroPage() {
     const IMAGES = useSupabaseImages();
     const { designs: vectorDesigns, loading: loadingVectorDesigns } = useKeychainVectorDesigns();
+    const { loading: loadingAddons, basePrice, getAddonPrice, getAddon } = useProductAddons(PRODUCT_ID);
     const [selectedVectorDesign, setSelectedVectorDesign] = useState<string | null>(null);
     const selectedVectorDesignData = useMemo(
         () =>
@@ -311,13 +367,35 @@ export default function PersonalizarLlaveroPage() {
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
-    // precio total del llavero
+    // precio total del llavero (dinámico desde BD)
     const total =
-        PRICE.base +
-        (addHelmet ? PRICE.addon : 0) +
-        (addSmall ? PRICE.addon : 0) +
-        (addMoto ? PRICE.addon : 0) +
-        (photoEngraving ? PRICE_PHOTO : 0);
+        basePrice +
+        (addHelmet ? getAddonPrice("helmet") : 0) +
+        (addSmall ? getAddonPrice("small") : 0) +
+        (addMoto ? getAddonPrice("moto") : 0) +
+        (photoEngraving ? getAddonPrice("photo_engraving") : 0);
+
+    // IDs de addons seleccionados para enviar al backend
+    const selectedAddonIds = useMemo(() => {
+        const ids: number[] = [];
+        if (addHelmet) {
+            const addon = getAddon("helmet");
+            if (addon) ids.push(addon.id);
+        }
+        if (addSmall) {
+            const addon = getAddon("small");
+            if (addon) ids.push(addon.id);
+        }
+        if (addMoto) {
+            const addon = getAddon("moto");
+            if (addon) ids.push(addon.id);
+        }
+        if (photoEngraving) {
+            const addon = getAddon("photo_engraving");
+            if (addon) ids.push(addon.id);
+        }
+        return ids;
+    }, [addHelmet, addSmall, addMoto, photoEngraving, getAddon]);
 
 const payload = useMemo(
         () => ({
@@ -333,6 +411,7 @@ const payload = useMemo(
                     publicUrl: selectedVectorDesignData.publicUrl,
                 }
                 : null,
+            selectedAddonIds, // IDs de addons seleccionados
             total,
         }),
         [
@@ -349,6 +428,7 @@ const payload = useMemo(
             photoEngraving,
             photoImage,
             selectedVectorDesignData,
+            selectedAddonIds,
             total,
         ]
     );
@@ -471,10 +551,10 @@ function applyTemplate(templateId: number) {
         if (!file) return;
 
         try {
-            // (opcional) validación de tamaño: máx ~5MB
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert('La imagen es muy pesada (máx 5MB).');
+            // Validar tipo MIME y tamaño
+            const validation = validateImageFile(file);
+            if (!validation.valid) {
+                alert(validation.error);
                 return;
             }
 
@@ -524,11 +604,9 @@ function applyTemplate(templateId: number) {
     }
 
 
-    if (!IMAGES) {
-        return <div className="p-10 text-center">Cargando imágenes...</div>;
+    if (!IMAGES || loadingAddons) {
+        return <div className="p-10 text-center">Cargando...</div>;
     }
-
-    const unitPrice = total;
 
     const handlePay = async () => {
         if (!isCustomerFormValid) {
@@ -556,7 +634,7 @@ function applyTemplate(templateId: number) {
                             productId: PRODUCT_ID,
                             productVariantId: selectedVariant?.id ?? null,
                             quantity: 1,
-                            unitPrice: unitPrice,
+                            selectedAddons: selectedAddonIds, // IDs de addons para calcular precio en backend
                             title: selectedVariant
                                 ? `${PRODUCT_TITLE} - ${selectedVariant.name}`
                                 : PRODUCT_TITLE,
@@ -1041,7 +1119,7 @@ return (
                                 {/* Casco */}
                                 <AddonSection
                                     title="Casco"
-                                    price={PRICE.addon}
+                                    price={getAddonPrice("helmet")}
                                     checked={addHelmet}
                                     onChecked={(v) => {
                                         setAddHelmet(v);
@@ -1093,7 +1171,7 @@ return (
                                 {/* Placa pequeña */}
                                 <AddonSection
                                     title="Placa pequeña"
-                                    price={PRICE.addon}
+                                    price={getAddonPrice("small")}
                                     checked={addSmall}
                                     onChecked={(v) => {
                                         setAddSmall(v);
@@ -1145,7 +1223,7 @@ return (
                                 {/* Moto */}
                                 <AddonSection
                                     title="Moto"
-                                    price={PRICE.addon}
+                                    price={getAddonPrice("moto")}
                                     checked={addMoto}
                                     onChecked={(v) => {
                                         setAddMoto(v);
@@ -1180,7 +1258,7 @@ return (
                                 {/* Fotograbado */}
                                 <AddonSection
                                     title="Fotograbado"
-                                    price={PRICE_PHOTO}
+                                    price={getAddonPrice("photo_engraving")}
                                     checked={photoEngraving}
 onChecked={(v) => {
                                         setPhotoEngraving(v);
