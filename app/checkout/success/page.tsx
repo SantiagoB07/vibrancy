@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface Order {
@@ -13,23 +13,23 @@ interface Order {
     created_at?: string;
 }
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get("order_id");
+    const token = searchParams.get("token");
 
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState<boolean>(!!orderId);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!orderId) return;
+        if (!orderId || !token) return;
 
         let attempts = 0;
-        let interval: NodeJS.Timeout;
 
         const fetchOrder = async () => {
             try {
-                const res = await fetch(`/api/orders/${orderId}`);
+                const res = await fetch(`/api/orders/${orderId}?token=${token}`);
                 if (!res.ok) {
                     setError("No pudimos obtener la información de tu orden.");
                     setLoading(false);
@@ -49,7 +49,7 @@ export default function CheckoutSuccessPage() {
         fetchOrder();
 
         // Polling corto por si el webhook se demora (máx. ~18s)
-        interval = setInterval(() => {
+        const interval = setInterval(() => {
             attempts += 1;
             if (attempts > 5) {
                 clearInterval(interval);
@@ -59,14 +59,14 @@ export default function CheckoutSuccessPage() {
         }, 3000);
 
         return () => clearInterval(interval);
-    }, [orderId]);
+    }, [orderId, token]);
 
     const isPaid = order?.status === "PAID";
 
     // Distintos estados de la vista según lo que tengamos
 
-    // 1. No llegó order_id en la URL
-    if (!orderId) {
+    // 1. No llegó order_id o token en la URL
+    if (!orderId || !token) {
         return (
             <main className="min-h-screen flex items-center justify-center bg-[#E6C29A] px-4">
                 <div className="max-w-md w-full bg-[#F9E3C8] rounded-3xl shadow-2xl border border-[#B9804A]/30 p-8 text-center">
@@ -100,7 +100,7 @@ export default function CheckoutSuccessPage() {
                     </div>
 
                     <Link
-                        href={"/products"}
+                        href="/products"
                         className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#5E3A1E] text-[#F9E3C8] text-sm font-medium hover:bg-[#4C2F18] transition"
                     >
                         Volver a la tienda
@@ -175,7 +175,7 @@ export default function CheckoutSuccessPage() {
                     </p>
 
                     <Link
-                        href={"/products/page.tsx"}
+                        href="/products"
                         className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#5E3A1E] text-[#F9E3C8] text-sm font-medium hover:bg-[#4C2F18] transition"
                     >
                         Volver a la tienda
@@ -242,12 +242,42 @@ export default function CheckoutSuccessPage() {
                 )}
 
                 <Link
-                    href="#productos"
+                    href="/products"
                     className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#5E3A1E] text-[#F9E3C8] text-sm font-medium hover:bg-[#4C2F18] transition"
                 >
                     Volver a la tienda
                 </Link>
             </div>
         </main>
+    );
+}
+
+function LoadingFallback() {
+    return (
+        <main className="min-h-screen flex items-center justify-center bg-[#E6C29A] px-4">
+            <div className="max-w-md w-full bg-[#F9E3C8] rounded-3xl shadow-2xl border border-[#B9804A]/30 p-8 text-center">
+                <div className="flex justify-center mb-4">
+                    <div className="relative w-20 h-20">
+                        <Image
+                            src="/images/vibrancy-logo.png"
+                            alt="Vibrancy Accesorios"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                </div>
+                <h1 className="text-2xl font-semibold text-[#5E3A1E] mb-2">
+                    Cargando... ✨
+                </h1>
+            </div>
+        </main>
+    );
+}
+
+export default function CheckoutSuccessPage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <CheckoutSuccessContent />
+        </Suspense>
     );
 }
