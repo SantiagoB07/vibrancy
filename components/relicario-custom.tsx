@@ -920,59 +920,6 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   </button>
 </div>
 
-{/* Diseños predeterminados */}
-<div className="px-8 mt-4">
-  <div className="flex items-center justify-between">
-    <h4 className="text-sm font-medium text-gray-900 mb-2">
-      Diseños predeterminados
-    </h4>
-    <PresetDesignModal
-        designs={PRESET_DESIGNS}
-        trigger={
-          <button className="px-3 py-2 bg-gray-100 rounded-md text-sm">
-            Editar diseños
-          </button> as ReactElement
-        }
-        onConfirm={(d) => chooseDesign(d)}
-    />
-  </div>
-
-  <div className="grid grid-cols-4 gap-3 mt-2">
-    {PRESET_DESIGNS.map((d) => {
-      const active = selectedDesign === d.path;
-      return (
-        <button
-          key={d.id}
-          onClick={() => chooseDesign(d)}
-          className={`p-1 border rounded-md overflow-hidden ${
-            active ? "ring-2 ring-green-500" : "border-gray-200"
-          }`}
-          aria-pressed={active}
-          title={d.label || d.id}
-        >
-          <div
-            className="relative"
-            style={{ width: d.width ?? 150, height: d.height ?? 84 }}
-          >
-            <Image
-              src={d.path}
-              alt={d.label || d.id}
-              width={d.width ?? 150}
-              height={d.height ?? 84}
-              className="object-contain"
-            />
-          </div>
-        </button>
-      );
-    })}
-    <button
-      onClick={() => chooseDesign(null)}
-      className="col-span-4 mt-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
-    >
-      Quitar diseño
-    </button>
-  </div>
-</div>
 
 {/* Inputs de texto */}
 <div className="space-y-4 mb-6 mt-4">
