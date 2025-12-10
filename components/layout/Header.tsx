@@ -1,20 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { SOCIAL_LINKS } from "@/lib/constants";
 
 const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/products", label: "Productos" },
-  { href: "https://wa.me/573001234567", label: "Contacto", external: true },
+  { href: SOCIAL_LINKS.WHATSAPP, label: "Contacto", external: true },
 ];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Hardcoded cart count for now
-  const cartCount = 2;
 
   return (
       <header className="sticky top-0 z-50 bg-[#f5e6d3] shadow-md border-b border-amber-200">
@@ -54,19 +52,8 @@ export function Header() {
               ))}
             </nav>
 
-            {/* Cart + Mobile Menu Button */}
+            {/* Mobile Menu Button */}
             <div className="flex items-center gap-4">
-              {/* Cart */}
-              <Link href="/cart" className="relative p-2 hover:bg-amber-200 rounded-full transition-colors">
-                <ShoppingCart className="h-6 w-6 text-amber-900" />
-                {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-amber-900 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-                )}
-              </Link>
-
-              {/* Mobile Menu Button */}
               <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="md:hidden p-2 hover:bg-amber-200 rounded-full transition-colors"
