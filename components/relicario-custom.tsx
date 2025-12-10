@@ -9,6 +9,7 @@ import { Cookie, Courgette } from "next/font/google";
 import PresetDesignModal, { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { validateImageFile } from "@/lib/utils";
 
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
@@ -287,6 +288,13 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
 
     for (const file of filesArray) {
       try {
+        // Validar tipo MIME y tamaño
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          alert(validation.error);
+          continue;
+        }
+
         const ext = file.name.split(".").pop() || "jpg";
         const fileName = `${crypto.randomUUID()}.${ext}`;
         const storagePath = `tmp/${fileName}`;
