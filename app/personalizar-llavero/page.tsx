@@ -232,11 +232,22 @@ function computeFontSize(
     boxW: number,
     boxH: number,
     maxPx: number,
-    maxLines: number
-) {
+    maxLines: number,
+    preferredSize?: number
+): number | null {
     const lines = value.split('\n').slice(0, maxLines);
     const avgCharWidth = 0.6;
     const lineHeight = 1.1;
+
+    // Si hay un tamaño preferido, verificar si cabe
+    if (preferredSize) {
+        const fitsW = lines.every((ln) => ln.length * (preferredSize * avgCharWidth) <= boxW);
+        const fitsH = lines.length * preferredSize * lineHeight <= boxH;
+        if (fitsW && fitsH) return preferredSize;
+        return null; // No cabe con el tamaño preferido
+    }
+
+    // Lógica original para calcular automáticamente
     for (let f = Math.min(maxPx, 48); f >= 10; f -= 1) {
         const fitsW = lines.every((ln) => ln.length * (f * avgCharWidth) <= boxW);
         const fitsH = lines.length * f * lineHeight <= boxH;
@@ -252,6 +263,7 @@ function EngravedText({
                           maxPx,
                           maxLines,
                           color,
+                          preferredFontSize,
                       }: {
     value: string;
     boxW: number;
@@ -259,11 +271,18 @@ function EngravedText({
     maxPx: number;
     maxLines: number;
     color: Color;
+    preferredFontSize?: number;
 }) {
     const sanitized = value.replace(/\s+$/g, '');
     const fontSize = useMemo(
-        () => computeFontSize(sanitized, boxW, boxH, maxPx, maxLines),
-        [sanitized, boxW, boxH, maxPx, maxLines]
+        () => {
+            if (preferredFontSize) {
+                const result = computeFontSize(sanitized, boxW, boxH, maxPx, maxLines, preferredFontSize);
+                if (result !== null) return result;
+            }
+            return computeFontSize(sanitized, boxW, boxH, maxPx, maxLines) ?? 12;
+        },
+        [sanitized, boxW, boxH, maxPx, maxLines, preferredFontSize]
     );
 
     const isBlack = color === 'black';
@@ -318,8 +337,9 @@ export default function PersonalizarLlaveroPage() {
         publicUrl: string;
     } | null>(null);
 
-    const [baseColor, setBaseColor] = useState<Color>('silver');
+const [baseColor, setBaseColor] = useState<Color>('silver');
     const [baseText, setBaseText] = useState<string>('Tu mensaje');
+    const [baseFontSize, setBaseFontSize] = useState<number>(12);
 
     const [addHelmet, setAddHelmet] = useState(false);
     const [helmetColor, setHelmetColor] = useState<Color>('silver');
@@ -344,9 +364,22 @@ export default function PersonalizarLlaveroPage() {
 // toast de advertencia
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const showToast = (message: string) => {
+const showToast = (message: string) => {
         setToastMessage(message);
         setTimeout(() => setToastMessage(null), 5000); // Auto-dismiss después de 5 segundos
+    };
+
+    // Función para validar si el texto cabe con un tamaño de fuente específico
+    const canFitWithFontSize = (size: number): boolean => {
+        const lines = baseText.split('\n').slice(0, 8);
+        const avgCharWidth = 0.6;
+        const lineHeight = 1.1;
+        const boxW = 130;
+        const boxH = hasVectorDesign ? 110 : 120;
+
+        const fitsW = lines.every((ln) => ln.length * (size * avgCharWidth) <= boxW);
+        const fitsH = lines.length * size * lineHeight <= boxH;
+        return fitsW && fitsH;
     };
 
     // flujo checkout
@@ -782,13 +815,14 @@ return (
                                                                     height: hasVectorDesign ? 110 : 120, // alto máximo del texto
                                                                 }}
                                                             >
-                                                                <EngravedText
+<EngravedText
                                                                     value={baseText}
                                                                     boxW={130}
                                                                     boxH={hasVectorDesign ? 110 : 120} // mismo que arriba
-                                                                    maxPx={12}
-                                                                    maxLines={3}
+                                                                    maxPx={18}
+                                                                    maxLines={8}
                                                                     color={baseColor}
+                                                                    preferredFontSize={baseFontSize}
                                                                 />
                                                             </div>
 
@@ -1042,9 +1076,48 @@ return (
                                                 placeholder={photoEngraving ? "Desactivado por fotograbado" : "Escribe tu mensaje aquí..."}
                                             />
 
-                                            <p className="text-xs text-zinc-500 mt-1">
+<p className="text-xs text-zinc-500 mt-1">
                                                 {baseText.length}/{BASE_TEXT_MAX_CHARS} caracteres
                                             </p>
+
+                                            {/* Control de tamaño de fuente */}
+                                            <div className="mt-4">
+                                                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                                    Tamaño de letra
+                                                </label>
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBaseFontSize(prev => Math.max(10, prev - 2))}
+                                                        disabled={baseFontSize <= 10 || photoEngraving}
+                                                        className="w-10 h-10 rounded-lg border border-zinc-300 flex items-center justify-center text-xl font-bold hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                                    >
+                                                        −
+                                                    </button>
+                                                    <span className="text-sm text-zinc-600 min-w-[60px] text-center">
+                                                        {baseFontSize}px
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newSize = baseFontSize + 2;
+                                                            if (newSize > 18) return;
+                                                            setBaseFontSize(newSize);
+                                                            // Mostrar advertencia si el texto no cabe con el nuevo tamaño
+                                                            if (!canFitWithFontSize(newSize)) {
+                                                                showToast("El texto es demasiado largo para este tamaño. El sistema ajustará automáticamente al tamaño máximo que quepa.");
+                                                            }
+                                                        }}
+                                                        disabled={baseFontSize >= 18 || photoEngraving}
+                                                        className="w-10 h-10 rounded-lg border border-zinc-300 flex items-center justify-center text-xl font-bold hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-zinc-500 mt-1">
+                                                    Rango: 10px - 18px
+                                                </p>
+                                            </div>
 
 
                                             {/* Imágenes vectorizadas (opcional) */}

@@ -1,12 +1,12 @@
 'use client';
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
-import { useState, useEffect, type ChangeEvent, type ReactNode, type ReactElement } from "react";
+import { useState, useEffect, type ChangeEvent, type ReactNode } from "react";
 
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
-import PresetDesignModal, { PresetDesign } from "./preset-design-modal";
+import { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
@@ -120,10 +120,11 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
   });
 
   const effectiveDesign =
-    PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.path)) ||
+PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.path)) ||
     selectedDesignConfig;
 
-  const chooseDesign = (design: PresetDesign | null) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _chooseDesign = (design: PresetDesign | null) => {
     setSelectedDesign(design ? design.path : null);
     setSelectedDesignConfig(design || null);
 
@@ -426,7 +427,10 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+        <VisuallyHidden>
+          <DialogTitle>Personaliza tu relicario corazón</DialogTitle>
+        </VisuallyHidden>
         <div className="relative bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
           {/* botón cerrar */}
           <button

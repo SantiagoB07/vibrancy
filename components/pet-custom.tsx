@@ -1,7 +1,7 @@
 "use client";
 
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
@@ -175,7 +175,10 @@ export function PetCustom({ product, children }: PetCustomProps) {
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
 
-            <DialogContent className="sm:max-w-2xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-2xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+                <VisuallyHidden>
+                    <DialogTitle>Personaliza tu placa para mascota</DialogTitle>
+                </VisuallyHidden>
                 <div className="relative bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
                     {/* botón cerrar */}
                     <div className="absolute right-4 top-4 z-10">

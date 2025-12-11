@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -279,7 +279,10 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                 {children}
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+                <VisuallyHidden>
+                    <DialogTitle>Personaliza tu dije de carta</DialogTitle>
+                </VisuallyHidden>
                 <div className="relative bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
                     {/* botón cerrar */}
                     <button
@@ -363,7 +366,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                             <div
                                                 className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
                                                 style={{
-                                                    transform: 'translate(-50%, -85%)',
+                                                    transform: 'translate(-50%, -85%) rotate(-4deg)',
                                                     width: '160px',
                                                     height: '100px',
                                                 }}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
@@ -406,9 +406,12 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
             </DialogTrigger>
 
             {/* SOLO ORGANIZACIÓN / LAYOUT */}
-            <DialogContent
+<DialogContent
                 className="sm:max-w-6xl w-full max-h-[90vh] p-0 bg-transparent border-none"
             >
+                <VisuallyHidden>
+                    <DialogTitle>Personaliza tu girasol</DialogTitle>
+                </VisuallyHidden>
                 <div className="relative bg-white rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
                     {/* botón cerrar */}
                     <button

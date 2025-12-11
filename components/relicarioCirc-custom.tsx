@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -307,7 +307,10 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-        <DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+          <VisuallyHidden>
+            <DialogTitle>Personaliza tu relicario circular</DialogTitle>
+          </VisuallyHidden>
           <div className="relative bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
 
             {/* Close button */}
