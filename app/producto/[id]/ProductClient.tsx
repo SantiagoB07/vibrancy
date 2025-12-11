@@ -6,6 +6,11 @@ import { RelicarioCustom } from "@/components/relicario-custom";
 import { useRouter } from "next/navigation";
 import { GirasolCustom } from "@/components/girasol-custom";
 
+import { PetCustom } from "@/components/pet-custom";
+import { RelicarioCircCustom } from "@/components/relicarioCirc-custom";
+import { LetterCharmCustom } from "@/components/letter-charm-custom";
+
+
 
 function imgUrl(img?: string) {
     if (!img) return "/images/04.png";
@@ -28,9 +33,16 @@ interface Product {
     img?: string;
 }
 
+interface RelatedProduct {
+    id: string;
+    title: string;
+    price: number;
+    img?: string;
+}
+
 interface ProductClientProps {
     producto: Product;
-    relacionados: Product[];
+    relacionados: RelatedProduct[];
 }
 
 export default function ProductClient({ producto, relacionados }: ProductClientProps) {
@@ -39,16 +51,15 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
     const router = useRouter();
 
     const handleBuyNow = () => {
-        // Normaliza el título a minúsculas para evitar errores
         const nombre = producto.title.toLowerCase();
 
         if (nombre.includes("llavero")) {
-            // Si es un llavero → redirige
             router.push("/personalizar-llavero");
-        } else {
-            // Si no es llavero → no hace nada
         }
+
     };
+
+    const nombre = producto.title.toLowerCase();
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -88,8 +99,8 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                                 </button>
                             ))}
                             <span className="ml-2 text-sm text-gray-500">
-                {rating > 0 ? `${rating} / 5` : "Sin calificación"}
-              </span>
+                                {rating > 0 ? `${rating} / 5` : "Sin calificación"}
+                            </span>
                         </div>
 
                         <p className="text-3xl font-semibold text-green-600">
@@ -97,31 +108,55 @@ export default function ProductClient({ producto, relacionados }: ProductClientP
                         </p>
                     </div>
 
-                    {producto.title.toLowerCase().includes("corazón") ? (
-                        // ❤️ Modal para relicario de corazón
-                        <RelicarioCustom product={producto}>
-                            <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
-                                Comprar ahora
-                            </button>
-                        </RelicarioCustom>
-                    ) : producto.title.toLowerCase().includes("girasol") ? (
-                        // 🌻 Modal para dije de girasol
-                        <GirasolCustom product={producto}>
-                            <button className="mt-6 bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition w-full">
-                                Personalizar girasol
-                            </button>
-                        </GirasolCustom>
-                    ) : (
-                        // 🔑 Otros productos (redirigir)
-                        <button
-                            onClick={handleBuyNow}
-                            className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full"
-                        >
-                            Comprar ahora
-                        </button>
-                    )}
+                    {/** ❤️ Relicario corazón */}
+                    {nombre.includes("corazón") ? (
+                            <RelicarioCustom product={producto}>
+                                <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                                    Comprar ahora
+                                </button>
+                            </RelicarioCustom>
 
+                        ) : /** 🌻 Dije girasol */
+                        nombre.includes("girasol") ? (
+                                <GirasolCustom product={producto}>
+                                    <button className="mt-6 bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 transition w-full">
+                                        Personalizar girasol
+                                    </button>
+                                </GirasolCustom>
 
+                            ) : /** 🐾 Placa de mascota */
+                            nombre.includes("placa") && nombre.includes("mascota") ? (
+                                    <PetCustom product={producto}>
+                                        <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                                            Comprar ahora
+                                        </button>
+                                    </PetCustom>
+
+                                ) : /** 🔵 Relicario circular */
+                                nombre.includes("relicario") && nombre.includes("personalizable") ? (
+                                    <RelicarioCircCustom product={producto}>
+                                        <button className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full">
+                                            Comprar ahora
+                                        </button>
+                                    </RelicarioCircCustom>
+
+                                    ) : /** 🔵 Dije de carta */
+                                    nombre.includes("carta") && nombre.includes("sobre") ? (
+                                        <LetterCharmCustom product={producto}>
+                                            <button className="mt-6 bg-pink-500 text-white py-3 rounded-lg hover:bg-pink-600 transition w-full">
+                                                Personalizar carta
+                                            </button>
+                                        </LetterCharmCustom>
+
+                                ) : (
+                                    /** 🔑 Otros productos → redirección genérica */
+                                    <button
+                                        onClick={handleBuyNow}
+                                        className="mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition w-full"
+                                    >
+                                        Comprar ahora
+                                    </button>
+                                )}
                 </div>
             </div>
 

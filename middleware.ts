@@ -7,10 +7,20 @@ export async function middleware(request: NextRequest) {
 
   // Rutas públicas
   if (
-    pathname === "/contacto" ||
+      pathname === "/" ||
+      pathname === "/products" ||
+      pathname === "/contacto" ||
       pathname === "/personalizar-llavero" ||
-    /^\/producto\/\d+(?:\/|$)/.test(pathname) ||
-    pathname === "/cart"
+      /^\/producto\/\d+(?:\/|$)/.test(pathname) ||
+      pathname === "/cart" ||
+      // ✅ páginas de resultado de pago (Mercado Pago back_urls)
+      pathname === "/checkout/success" ||
+      pathname === "/checkout/failure" ||
+      pathname === "/checkout/pending" ||
+      // ✅ endpoints públicos de pago / webhooks
+      pathname.startsWith("/api/checkout") ||
+      pathname.startsWith("/api/mercadopago") ||
+      pathname.startsWith("/api/webhooks")
   ) {
     return NextResponse.next();
   }
