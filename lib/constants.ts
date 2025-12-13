@@ -15,3 +15,11 @@ export const BRAND = {
     NAME: "Vibrancy Accesorios",
     TAGLINE: "Accesorios personalizados hechos con amor en Colombia",
 };
+
+// Datos de pago por transferencia
+export const PAYMENT_CONFIG = {
+    NEQUI: "3125942901",
+    DAVIPLATA: "3125942901",
+    TITULAR: "Santiago Botero",
+    WHATSAPP: "573160489911", // Para enviar comprobante
+};
