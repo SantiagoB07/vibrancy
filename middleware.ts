@@ -17,10 +17,14 @@ export async function middleware(request: NextRequest) {
       pathname === "/checkout/success" ||
       pathname === "/checkout/failure" ||
       pathname === "/checkout/pending" ||
-      // ✅ endpoints públicos de pago / webhooks
+      // ✅ páginas de selección de método de pago
+      pathname === "/checkout/payment-method" ||
+      pathname === "/checkout/transfer" ||
+      // ✅ endpoints públicos de pago / webhooks / órdenes
       pathname.startsWith("/api/checkout") ||
       pathname.startsWith("/api/mercadopago") ||
-      pathname.startsWith("/api/webhooks")
+      pathname.startsWith("/api/webhooks") ||
+      pathname.startsWith("/api/orders")
   ) {
     return NextResponse.next();
   }
