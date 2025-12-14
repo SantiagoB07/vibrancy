@@ -10,7 +10,7 @@ import {
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
+import { CustomerForm, CustomerData, isValidEmail } from '@/components/checkout/CustomerForm';
 import { validateImageFile } from '@/lib/utils';
 
 
@@ -397,6 +397,7 @@ const showToast = (message: string) => {
     const isCustomerFormValid =
         customerData.name.trim().length > 2 &&
         customerData.phone.trim().length >= 7 &&
+        isValidEmail(customerData.email) &&
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
