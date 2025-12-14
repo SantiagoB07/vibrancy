@@ -5,10 +5,15 @@ import React from "react";
 export interface CustomerData {
     name: string;
     phone: string;
-    email?: string | null;
+    email: string;
     address: string;
     neighborhood?: string | null;
     locality: string;
+}
+
+// Función de validación de email exportada para usar en otros componentes
+export function isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
 interface Props {
@@ -66,15 +71,19 @@ export function CustomerForm({ data, onChange }: Props) {
             {/* Email */}
             <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Correo electrónico (opcional)
+                    Correo electrónico <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="email"
-                    value={data.email ?? ""}
+                    value={data.email}
                     onChange={(e) => update("email", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Ej: tu_correo@email.com"
+                    required
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                    Te enviaremos la confirmación de tu pedido a este correo.
+                </p>
             </div>
 
             {/* Dirección */}
