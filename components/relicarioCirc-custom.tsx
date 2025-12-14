@@ -280,10 +280,22 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
         return;
       }
 
-      window.location.href = data.init_point;
+      if (!data.order_id || !data.access_token) {
+        console.error("Respuesta sin order_id o access_token (relicarioCirc):", data);
+        alert("No se pudo crear la orden.");
+        return;
+      }
+
+      // Redirigir a la página de selección de método de pago
+      const params = new URLSearchParams({
+        order_id: String(data.order_id),
+        token: data.access_token,
+        ...(data.init_point && { init_point: data.init_point }),
+      });
+      window.location.href = `/checkout/payment-method?${params}`;
     } catch (err) {
       console.error(err);
-      alert("No se pudo procesar el pago.");
+      alert("Error al procesar tu pedido.");
     } finally {
       setIsPaying(false);
     }
@@ -342,7 +354,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                     disabled={step === 2 && !isCustomerFormValid}
                     className="bg-black text-white px-6 py-2 rounded-full disabled:opacity-60"
                 >
-                  {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Confirmar y pagar"}
+                  {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
                 </button>
               </div>
             </div>

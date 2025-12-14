@@ -408,16 +408,22 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
         return;
       }
 
-      if (!data.init_point) {
-        console.error("Respuesta sin init_point (relicario):", data);
-        alert("No se recibió la URL de pago.");
+      if (!data.order_id || !data.access_token) {
+        console.error("Respuesta sin order_id o access_token (relicario):", data);
+        alert("No se pudo crear la orden.");
         return;
       }
 
-      window.location.href = data.init_point;
+      // Redirigir a la página de selección de método de pago
+      const params = new URLSearchParams({
+        order_id: String(data.order_id),
+        token: data.access_token,
+        ...(data.init_point && { init_point: data.init_point }),
+      });
+      window.location.href = `/checkout/payment-method?${params}`;
     } catch (error) {
       console.error("Error en handlePay (relicario):", error);
-      alert("Error al conectar con Mercado Pago.");
+      alert("Error al procesar tu pedido.");
     } finally {
       setIsPaying(false);
     }
@@ -471,8 +477,8 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                     {step === 1
                       ? "Continuar"
                       : isPaying
-                      ? "Redirigiendo..."
-                      : "Confirmar y pagar"}
+                      ? "Procesando..."
+                      : "Continuar al pago"}
                   </button>
                 </div>
               </div>

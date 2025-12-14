@@ -230,6 +230,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
         };
 
         try {
+            setIsPaying(true);
 
             const res = await fetch("/api/checkout", {
                 method: "POST",
@@ -258,11 +259,25 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                 return;
             }
 
-            window.location.href = data.init_point;
+            if (!data.order_id || !data.access_token) {
+                console.error("Respuesta sin order_id o access_token (letter-charm):", data);
+                alert("No se pudo crear la orden.");
+                return;
+            }
+
+            // Redirigir a la página de selección de método de pago
+            const params = new URLSearchParams({
+                order_id: String(data.order_id),
+                token: data.access_token,
+                ...(data.init_point && { init_point: data.init_point }),
+            });
+            window.location.href = `/checkout/payment-method?${params}`;
 
         } catch (error) {
             console.error(error);
-            alert("No se pudo conectar con Mercado Pago.");
+            alert("Error al procesar tu pedido.");
+        } finally {
+            setIsPaying(false);
         }
 
 
@@ -313,10 +328,10 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                         }
                                         handlePay();
                                     }}
-                                    disabled={step === 2 && !isCustomerFormValid}
+                                    disabled={step === 2 && (!isCustomerFormValid || isPaying)}
                                     className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
                                 >
-                                    {step === 1 ? "Continuar" : "Confirmar y pagar"}
+                                    {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
                                 </button>
 
 
