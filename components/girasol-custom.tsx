@@ -86,7 +86,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
-    const [isPaying, setIsPaying] = useState(false);
+const [isPaying, setIsPaying] = useState(false);
 
 
     // formateador de número (COP)
@@ -500,15 +500,11 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                     />
                                                     {/* overlay de texto cara 1 */}
                                                     <div
-                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{
-                                                            transform: "translate(-50%, 7%)",
-                                                            width: "130px",
-                                                            height: "150px",
-                                                        }}
+                                                        className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{ paddingTop: "35%" }}
                                                     >
                                                         <span
-                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
                                                             style={{
                                                                 fontFamily,
                                                                 textShadow: `
@@ -516,7 +512,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                                     0 2px 3px rgba(0,0,0,0.12)
                                                                 `,
                                                                 wordBreak: "break-word",
-                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                                fontSize: `clamp(10px, ${getFontSizeForCircle(phraseFace1) * 0.04}em, ${getFontSizeForCircle(phraseFace1)}px)`,
                                                             }}
                                                         >
                                                             {formatTextForCircle(phraseFace1)}
@@ -542,15 +538,11 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                     />
                                                     {/* overlay de texto cara 2 */}
                                                     <div
-                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{
-                                                            transform: "translate(-50%, 7%)",
-                                                            width: "130px",
-                                                            height: "150px",
-                                                        }}
+                                                        className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{ paddingTop: "35%" }}
                                                     >
                                                         <span
-                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
                                                             style={{
                                                                 fontFamily,
                                                                 textShadow: `
@@ -558,7 +550,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                                     0 2px 3px rgba(0,0,0,0.12)
                                                                 `,
                                                                 wordBreak: "break-word",
-                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                                fontSize: `clamp(10px, ${getFontSizeForCircle(phraseFace2) * 0.04}em, ${getFontSizeForCircle(phraseFace2)}px)`,
                                                             }}
                                                         >
                                                             {formatTextForCircle(phraseFace2)}

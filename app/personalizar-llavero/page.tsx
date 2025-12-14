@@ -4,6 +4,8 @@ import {
     useEffect,
     useMemo,
     useState,
+    useRef,
+    useCallback,
     type ReactNode,
     type JSX,
 } from 'react';
@@ -363,6 +365,44 @@ const [baseColor, setBaseColor] = useState<Color>('silver');
 
 // toast de advertencia
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+    // Ref para el contenedor de vista previa (externo)
+    const previewContainerRef = useRef<HTMLDivElement>(null);
+    
+    // Ref y escala para el contenedor de la imagen de la placa (interno)
+    const baseImageContainerRef = useRef<HTMLDivElement>(null);
+    const [overlayScale, setOverlayScale] = useState(1);
+    const [overlayPaddingTop, setOverlayPaddingTop] = useState("18%");
+
+    // Calcular escala basada en el ancho real del contenedor de la imagen
+    const updateOverlayScale = useCallback(() => {
+        if (baseImageContainerRef.current) {
+            const containerWidth = baseImageContainerRef.current.offsetWidth;
+            // Base de diseño: 700px
+            // Escala mínima: 0.4 (móvil), máxima: 0.75 (escritorio)
+            const scale = Math.max(0.4, Math.min(containerWidth / 700, 0.75));
+            setOverlayScale(scale);
+            
+            // desktop 22, movil 40
+            const paddingTop = containerWidth > 500 ? "22%" : "40%";
+            setOverlayPaddingTop(paddingTop);
+        }
+    }, []);
+
+    // Observar cambios de tamaño del contenedor de la imagen
+    useEffect(() => {
+        updateOverlayScale();
+        
+        const resizeObserver = new ResizeObserver(() => {
+            updateOverlayScale();
+        });
+        
+        if (baseImageContainerRef.current) {
+            resizeObserver.observe(baseImageContainerRef.current);
+        }
+        
+        return () => resizeObserver.disconnect();
+    }, [updateOverlayScale]);
 
 const showToast = (message: string) => {
         setToastMessage(message);
@@ -777,7 +817,10 @@ return (
                             {/* Vista previa - IZQUIERDA */}
                             <div className="lg:sticky lg:top-24">
                                 <div className="bg-white rounded-3xl p-8 shadow-lg">
-                                    <div className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden">
+                                    <div 
+                                        ref={previewContainerRef}
+                                        className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden"
+                                    >
                                         {/* Placa grande */}
                                         {activeView === 'base' && (
                                             <div
@@ -790,7 +833,7 @@ return (
                                                     transform: 'translateX(-50%) scale(1.1)',
                                                 }}
                                             >
-                                                <div className="relative w-full h-full">
+                                                <div ref={baseImageContainerRef} className="relative w-full h-full">
                                                     <img
                                                         src={IMAGES.base[baseColor]}
                                                         alt="Placa grande"
@@ -799,11 +842,11 @@ return (
 
                                                     {/* ZONA DE TEXTO + DIBUJO, ANCLADA POR ARRIBA */}
                                                     <div
-                                                        className="absolute inset-0 flex items-center justify-center p-4"
-                                                        style={{
-                                                            // esto mantiene el bloque texto+dibujo aproximadamente
-                                                            // donde ya se veía bien antes
-                                                            transform: 'translateY(65px)',
+                                                        className="absolute inset-0 flex items-center justify-center"
+                                                        style={{ 
+                                                            paddingTop: overlayPaddingTop,
+                                                            transform: `scale(${overlayScale})`,
+                                                            transformOrigin: "center center"
                                                         }}
                                                     >
                                                         {/* ZONA SEGURA: texto arriba, dibujo abajo */}
@@ -811,20 +854,17 @@ return (
                                                             className="flex flex-col items-center justify-between"
                                                             style={{
                                                                 width: 130,
-                                                                height: hasVectorDesign ? 150 : 120, // alto total de la zona
+                                                                height: hasVectorDesign ? 180 : 140,
                                                             }}
                                                         >
                                                             {/* CONTENEDOR DEL TEXTO (parte superior de la zona) */}
                                                             <div
                                                                 className="w-full flex items-start justify-center"
-                                                                style={{
-                                                                    height: hasVectorDesign ? 110 : 120, // alto máximo del texto
-                                                                }}
                                                             >
 <EngravedText
                                                                     value={baseText}
                                                                     boxW={130}
-                                                                    boxH={hasVectorDesign ? 110 : 120} // mismo que arriba
+                                                                    boxH={hasVectorDesign ? 110 : 120}
                                                                     maxPx={18}
                                                                     maxLines={8}
                                                                     color={baseColor}
@@ -836,10 +876,7 @@ return (
                                                             {hasVectorDesign && (
                                                                 <div
                                                                     className="w-full flex items-center justify-center"
-                                                                    style={{
-                                                                        height: 80,
-                                                                        transform: 'translateY(20px)'
-                                                                    }}
+                                                                    style={{ height: 70 }}
                                                                 >
                                                                     <img
                                                                         src={selectedVectorDesignData!.publicUrl}
