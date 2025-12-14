@@ -13,6 +13,8 @@ export async function middleware(request: NextRequest) {
       pathname === "/personalizar-llavero" ||
       /^\/producto\/\d+(?:\/|$)/.test(pathname) ||
       pathname === "/cart" ||
+      // ✅ página de consulta de pedido (link mágico)
+      /^\/mi-pedido\/\d+(?:\/|$)/.test(pathname) ||
       // ✅ páginas de resultado de pago (Mercado Pago back_urls)
       pathname === "/checkout/success" ||
       pathname === "/checkout/failure" ||
