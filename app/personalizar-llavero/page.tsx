@@ -297,7 +297,11 @@ function EngravedText({
         <div
             style={{
                 width: boxW,
-                height: boxH,
+
+                height: 'auto',
+                maxHeight: boxH,
+                overflow: 'hidden',
+
                 fontSize,
                 lineHeight: 1.1,
                 color: textColor,
@@ -305,15 +309,18 @@ function EngravedText({
                 letterSpacing: 0.5,
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
+
+
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
                 textAlign: 'center',
                 padding: 8,
             }}
         >
             {sanitized || ' '}
         </div>
+
     );
 }
 
@@ -378,31 +385,54 @@ const [baseColor, setBaseColor] = useState<Color>('silver');
     const updateOverlayScale = useCallback(() => {
         if (baseImageContainerRef.current) {
             const containerWidth = baseImageContainerRef.current.offsetWidth;
+            console.log("[llavero] containerWidth:", containerWidth);
+
+
             // Base de diseño: 700px
             // Escala mínima: 0.4 (móvil), máxima: 0.75 (escritorio)
             const scale = Math.max(0.4, Math.min(containerWidth / 700, 0.75));
             setOverlayScale(scale);
             
             // desktop 22, movil 40
-            const paddingTop = containerWidth > 500 ? "22%" : "40%";
+            const paddingTop = containerWidth > 500 ? "22%" : "45%";
             setOverlayPaddingTop(paddingTop);
         }
     }, []);
 
     // Observar cambios de tamaño del contenedor de la imagen
     useEffect(() => {
+        // 1) cálculo inmediato
         updateOverlayScale();
-        
+
+        // 2) re-cálculo 1 y 2 frames después (cuando ya pintó bien)
+        const raf1 = requestAnimationFrame(() => {
+            updateOverlayScale();
+        });
+        const raf2 = requestAnimationFrame(() => {
+            updateOverlayScale();
+        });
+
         const resizeObserver = new ResizeObserver(() => {
             updateOverlayScale();
         });
-        
+
         if (baseImageContainerRef.current) {
             resizeObserver.observe(baseImageContainerRef.current);
         }
-        
-        return () => resizeObserver.disconnect();
+
+        const onResize = () => updateOverlayScale();
+        window.addEventListener("resize", onResize);
+        window.addEventListener("orientationchange", onResize);
+
+        return () => {
+            cancelAnimationFrame(raf1);
+            cancelAnimationFrame(raf2);
+            window.removeEventListener("resize", onResize);
+            window.removeEventListener("orientationchange", onResize);
+            resizeObserver.disconnect();
+        };
     }, [updateOverlayScale]);
+
 
 const showToast = (message: string) => {
         setToastMessage(message);
@@ -838,6 +868,7 @@ return (
                                                         src={IMAGES.base[baseColor]}
                                                         alt="Placa grande"
                                                         className="w-full h-full object-contain"
+                                                        onLoad={() => updateOverlayScale()}
                                                     />
 
                                                     {/* ZONA DE TEXTO + DIBUJO, ANCLADA POR ARRIBA */}
@@ -851,20 +882,19 @@ return (
                                                     >
                                                         {/* ZONA SEGURA: texto arriba, dibujo abajo */}
                                                         <div
-                                                            className="flex flex-col items-center justify-between"
+                                                            className="flex flex-col items-center justify-start"
                                                             style={{
                                                                 width: 130,
-                                                                height: hasVectorDesign ? 180 : 140,
+                                                                height: hasVectorDesign ? 260 : 210,
+                                                                gap: 6,
                                                             }}
                                                         >
                                                             {/* CONTENEDOR DEL TEXTO (parte superior de la zona) */}
-                                                            <div
-                                                                className="w-full flex items-start justify-center"
-                                                            >
-<EngravedText
+                                                            <div className="w-full flex justify-center">
+                                                                <EngravedText
                                                                     value={baseText}
                                                                     boxW={130}
-                                                                    boxH={hasVectorDesign ? 110 : 120}
+                                                                    boxH={hasVectorDesign ? 160 : 180}
                                                                     maxPx={18}
                                                                     maxLines={8}
                                                                     color={baseColor}
@@ -875,8 +905,8 @@ return (
                                                             {/* CONTENEDOR DEL DIBUJO (parte inferior de la zona) */}
                                                             {hasVectorDesign && (
                                                                 <div
-                                                                    className="w-full flex items-center justify-center"
-                                                                    style={{ height: 70 }}
+                                                                    className="w-full flex justify-center"
+                                                                    style={{ height: 70, flexShrink: 0 }}
                                                                 >
                                                                     <img
                                                                         src={selectedVectorDesignData!.publicUrl}
