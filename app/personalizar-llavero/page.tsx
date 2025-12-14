@@ -894,7 +894,7 @@ return (
                                                                 <EngravedText
                                                                     value={baseText}
                                                                     boxW={130}
-                                                                    boxH={hasVectorDesign ? 160 : 180}
+                                                                    boxH={hasVectorDesign ? 160 : 220}
                                                                     maxPx={18}
                                                                     maxLines={8}
                                                                     color={baseColor}
