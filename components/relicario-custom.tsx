@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
-import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { CustomerForm, CustomerData, isValidEmail } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
 
 
@@ -155,6 +155,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
   const isCustomerFormValid =
     customerData.name.trim().length > 2 &&
     customerData.phone.trim().length >= 7 &&
+    isValidEmail(customerData.email) &&
     customerData.address.trim().length > 5 &&
     customerData.locality.trim().length > 2;
 
