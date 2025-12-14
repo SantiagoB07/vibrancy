@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -354,7 +355,28 @@ export async function POST(request: Request) {
             );
         }
 
-        // 7) Respuesta al frontend (incluir token para consultas posteriores)
+        // 8) Enviar email de confirmación si hay email del cliente
+        if (customerData?.email) {
+            try {
+                await sendOrderConfirmationEmail({
+                    to: customerData.email,
+                    customerName: customerData.name,
+                    orderId,
+                    accessToken,
+                    totalAmount,
+                    items: validatedItems.map((item) => ({
+                        title: item.title,
+                        quantity: item.quantity,
+                        unitPrice: item.unitPrice,
+                    })),
+                });
+            } catch (emailError) {
+                // No bloquear la compra si falla el email
+                console.error("❌ Error enviando email (no bloqueante):", emailError);
+            }
+        }
+
+        // 9) Respuesta al frontend (incluir token para consultas posteriores)
         return NextResponse.json(
             {
                 init_point: initPoint,
