@@ -6,7 +6,7 @@ import { useState, useEffect, type ChangeEvent, type ReactNode } from "react";
 
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
-import { PresetDesign } from "./preset-design-modal";
+import { RELICARIO_PRESET_DESIGNS, type RelicarioPresetDesign as PresetDesign } from "@/lib/relicarios/preset-designs";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
@@ -84,30 +84,14 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
     return 20;
   });
 
-  // Diseños predeterminados
-  const PRESET_DESIGNS: PresetDesign[] = [
-    { id: "alas", path: "/images/eRelicarios/alas.svg", label: "Alas", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -8, width: 120, height: 67 },
-    { id: "anillos", path: "/images/eRelicarios/anillos.svg", label: "Anillos", position: "below", defaultText: "Nombre", offsetX: 0, offsetY: -2, width: 105, height: 59 },
-    { id: "corazon", path: "/images/eRelicarios/corazon.svg", label: "Corazón", position: "right", defaultText: "Perdóname", offsetX: -6, offsetY: 0, width: 105, height: 59 },
-    { id: "corazon2", path: "/images/eRelicarios/corazon2.svg", label: "Corazón 2", position: "below", defaultText: "Vuelve", offsetX: 0, offsetY: -6, width: 105, height: 59 },
-    { id: "corazon3", path: "/images/eRelicarios/corazon3.svg", label: "Corazón 3", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -6, width: 105, height: 59 },
-    { id: "corazon4", path: "/images/eRelicarios/corazon4.svg", label: "Corazón 4", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -4, width: 120, height: 67 },
-    { id: "estrellas", path: "/images/eRelicarios/estrellas.svg", label: "Estrellas", position: "right", defaultText: "Siempre juntos", offsetX: -14, offsetY: 0, width: 120, height: 67 },
-    { id: "flores", path: "/images/eRelicarios/flores.svg", label: "Flores", position: "below", defaultText: "Nose", offsetX: 0, offsetY: -6, width: 120, height: 67 },
-    { id: "flores2", path: "/images/eRelicarios/flores2.svg", label: "Flores 2", position: "right", defaultText: "tampoco", offsetX: -8, offsetY: 0, width: 150, height: 84 },
-    { id: "mariposas", path: "/images/eRelicarios/mariposas.svg", label: "Mariposas", position: "right", defaultText: "algo", offsetX: -14, offsetY: 0, width: 105, height: 59 },
-  ];
+  const PRESET_DESIGNS = RELICARIO_PRESET_DESIGNS;
 
-  const [selectedDesign, setSelectedDesign] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("petTag_design") || null;
-    }
-    return null;
-  });
+  const designEditorEnabled = process.env.NEXT_PUBLIC_RELICARIO_DESIGN_EDITOR === "true";
 
-  const [selectedDesignConfig, setSelectedDesignConfig] = useState<PresetDesign | null>(() => {
+  // Diseño para el frente (anverso)
+  const [frontDesignConfig, setFrontDesignConfig] = useState<PresetDesign | null>(() => {
     if (typeof window !== "undefined") {
-      const raw = localStorage.getItem("petTag_design_config");
+      const raw = localStorage.getItem("petTag_design_front");
       if (raw) {
         try {
           return JSON.parse(raw) as PresetDesign;
@@ -119,36 +103,78 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
     return null;
   });
 
-  const effectiveDesign =
-PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.path)) ||
-    selectedDesignConfig;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _chooseDesign = (design: PresetDesign | null) => {
-    setSelectedDesign(design ? design.path : null);
-    setSelectedDesignConfig(design || null);
-
+  // Diseño para el reverso
+  const [backDesignConfig, setBackDesignConfig] = useState<PresetDesign | null>(() => {
     if (typeof window !== "undefined") {
-      if (design) {
-        localStorage.setItem("petTag_design", design.path);
-        localStorage.setItem("petTag_design_config", JSON.stringify(design));
-        if (design.fontFamily) {
-          setFontFamily(design.fontFamily);
-          localStorage.setItem("petTag_fontFamily", design.fontFamily);
+      const raw = localStorage.getItem("petTag_design_back");
+      if (raw) {
+        try {
+          return JSON.parse(raw) as PresetDesign;
+        } catch {
+          return null;
         }
-        if (design.color) {
-          setTextColor(design.color);
-          localStorage.setItem("petTag_textColor", design.color);
-        }
-        if (design.fontSize) {
-          setDesignFontSize(design.fontSize);
-          localStorage.setItem("petTag_fontSize", String(design.fontSize));
-        }
-      } else {
-        localStorage.removeItem("petTag_design");
-        localStorage.removeItem("petTag_design_config");
       }
     }
+    return null;
+  });
+
+  // Diseño efectivo según la cara actual
+  const effectiveDesign = currentFace === 1 ? frontDesignConfig : backDesignConfig;
+  const effectiveFrontDesign = frontDesignConfig;
+  const effectiveBackDesign = backDesignConfig;
+
+  const chooseDesign = (design: PresetDesign | null) => {
+    const nextDesign = design ? ({ ...design } as PresetDesign) : null;
+    const storageKey = currentFace === 1 ? "petTag_design_front" : "petTag_design_back";
+    
+    if (currentFace === 1) {
+      setFrontDesignConfig(nextDesign);
+    } else {
+      setBackDesignConfig(nextDesign);
+    }
+
+    if (typeof window !== "undefined") {
+      if (nextDesign) {
+        localStorage.setItem(storageKey, JSON.stringify(nextDesign));
+
+        // Aplicar texto por defecto solo si el campo está vacío
+        if (currentFace === 1 && !petName && nextDesign.defaultText) {
+          setPetName(nextDesign.defaultText);
+          localStorage.setItem("petTag_petName", nextDesign.defaultText);
+        } else if (currentFace === 2 && !ownerInfo && nextDesign.defaultText) {
+          setOwnerInfo(nextDesign.defaultText);
+          localStorage.setItem("petTag_ownerInfo", nextDesign.defaultText);
+        }
+        if (nextDesign.fontFamily) {
+          setFontFamily(nextDesign.fontFamily);
+          localStorage.setItem("petTag_fontFamily", nextDesign.fontFamily);
+        }
+        if (nextDesign.color) {
+          setTextColor(nextDesign.color);
+          localStorage.setItem("petTag_textColor", nextDesign.color);
+        }
+        if (nextDesign.fontSize) {
+          setDesignFontSize(nextDesign.fontSize);
+          localStorage.setItem("petTag_fontSize", String(nextDesign.fontSize));
+        }
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    }
+  };
+
+  const updateSelectedDesignConfig = (patch: Partial<PresetDesign>) => {
+    const storageKey = currentFace === 1 ? "petTag_design_front" : "petTag_design_back";
+    const setConfig = currentFace === 1 ? setFrontDesignConfig : setBackDesignConfig;
+    
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      }
+      return next;
+    });
   };
 
   // ---- lógica de checkout / supabase (rama fix/general-items) ----
@@ -394,6 +420,8 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
               personalizationBack: ownerInfo || null,
               photos: photosForCheckout,
               engravingFont: getSelectedFontForDb(),
+              relicarioDesignId: effectiveDesign?.id ?? null,
+              relicarioDesignPath: effectiveDesign?.path ?? null,
             },
           ],
 
@@ -433,7 +461,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-5xl lg:max-w-6xl w-full max-h-[90vh] p-0 bg-transparent border-none">
         <VisuallyHidden>
           <DialogTitle>Personaliza tu relicario corazón</DialogTitle>
         </VisuallyHidden>
@@ -486,13 +514,15 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
           </div>
 
           {/* CONTENIDO */}
-          <div className="flex-1 overflow-y-auto p-8 pb-10 pt-6">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-10 pt-6">
             {step === 1 && (
-              <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                {/* COLUMNA IZQUIERDA: Preview del relicario */}
+                <div className="flex flex-col">
                 {/* Preview del relicario */}
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center mb-4 lg:mb-6">
                   <div
-                    className="relative w-[520px] h-[280px] perspective-1000"
+                    className="relative w-full max-w-[520px] h-[280px] lg:h-[320px] perspective-1000"
                     style={{ transformStyle: "preserve-3d" }}
                   >
   {/* Frente */}
@@ -516,80 +546,85 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
         transition: "opacity 0.2s ease-in-out",
       }}
     >
-      {effectiveDesign ? (
+      {effectiveFrontDesign ? (
         <div className="absolute inset-0 pointer-events-none z-10">
           <div
             style={{
               position: "absolute",
               left: "50%",
               top: "50%",
-              transform: `translate(calc(-50% + ${effectiveDesign.offsetX ?? 0}px), calc(-50% + ${
-                effectiveDesign.offsetY ?? 0
-              }px))`,
+              transform: "translate(-50%, -50%)",
             }}
           >
             {(() => {
-              const txt = formatTextWithBreak(petName || effectiveDesign.defaultText || "");
-              let baseSize = effectiveDesign.fontSize ?? designFontSize;
+              const txt = formatTextWithBreak(petName || effectiveFrontDesign.defaultText || "");
+              const svgOx = effectiveFrontDesign.offsetX ?? 0;
+              const svgOy = effectiveFrontDesign.offsetY ?? 0;
+              let baseSize = effectiveFrontDesign.fontSize ?? designFontSize;
               if (isCookie) {
                 baseSize += 2;
               }
               const computedFontSize =
-                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.85) : baseSize;
+                  effectiveFrontDesign.position === "right" ? Math.round(baseSize * 0.85) : baseSize;
+
+              const isSideText = effectiveFrontDesign.position === "left" || effectiveFrontDesign.position === "right";
 
               const baseStyle = {
-                fontFamily: effectiveDesign.fontFamily || fontFamily,
-                color: effectiveDesign.color || textColor,
+                fontFamily: effectiveFrontDesign.fontFamily || fontFamily,
+                color: effectiveFrontDesign.color || textColor,
                 fontSize: `${computedFontSize}px`,
+                lineHeight: "1.05",
+                textAlign: isSideText ? "left" : "center",
+                width: isSideText ? undefined : (effectiveFrontDesign.width ?? 150),
                 padding:
-                  effectiveDesign.position === "left" || effectiveDesign.position === "right"
-                    ? "0"
-                    : "0 8px",
+                  isSideText ? "0" : "0 8px",
               } as React.CSSProperties;
-              const ox = effectiveDesign.offsetX ?? 0;
-              const oy = effectiveDesign.offsetY ?? 0;
+              const textOx = effectiveFrontDesign.textOffsetX ?? 0;
+              const textOy = effectiveFrontDesign.textOffsetY ?? 0;
               const horizGap = -20;
 
-              switch (effectiveDesign.position) {
+              switch (effectiveFrontDesign.position) {
                 case "below":
                   return (
                     <div className="flex flex-col items-center">
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveFrontDesign.width ?? 150,
+                          height: effectiveFrontDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveFrontDesign.path}
+                          alt={effectiveFrontDesign.label || ""}
+                          width={effectiveFrontDesign.width ?? 150}
+                          height={effectiveFrontDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
-                      <div style={{ ...baseStyle, marginTop: oy }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginTop: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
                     </div>
                   );
                 case "above":
                   return (
                     <div className="flex flex-col items-center">
-                      <div style={{ ...baseStyle, marginBottom: oy }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginBottom: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveFrontDesign.width ?? 150,
+                          height: effectiveFrontDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveFrontDesign.path}
+                          alt={effectiveFrontDesign.label || ""}
+                          width={effectiveFrontDesign.width ?? 150}
+                          height={effectiveFrontDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -598,20 +633,21 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                 case "left":
                   return (
                     <div className="flex items-center">
-                      <div style={{ ...baseStyle, marginRight: horizGap }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginRight: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveFrontDesign.width ?? 150,
+                          height: effectiveFrontDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveFrontDesign.path}
+                          alt={effectiveFrontDesign.label || ""}
+                          width={effectiveFrontDesign.width ?? 150}
+                          height={effectiveFrontDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -623,20 +659,21 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveFrontDesign.width ?? 150,
+                          height: effectiveFrontDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveFrontDesign.path}
+                          alt={effectiveFrontDesign.label || ""}
+                          width={effectiveFrontDesign.width ?? 150}
+                          height={effectiveFrontDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
-                      <div style={{ ...baseStyle, marginLeft: horizGap }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginLeft: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
                     </div>
                   );
                 case "center":
@@ -645,24 +682,25 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                     <div
                       className="relative"
                       style={{
-                        width: effectiveDesign.width ?? 150,
-                        height: effectiveDesign.height ?? 84,
+                        width: effectiveFrontDesign.width ?? 150,
+                        height: effectiveFrontDesign.height ?? 84,
                         overflow: "visible",
                       }}
                     >
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveFrontDesign.width ?? 150,
+                          height: effectiveFrontDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveFrontDesign.path}
+                          alt={effectiveFrontDesign.label || ""}
+                          width={effectiveFrontDesign.width ?? 150}
+                          height={effectiveFrontDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -672,7 +710,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                           position: "absolute",
                           left: "50%",
                           top: "50%",
-                          transform: `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`,
+                          transform: `translate(calc(-50% + ${textOx}px), calc(-50% + ${textOy}px))`,
                         }}
                       >
                         {txt}
@@ -694,6 +732,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
             `,
             fontSize: `${designFontSize + (isCookie ? 2 : 0)}px`,
             color: textColor,
+            lineHeight: "1.05",
           }}
         >
           {formatTextWithBreak(petName)}
@@ -723,80 +762,85 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
         transition: "opacity 0.2s ease-in-out",
       }}
     >
-      {effectiveDesign ? (
+      {effectiveBackDesign ? (
         <div className="absolute inset-0 pointer-events-none z-10">
           <div
             style={{
               position: "absolute",
               left: "50%",
               top: "50%",
-              transform: `translate(calc(-50% + ${effectiveDesign.offsetX ?? 0}px), calc(-50% + ${
-                effectiveDesign.offsetY ?? 0
-              }px))`,
+              transform: "translate(-50%, -50%)",
             }}
           >
             {(() => {
-              const txt = formatTextWithBreak(ownerInfo || effectiveDesign.defaultText || "");
-              let baseSize = effectiveDesign.fontSize ?? designFontSize;
+              const txt = formatTextWithBreak(ownerInfo || effectiveBackDesign.defaultText || "");
+              const svgOx = effectiveBackDesign.offsetX ?? 0;
+              const svgOy = effectiveBackDesign.offsetY ?? 0;
+              let baseSize = effectiveBackDesign.fontSize ?? designFontSize;
               if (isCookie) {
                 baseSize += 2;
               }
               const computedFontSize =
-                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.7) : baseSize;
+                  effectiveBackDesign.position === "right" ? Math.round(baseSize * 0.7) : baseSize;
+
+              const isSideText = effectiveBackDesign.position === "left" || effectiveBackDesign.position === "right";
 
               const baseStyle = {
-                fontFamily: effectiveDesign.fontFamily || fontFamily,
-                color: effectiveDesign.color || textColor,
+                fontFamily: effectiveBackDesign.fontFamily || fontFamily,
+                color: effectiveBackDesign.color || textColor,
                 fontSize: `${computedFontSize}px`,
+                lineHeight: "1.05",
+                textAlign: isSideText ? "left" : "center",
+                width: isSideText ? undefined : (effectiveBackDesign.width ?? 150),
                 padding:
-                  effectiveDesign.position === "left" || effectiveDesign.position === "right"
-                    ? "0"
-                    : "0 8px",
+                  isSideText ? "0" : "0 8px",
               } as React.CSSProperties;
-              const ox = effectiveDesign.offsetX ?? 0;
-              const oy = effectiveDesign.offsetY ?? 0;
+              const textOx = effectiveBackDesign.textOffsetX ?? 0;
+              const textOy = effectiveBackDesign.textOffsetY ?? 0;
               const horizGap = -30;
 
-              switch (effectiveDesign.position) {
+              switch (effectiveBackDesign.position) {
                 case "below":
                   return (
                     <div className="flex flex-col items-center">
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveBackDesign.width ?? 150,
+                          height: effectiveBackDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveBackDesign.path}
+                          alt={effectiveBackDesign.label || ""}
+                          width={effectiveBackDesign.width ?? 150}
+                          height={effectiveBackDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
-                      <div style={{ ...baseStyle, marginTop: oy }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginTop: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
                     </div>
                   );
                 case "above":
                   return (
                     <div className="flex flex-col items-center">
-                      <div style={{ ...baseStyle, marginBottom: oy }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginBottom: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveBackDesign.width ?? 150,
+                          height: effectiveBackDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveBackDesign.path}
+                          alt={effectiveBackDesign.label || ""}
+                          width={effectiveBackDesign.width ?? 150}
+                          height={effectiveBackDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -805,20 +849,21 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                 case "left":
                   return (
                     <div className="flex items-center">
-                      <div style={{ ...baseStyle, marginRight: horizGap }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginRight: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveBackDesign.width ?? 150,
+                          height: effectiveBackDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveBackDesign.path}
+                          alt={effectiveBackDesign.label || ""}
+                          width={effectiveBackDesign.width ?? 150}
+                          height={effectiveBackDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -830,20 +875,21 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveBackDesign.width ?? 150,
+                          height: effectiveBackDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveBackDesign.path}
+                          alt={effectiveBackDesign.label || ""}
+                          width={effectiveBackDesign.width ?? 150}
+                          height={effectiveBackDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
-                      <div style={{ ...baseStyle, marginLeft: horizGap }}>{txt}</div>
+                      <div style={{ ...baseStyle, marginLeft: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
                     </div>
                   );
                 case "center":
@@ -852,24 +898,25 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                     <div
                       className="relative"
                       style={{
-                        width: effectiveDesign.width ?? 150,
-                        height: effectiveDesign.height ?? 84,
+                        width: effectiveBackDesign.width ?? 150,
+                        height: effectiveBackDesign.height ?? 84,
                         overflow: "visible",
                       }}
                     >
                       <div
                         className="relative"
                         style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
+                          width: effectiveBackDesign.width ?? 150,
+                          height: effectiveBackDesign.height ?? 84,
                           overflow: "hidden",
+                          transform: `translate(${svgOx}px, ${svgOy}px)`,
                         }}
                       >
                         <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
+                          src={effectiveBackDesign.path}
+                          alt={effectiveBackDesign.label || ""}
+                          width={effectiveBackDesign.width ?? 150}
+                          height={effectiveBackDesign.height ?? 84}
                           className="object-contain"
                         />
                       </div>
@@ -879,7 +926,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                           position: "absolute",
                           left: "50%",
                           top: "50%",
-                          transform: `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`,
+                          transform: `translate(calc(-50% + ${textOx}px), calc(-50% + ${textOy}px))`,
                         }}
                       >
                         {txt}
@@ -911,7 +958,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                 </div>
 
 {/* Botones de control */}
-<div className="flex justify-center mb-6 space-x-4">
+<div className="flex justify-center mb-4 lg:mb-6 space-x-4">
   <button
     onClick={handleRotate}
     className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
@@ -930,9 +977,8 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
   </button>
 </div>
 
-
 {/* Inputs de texto */}
-<div className="space-y-4 mb-6 mt-4">
+<div className="space-y-4 mb-4">
   <div>
     <label htmlFor="tag-input" className="sr-only">
       {currentFace === 1 ? "Nombre de la mascota" : "Información del dueño"}
@@ -943,7 +989,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
       value={currentFace === 1 ? petName : ownerInfo}
       onChange={(e) => {
         const newValue = e.target.value;
-        const limit = selectedDesignConfig?.maxChars ?? 15;
+        const limit = effectiveDesign?.maxChars ?? 15;
         if (newValue.length <= limit) {
           if (currentFace === 1) {
             setPetName(newValue);
@@ -963,26 +1009,26 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
           ? "Nombre de la mascota"
           : "Info. de contacto del dueño"
       }
-      maxLength={selectedDesignConfig?.maxChars ?? 15}
+      maxLength={effectiveDesign?.maxChars ?? 15}
       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
     />
     <p
       className={`text-xs mt-1 text-center ${
         (currentFace === 1 ? petName.length : ownerInfo.length) >=
-        (selectedDesignConfig?.maxChars ?? 15)
+        (effectiveDesign?.maxChars ?? 15)
           ? "text-red-500"
           : "text-gray-500"
       }`}
     >
       {currentFace === 1
-        ? `${petName.length}/${selectedDesignConfig?.maxChars ?? 15} caracteres`
-        : `${ownerInfo.length}/${selectedDesignConfig?.maxChars ?? 15} caracteres`}
+        ? `${petName.length}/${effectiveDesign?.maxChars ?? 15} caracteres`
+        : `${ownerInfo.length}/${effectiveDesign?.maxChars ?? 15} caracteres`}
     </p>
   </div>
 </div>
 
                 {/* Selector de fuente */}
-                <div className="mt-2 mb-6 flex justify-center">
+                <div className="mb-4 flex justify-center">
                   <select
                       value={fontFamily}
                       onChange={(e) => {
@@ -1003,10 +1049,9 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                   </select>
                 </div>
 
-
-{/* Upload de imágenes (rama nueva, con múltiples fotos) */}
-<div className="px-2 md:px-8 pb-6">
-  <div className="border-t border-gray-200 pt-4 mt-4">
+{/* Upload de imágenes */}
+<div className="pb-4">
+  <div className="border-t border-gray-200 pt-4">
     <h3 className="text-sm font-medium text-gray-900 mb-2">
       Sube hasta 2 fotos para añadir al relicario.
     </h3>
@@ -1026,7 +1071,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
         {uploadedImages.map((img, index) => (
           <div
             key={index}
-            className="relative w-32 h-32 rounded-lg overflow-hidden"
+            className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-lg overflow-hidden"
           >
             <Image
               src={img}
@@ -1056,7 +1101,176 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     )}
   </div>
 </div>
-              </>
+                </div>{/* Fin columna izquierda */}
+
+                {/* COLUMNA DERECHA: Solo diseños */}
+                <div className="flex flex-col space-y-4">
+{/* Selector de diseño */}
+<div className="mb-4">
+  <div className="border-t lg:border-t-0 border-gray-200 pt-4 lg:pt-0">
+    <div className="flex items-center justify-between gap-3">
+      <h3 className="text-sm font-medium text-gray-900">Elige un diseño</h3>
+      {effectiveDesign ? (
+        <button
+          type="button"
+          onClick={() => chooseDesign(null)}
+          className="text-xs text-gray-600 hover:text-gray-900 underline"
+        >
+          Quitar diseño
+        </button>
+      ) : null}
+    </div>
+
+    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <button
+        type="button"
+        onClick={() => chooseDesign(null)}
+        className={`rounded-lg border p-3 text-left hover:shadow-sm transition bg-white ${
+          !effectiveDesign ? "border-gray-900" : "border-gray-200"
+        }`}
+        aria-pressed={!effectiveDesign}
+      >
+        <div className="text-sm font-semibold text-gray-900">Sin diseño</div>
+        <div className="text-xs text-gray-500 mt-1">Solo texto</div>
+      </button>
+
+      {PRESET_DESIGNS.map((d) => {
+        const selected = effectiveDesign?.path === d.path;
+        return (
+          <button
+            key={d.id}
+            type="button"
+            onClick={() => chooseDesign(d)}
+            className={`rounded-lg border p-2 hover:shadow-sm transition bg-white ${
+              selected ? "border-gray-900" : "border-gray-200"
+            }`}
+            aria-pressed={selected}
+          >
+            <div className="flex items-center justify-center">
+              <Image
+                src={d.path}
+                alt={d.label || d.id}
+                width={d.width ?? 150}
+                height={d.height ?? 84}
+                className="object-contain"
+              />
+            </div>
+            <div className="text-xs text-center mt-2 text-gray-700">
+              {d.label || d.id}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+{/* Editor de diseño (solo para admin) */}
+{designEditorEnabled && effectiveDesign ? (
+  <div className="mb-4">
+    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-gray-900">Ajuste de diseño ({currentFace === 1 ? "Anverso" : "Reverso"})</div>
+          <div className="text-xs text-gray-600">Solo visible con NEXT_PUBLIC_RELICARIO_DESIGN_EDITOR=true</div>
+        </div>
+        <button
+          type="button"
+          className="text-xs underline text-gray-700 hover:text-gray-900"
+          onClick={async () => {
+            const json = JSON.stringify(effectiveDesign, null, 2);
+            try {
+              await navigator.clipboard.writeText(json);
+              alert("Config copiada al portapapeles.");
+            } catch {
+              alert(json);
+            }
+          }}
+        >
+          Copiar JSON
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <label className="text-xs text-gray-700">
+          width
+          <input
+            type="number"
+            value={effectiveDesign.width ?? 150}
+            onChange={(e) => updateSelectedDesignConfig({ width: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          height
+          <input
+            type="number"
+            value={effectiveDesign.height ?? 84}
+            onChange={(e) => updateSelectedDesignConfig({ height: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          offsetX (SVG)
+          <input
+            type="number"
+            value={effectiveDesign.offsetX ?? 0}
+            onChange={(e) => updateSelectedDesignConfig({ offsetX: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          offsetY (SVG)
+          <input
+            type="number"
+            value={effectiveDesign.offsetY ?? 0}
+            onChange={(e) => updateSelectedDesignConfig({ offsetY: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+
+        <label className="text-xs text-gray-700">
+          textOffsetX
+          <input
+            type="number"
+            value={effectiveDesign.textOffsetX ?? 0}
+            onChange={(e) => updateSelectedDesignConfig({ textOffsetX: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          textOffsetY
+          <input
+            type="number"
+            value={effectiveDesign.textOffsetY ?? 0}
+            onChange={(e) => updateSelectedDesignConfig({ textOffsetY: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          fontSize
+          <input
+            type="number"
+            value={effectiveDesign.fontSize ?? designFontSize}
+            onChange={(e) => updateSelectedDesignConfig({ fontSize: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+        <label className="text-xs text-gray-700">
+          maxChars
+          <input
+            type="number"
+            value={effectiveDesign.maxChars ?? 15}
+            onChange={(e) => updateSelectedDesignConfig({ maxChars: Number(e.target.value) })}
+            className="mt-1 w-full px-2 py-1 border rounded bg-white"
+          />
+        </label>
+      </div>
+    </div>
+  </div>
+) : null}
+                </div>{/* Fin columna derecha */}
+              </div>/* Fin grid */
             )}
 
             {step === 2 && (

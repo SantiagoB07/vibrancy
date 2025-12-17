@@ -9,6 +9,7 @@ import { Cookie, Courgette } from "next/font/google";
 
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
+import { RELICARIO_PRESET_DESIGNS, type RelicarioPresetDesign } from "@/lib/relicarios/preset-designs";
 
 // ===========================
 // Fonts
@@ -85,11 +86,115 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
   const [fontFamily, setFontFamily] = useState(cookieFont.style.fontFamily);
   const isCookie = fontFamily === cookieFont.style.fontFamily;
 
+  const designEditorEnabled = process.env.NEXT_PUBLIC_RELICARIO_DESIGN_EDITOR === "true";
+
+  const [textColor, setTextColor] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("relicarioCirc_textColor") || "#3b3b3b";
+    }
+    return "#3b3b3b";
+  });
+
+  const [designFontSize, setDesignFontSize] = useState(() => {
+    if (typeof window !== "undefined") {
+      return Number(localStorage.getItem("relicarioCirc_fontSize")) || 20;
+    }
+    return 20;
+  });
+
+  // Diseño para el frente (anverso)
+  const [frontDesignConfig, setFrontDesignConfig] = useState<RelicarioPresetDesign | null>(() => {
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("relicarioCirc_design_front");
+      if (raw) {
+        try {
+          return JSON.parse(raw) as RelicarioPresetDesign;
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
+
+  // Diseño para el reverso
+  const [backDesignConfig, setBackDesignConfig] = useState<RelicarioPresetDesign | null>(() => {
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("relicarioCirc_design_back");
+      if (raw) {
+        try {
+          return JSON.parse(raw) as RelicarioPresetDesign;
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
+
   // ===========================
   // Rotation state
   // ===========================
   const [currentFace, setCurrentFace] = useState<1 | 2>(1);
   const [isRotating, setIsRotating] = useState(false);
+
+  // Diseño efectivo según la cara actual
+  const effectiveDesign = currentFace === 1 ? frontDesignConfig : backDesignConfig;
+  const effectiveFrontDesign = frontDesignConfig;
+  const effectiveBackDesign = backDesignConfig;
+
+  const chooseDesign = (design: RelicarioPresetDesign | null) => {
+    const nextDesign = design ? ({ ...design } as RelicarioPresetDesign) : null;
+    const storageKey = currentFace === 1 ? "relicarioCirc_design_front" : "relicarioCirc_design_back";
+    
+    if (currentFace === 1) {
+      setFrontDesignConfig(nextDesign);
+    } else {
+      setBackDesignConfig(nextDesign);
+    }
+
+    if (typeof window !== "undefined") {
+      if (nextDesign) {
+        localStorage.setItem(storageKey, JSON.stringify(nextDesign));
+
+        // Aplicar texto por defecto solo si el campo está vacío
+        if (currentFace === 1 && !frontMessage && nextDesign.defaultText) {
+          setFrontMessage(nextDesign.defaultText);
+        } else if (currentFace === 2 && !backMessage && nextDesign.defaultText) {
+          setBackMessage(nextDesign.defaultText);
+        }
+
+        if (nextDesign.fontFamily) {
+          setFontFamily(nextDesign.fontFamily);
+          localStorage.setItem("relicarioCirc_fontFamily", nextDesign.fontFamily);
+        }
+        if (nextDesign.color) {
+          setTextColor(nextDesign.color);
+          localStorage.setItem("relicarioCirc_textColor", nextDesign.color);
+        }
+        if (nextDesign.fontSize) {
+          setDesignFontSize(nextDesign.fontSize);
+          localStorage.setItem("relicarioCirc_fontSize", String(nextDesign.fontSize));
+        }
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    }
+  };
+
+  const updateSelectedDesignConfig = (patch: Partial<RelicarioPresetDesign>) => {
+    const storageKey = currentFace === 1 ? "relicarioCirc_design_front" : "relicarioCirc_design_back";
+    const setConfig = currentFace === 1 ? setFrontDesignConfig : setBackDesignConfig;
+    
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      }
+      return next;
+    });
+  };
 
   // ===========================
   // Character limit
@@ -132,6 +237,11 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
 
     load();
   }, [product.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setFontFamily(localStorage.getItem("relicarioCirc_fontFamily") || cookieFont.style.fontFamily);
+  }, []);
 
   const toggleVariant = () => {
     if (!variants.length || !selectedVariant) return;
@@ -319,7 +429,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-5xl lg:max-w-6xl w-full max-h-[90vh] p-0 bg-transparent border-none">
           <VisuallyHidden>
             <DialogTitle>Personaliza tu relicario circular</DialogTitle>
           </VisuallyHidden>
@@ -328,45 +438,56 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
             {/* Close button */}
             <button
                 onClick={() => setIsOpen(false)}
-                className="absolute right-4 top-4 z-20 bg-white rounded-full p-2 shadow-md hover:shadow-lg"
+                className="absolute right-4 top-4 z-20 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="h-5 w-5 text-gray-600" />
             </button>
 
             {/* HEADER */}
-            <div className="border-b p-4 px-6 flex items-center justify-between">
-              <h1 className="text-lg md:text-xl font-bold">Personaliza tu relicario circular</h1>
-
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-xs text-gray-600">Total</p>
-                  <p className="text-xl font-bold">${nf.format(total)}</p>
+            <div className="bg-white border-b">
+              <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                    Personaliza tu relicario circular
+                  </h1>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <div className="text-left sm:text-right">
+                      <div className="text-xs text-zinc-600">Total</div>
+                      <div className="text-base md:text-2xl font-bold text-zinc-900">
+                        ${" "}{nf.format(total)}
+                      </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                          if (step === 1) {
+                            setStep(2);
+                            return;
+                          }
+                          handlePay();
+                        }}
+                        disabled={
+                          (!selectedVariant && variants.length > 0) ||
+                          (step === 2 && (!isCustomerFormValid || isPaying))
+                        }
+                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                    >
+                      {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
+                    </button>
+                  </div>
                 </div>
-
-                <button
-                    onClick={() => {
-                      if (step === 1) {
-                        setStep(2);
-                        return;
-                      }
-                      handlePay();
-                    }}
-                    disabled={step === 2 && !isCustomerFormValid}
-                    className="bg-black text-white px-6 py-2 rounded-full disabled:opacity-60"
-                >
-                  {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
-                </button>
               </div>
             </div>
 
-            {/* CONTENT */}
-            <div className="flex-1 overflow-y-auto p-8">
+            {/* CONTENIDO */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-10 pt-6">
 
               {/* STEP 1 */}
               {step === 1 && (
-                  <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                    {/* COLUMNA IZQUIERDA: Preview del relicario */}
+                    <div className="flex flex-col">
                     {/* Preview del relicario con rotación */}
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center mb-4 lg:mb-6">
                       <div
                           className="relative w-[300px] h-[300px] perspective-1000"
                           style={{ transformStyle: "preserve-3d" }}
@@ -392,20 +513,196 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                                 transition: "opacity 0.2s ease-in-out",
                               }}
                           >
-                            <span
-                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                            {effectiveFrontDesign ? (
+                              <div className="absolute inset-0 pointer-events-none z-10">
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    left: "50%",
+                                    top: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                  }}
+                                >
+                                  {(() => {
+                                    const txt = formatTextWithBreak(frontMessage || effectiveFrontDesign.defaultText || "");
+                                    const svgOx = effectiveFrontDesign.offsetX ?? 0;
+                                    const svgOy = effectiveFrontDesign.offsetY ?? 0;
+                                    let baseSize = effectiveFrontDesign.fontSize ?? designFontSize;
+                                    if (isCookie) baseSize += 2;
+                                    const computedFontSize =
+                                      effectiveFrontDesign.position === "right" ? Math.round(baseSize * 0.85) : baseSize;
+
+                                    const isSideText = effectiveFrontDesign.position === "left" || effectiveFrontDesign.position === "right";
+
+                                    const baseStyle = {
+                                      fontFamily: effectiveFrontDesign.fontFamily || fontFamily,
+                                      color: effectiveFrontDesign.color || textColor,
+                                      fontSize: `${computedFontSize}px`,
+                                      lineHeight: "1.05",
+                                      textAlign: isSideText ? "left" : "center",
+                                      width: isSideText ? undefined : (effectiveFrontDesign.width ?? 150),
+                                      padding:
+                                        isSideText ? "0" : "0 8px",
+                                    } as React.CSSProperties;
+                                    const textOx = effectiveFrontDesign.textOffsetX ?? 0;
+                                    const textOy = effectiveFrontDesign.textOffsetY ?? 0;
+                                    const horizGap = -20;
+
+                                    switch (effectiveFrontDesign.position) {
+                                      case "below":
+                                        return (
+                                          <div className="flex flex-col items-center">
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveFrontDesign.width ?? 150,
+                                                height: effectiveFrontDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveFrontDesign.path}
+                                                alt={effectiveFrontDesign.label || ""}
+                                                width={effectiveFrontDesign.width ?? 150}
+                                                height={effectiveFrontDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div style={{ ...baseStyle, marginTop: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
+                                          </div>
+                                        );
+                                      case "above":
+                                        return (
+                                          <div className="flex flex-col items-center">
+                                            <div style={{ ...baseStyle, marginBottom: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveFrontDesign.width ?? 150,
+                                                height: effectiveFrontDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveFrontDesign.path}
+                                                alt={effectiveFrontDesign.label || ""}
+                                                width={effectiveFrontDesign.width ?? 150}
+                                                height={effectiveFrontDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      case "left":
+                                        return (
+                                          <div className="flex items-center">
+                                            <div style={{ ...baseStyle, marginRight: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveFrontDesign.width ?? 150,
+                                                height: effectiveFrontDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveFrontDesign.path}
+                                                alt={effectiveFrontDesign.label || ""}
+                                                width={effectiveFrontDesign.width ?? 150}
+                                                height={effectiveFrontDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      case "right":
+                                        return (
+                                          <div className="flex items-center">
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveFrontDesign.width ?? 150,
+                                                height: effectiveFrontDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveFrontDesign.path}
+                                                alt={effectiveFrontDesign.label || ""}
+                                                width={effectiveFrontDesign.width ?? 150}
+                                                height={effectiveFrontDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div style={{ ...baseStyle, marginLeft: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
+                                          </div>
+                                        );
+                                      case "center":
+                                      default:
+                                        return (
+                                          <div
+                                            className="relative"
+                                            style={{
+                                              width: effectiveFrontDesign.width ?? 150,
+                                              height: effectiveFrontDesign.height ?? 84,
+                                              overflow: "visible",
+                                            }}
+                                          >
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveFrontDesign.width ?? 150,
+                                                height: effectiveFrontDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveFrontDesign.path}
+                                                alt={effectiveFrontDesign.label || ""}
+                                                width={effectiveFrontDesign.width ?? 150}
+                                                height={effectiveFrontDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div
+                                              style={{
+                                                ...baseStyle,
+                                                position: "absolute",
+                                                left: "50%",
+                                                top: "50%",
+                                                transform: `translate(calc(-50% + ${textOx}px), calc(-50% + ${textOy}px))`,
+                                              }}
+                                            >
+                                              {txt}
+                                            </div>
+                                          </div>
+                                        );
+                                    }
+                                  })()}
+                                </div>
+                              </div>
+                            ) : (
+                              <span
+                                className="text-xl font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
                                 style={{
                                   fontFamily,
-                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
-                                  color: "#3b3b3b",
+                                  fontSize: `${designFontSize + (isCookie ? 2 : 0)}px`,
+                                  color: textColor,
+                                  lineHeight: "1.05",
                                   textShadow: `
                                     0 1px 1px rgba(255,255,255,0.8),
                                     0 2px 2px rgba(0,0,0,0.2)
                                   `,
                                 }}
-                            >
-                              {formatTextWithBreak(frontMessage) || "Frase anverso"}
-                            </span>
+                              >
+                                {formatTextWithBreak(frontMessage) || "Frase anverso"}
+                              </span>
+                            )}
                           </div>
                         </div>
 
@@ -430,27 +727,203 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                                 transition: "opacity 0.2s ease-in-out",
                               }}
                           >
-                            <span
-                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                            {effectiveBackDesign ? (
+                              <div className="absolute inset-0 pointer-events-none z-10">
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    left: "50%",
+                                    top: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                  }}
+                                >
+                                  {(() => {
+                                    const txt = formatTextWithBreak(backMessage || effectiveBackDesign.defaultText || "");
+                                    const svgOx = effectiveBackDesign.offsetX ?? 0;
+                                    const svgOy = effectiveBackDesign.offsetY ?? 0;
+                                    let baseSize = effectiveBackDesign.fontSize ?? designFontSize;
+                                    if (isCookie) baseSize += 2;
+                                    const computedFontSize =
+                                      effectiveBackDesign.position === "right" ? Math.round(baseSize * 0.7) : baseSize;
+
+                                    const isSideText = effectiveBackDesign.position === "left" || effectiveBackDesign.position === "right";
+
+                                    const baseStyle = {
+                                      fontFamily: effectiveBackDesign.fontFamily || fontFamily,
+                                      color: effectiveBackDesign.color || textColor,
+                                      fontSize: `${computedFontSize}px`,
+                                      lineHeight: "1.05",
+                                      textAlign: isSideText ? "left" : "center",
+                                      width: isSideText ? undefined : (effectiveBackDesign.width ?? 150),
+                                      padding:
+                                        isSideText ? "0" : "0 8px",
+                                    } as React.CSSProperties;
+                                    const textOx = effectiveBackDesign.textOffsetX ?? 0;
+                                    const textOy = effectiveBackDesign.textOffsetY ?? 0;
+                                    const horizGap = -30;
+
+                                    switch (effectiveBackDesign.position) {
+                                      case "below":
+                                        return (
+                                          <div className="flex flex-col items-center">
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveBackDesign.width ?? 150,
+                                                height: effectiveBackDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveBackDesign.path}
+                                                alt={effectiveBackDesign.label || ""}
+                                                width={effectiveBackDesign.width ?? 150}
+                                                height={effectiveBackDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div style={{ ...baseStyle, marginTop: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
+                                          </div>
+                                        );
+                                      case "above":
+                                        return (
+                                          <div className="flex flex-col items-center">
+                                            <div style={{ ...baseStyle, marginBottom: textOy, transform: `translateX(${textOx}px)` }}>{txt}</div>
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveBackDesign.width ?? 150,
+                                                height: effectiveBackDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveBackDesign.path}
+                                                alt={effectiveBackDesign.label || ""}
+                                                width={effectiveBackDesign.width ?? 150}
+                                                height={effectiveBackDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      case "left":
+                                        return (
+                                          <div className="flex items-center">
+                                            <div style={{ ...baseStyle, marginRight: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveBackDesign.width ?? 150,
+                                                height: effectiveBackDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveBackDesign.path}
+                                                alt={effectiveBackDesign.label || ""}
+                                                width={effectiveBackDesign.width ?? 150}
+                                                height={effectiveBackDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      case "right":
+                                        return (
+                                          <div className="flex items-center">
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveBackDesign.width ?? 150,
+                                                height: effectiveBackDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveBackDesign.path}
+                                                alt={effectiveBackDesign.label || ""}
+                                                width={effectiveBackDesign.width ?? 150}
+                                                height={effectiveBackDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div style={{ ...baseStyle, marginLeft: horizGap, transform: `translate(${textOx}px, ${textOy}px)` }}>{txt}</div>
+                                          </div>
+                                        );
+                                      case "center":
+                                      default:
+                                        return (
+                                          <div
+                                            className="relative"
+                                            style={{
+                                              width: effectiveBackDesign.width ?? 150,
+                                              height: effectiveBackDesign.height ?? 84,
+                                              overflow: "visible",
+                                            }}
+                                          >
+                                            <div
+                                              className="relative"
+                                              style={{
+                                                width: effectiveBackDesign.width ?? 150,
+                                                height: effectiveBackDesign.height ?? 84,
+                                                overflow: "hidden",
+                                                transform: `translate(${svgOx}px, ${svgOy}px)`,
+                                              }}
+                                            >
+                                              <Image
+                                                src={effectiveBackDesign.path}
+                                                alt={effectiveBackDesign.label || ""}
+                                                width={effectiveBackDesign.width ?? 150}
+                                                height={effectiveBackDesign.height ?? 84}
+                                                className="object-contain"
+                                              />
+                                            </div>
+                                            <div
+                                              style={{
+                                                ...baseStyle,
+                                                position: "absolute",
+                                                left: "50%",
+                                                top: "50%",
+                                                transform: `translate(calc(-50% + ${textOx}px), calc(-50% + ${textOy}px))`,
+                                              }}
+                                            >
+                                              {txt}
+                                            </div>
+                                          </div>
+                                        );
+                                    }
+                                  })()}
+                                </div>
+                              </div>
+                            ) : (
+                              <span
+                                className="text-xl font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
                                 style={{
                                   fontFamily,
-                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
-                                  color: "#3b3b3b",
+                                  fontSize: `${designFontSize + (isCookie ? 2 : 0)}px`,
+                                  color: textColor,
+                                  lineHeight: "1.05",
                                   textShadow: `
                                     0 1px 1px rgba(255,255,255,0.8),
                                     0 2px 2px rgba(0,0,0,0.2)
                                   `,
                                 }}
-                            >
-                              {formatTextWithBreak(backMessage) || "Frase reverso"}
-                            </span>
+                              >
+                                {formatTextWithBreak(backMessage) || "Frase reverso"}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Botones de control: Rotar y Cambiar color */}
-                    <div className="flex justify-center mb-6 space-x-4">
+                    <div className="flex justify-center mb-4 lg:mb-6 space-x-4">
                       <button
                           onClick={handleRotate}
                           className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
@@ -470,17 +943,19 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                     </div>
 
                     {/* Campo de texto dinámico según cara */}
-                    <div className="max-w-md mx-auto mb-6">
-                      <label htmlFor="relicario-input" className="block text-sm font-medium mb-1">
-                        {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
-                      </label>
-                      <input
+                    <div className="space-y-4 mb-4">
+                      <div>
+                        <label htmlFor="relicario-input" className="sr-only">
+                          {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                        </label>
+                        <input
                           id="relicario-input"
                           type="text"
                           value={currentFace === 1 ? frontMessage : backMessage}
                           onChange={(e) => {
                             const newValue = e.target.value;
-                            if (newValue.length <= MAX_CHARS) {
+                            const limit = effectiveDesign?.maxChars ?? MAX_CHARS;
+                            if (newValue.length <= limit) {
                               if (currentFace === 1) {
                                 setFrontMessage(newValue);
                               } else {
@@ -489,79 +964,265 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                             }
                           }}
                           placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
-                          maxLength={MAX_CHARS}
+                          maxLength={effectiveDesign?.maxChars ?? MAX_CHARS}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                      />
-                      <p
+                        />
+                        <p
                           className={`text-xs mt-1 text-center ${
-                              (currentFace === 1 ? frontMessage.length : backMessage.length) >= MAX_CHARS
-                                  ? "text-red-500"
-                                  : "text-gray-500"
+                            (currentFace === 1 ? frontMessage.length : backMessage.length) >= (effectiveDesign?.maxChars ?? MAX_CHARS)
+                              ? "text-red-500"
+                              : "text-gray-500"
                           }`}
-                      >
-                        {currentFace === 1
-                            ? `${frontMessage.length}/${MAX_CHARS} caracteres`
-                            : `${backMessage.length}/${MAX_CHARS} caracteres`}
-                      </p>
+                        >
+                          {currentFace === 1
+                            ? `${frontMessage.length}/${effectiveDesign?.maxChars ?? MAX_CHARS} caracteres`
+                            : `${backMessage.length}/${effectiveDesign?.maxChars ?? MAX_CHARS} caracteres`}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Font selector */}
-                    <div className="flex justify-center mb-6">
+                    <div className="mb-4 flex justify-center">
                       <select
                           value={fontFamily}
-                          onChange={(e) => setFontFamily(e.target.value)}
-                          className="border px-3 py-2 rounded-lg"
+                          onChange={(e) => {
+                            const newFont = e.target.value;
+                            setFontFamily(newFont);
+                            if (typeof window !== "undefined") {
+                              localStorage.setItem("relicarioCirc_fontFamily", newFont);
+                            }
+                          }}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
                       >
-                        <option value={cookieFont.style.fontFamily}>Cookie</option>
-                        <option value={courgetteFont.style.fontFamily}>Courgette</option>
-                        <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+                        <option value={cookieFont.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                        <option value={courgetteFont.style.fontFamily}>Courgette (caligráfica)</option>
+                        <option value="Georgia, 'Times New Roman', serif">Georgia (clásica)</option>
                         <option value="'Lucida Calligraphy', 'Lucida Handwriting', cursive">
-                          Lucida Calligraphy
+                          Lucida Calligraphy (elegante)
                         </option>
                       </select>
                     </div>
 
                     {/* Image Upload */}
-                    <div className="max-w-md mx-auto">
-                      <label className="block text-sm font-medium mb-2">Fotos (máx. 2)</label>
+                    <div className="pb-4">
+                      <div className="border-t border-gray-200 pt-4">
+                        <h3 className="text-sm font-medium text-gray-900 mb-2">
+                          Sube hasta 2 fotos para añadir al relicario.
+                        </h3>
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={images.length >= MAX_IMAGES}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (images.length >= MAX_IMAGES) {
+                                alert("Máximo 2 fotos");
+                                return;
+                              }
+                              setImages([...images, file]);
+                            }}
+                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                        </div>
 
-                      <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (images.length >= MAX_IMAGES) {
-                              alert("Máximo 2 fotos");
-                              return;
-                            }
-                            setImages([...images, file]);
-                          }}
-                      />
-
-                      {/* Thumbnails */}
-                      <div className="flex gap-4 mt-4">
-                        {images.map((img, i) => (
-                            <div key={i} className="relative">
-                              <Image
-                                  src={URL.createObjectURL(img)}
-                                  alt="Foto subida"
-                                  width={80}
-                                  height={80}
-                                  className="rounded-lg object-cover"
-                              />
-
-                              <button
-                                  onClick={() => setImages(images.filter((_, idx) => idx !== i))}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs"
+                        {/* Thumbnails */}
+                        {images.length > 0 && (
+                          <div className="mt-4 flex gap-4">
+                            {images.map((img, i) => (
+                              <div
+                                key={i}
+                                className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-lg overflow-hidden"
                               >
-                                X
-                              </button>
-                            </div>
-                        ))}
+                                <Image
+                                  src={URL.createObjectURL(img)}
+                                  alt={`Imagen cargada ${i + 1}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setImages(images.filter((_, idx) => idx !== i))}
+                                  className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
+                                >
+                                  <X className="h-3 w-3 text-gray-600" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </>
+                    </div>{/* Fin columna izquierda */}
+
+                    {/* COLUMNA DERECHA: Solo diseños */}
+                    <div className="flex flex-col space-y-4">
+                    {/* Selector de diseño */}
+                    <div className="mb-4">
+                      <div className="border-t lg:border-t-0 border-gray-200 pt-4 lg:pt-0">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-sm font-medium text-gray-900">Elige un diseño</h3>
+                          {effectiveDesign ? (
+                            <button
+                              type="button"
+                              onClick={() => chooseDesign(null)}
+                              className="text-xs text-gray-600 hover:text-gray-900 underline"
+                            >
+                              Quitar diseño
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => chooseDesign(null)}
+                            className={`rounded-lg border p-3 text-left hover:shadow-sm transition bg-white ${
+                              !effectiveDesign ? "border-gray-900" : "border-gray-200"
+                            }`}
+                            aria-pressed={!effectiveDesign}
+                          >
+                            <div className="text-sm font-semibold text-gray-900">Sin diseño</div>
+                            <div className="text-xs text-gray-500 mt-1">Solo texto</div>
+                          </button>
+
+                          {RELICARIO_PRESET_DESIGNS.map((d) => {
+                            const selected = effectiveDesign?.path === d.path;
+                            return (
+                              <button
+                                key={d.id}
+                                type="button"
+                                onClick={() => chooseDesign(d)}
+                                className={`rounded-lg border p-2 hover:shadow-sm transition bg-white ${
+                                  selected ? "border-gray-900" : "border-gray-200"
+                                }`}
+                                aria-pressed={selected}
+                              >
+                                <div className="flex items-center justify-center">
+                                  <Image
+                                    src={d.path}
+                                    alt={d.label || d.id}
+                                    width={d.width ?? 150}
+                                    height={d.height ?? 84}
+                                    className="object-contain"
+                                  />
+                                </div>
+                                <div className="text-xs text-center mt-2 text-gray-700">{d.label || d.id}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Editor de diseño (solo para admin) */}
+                    {designEditorEnabled && effectiveDesign ? (
+                      <div className="mb-4">
+                        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900">
+                                Ajuste de diseño {currentFace === 1 ? "(Anverso)" : "(Reverso)"}
+                              </div>
+                              <div className="text-xs text-gray-600">Solo visible con NEXT_PUBLIC_RELICARIO_DESIGN_EDITOR=true</div>
+                            </div>
+                            <button
+                              type="button"
+                              className="text-xs underline text-gray-700 hover:text-gray-900"
+                              onClick={async () => {
+                                const json = JSON.stringify(effectiveDesign, null, 2);
+                                try {
+                                  await navigator.clipboard.writeText(json);
+                                  alert("Config copiada al portapapeles.");
+                                } catch {
+                                  alert(json);
+                                }
+                              }}
+                            >
+                              Copiar JSON
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 mt-4">
+                            <label className="text-xs text-gray-700">
+                              width
+                              <input
+                                type="number"
+                                value={effectiveDesign.width ?? 150}
+                                onChange={(e) => updateSelectedDesignConfig({ width: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              height
+                              <input
+                                type="number"
+                                value={effectiveDesign.height ?? 84}
+                                onChange={(e) => updateSelectedDesignConfig({ height: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              offsetX (SVG)
+                              <input
+                                type="number"
+                                value={effectiveDesign.offsetX ?? 0}
+                                onChange={(e) => updateSelectedDesignConfig({ offsetX: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              offsetY (SVG)
+                              <input
+                                type="number"
+                                value={effectiveDesign.offsetY ?? 0}
+                                onChange={(e) => updateSelectedDesignConfig({ offsetY: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              textOffsetX
+                              <input
+                                type="number"
+                                value={effectiveDesign.textOffsetX ?? 0}
+                                onChange={(e) => updateSelectedDesignConfig({ textOffsetX: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              textOffsetY
+                              <input
+                                type="number"
+                                value={effectiveDesign.textOffsetY ?? 0}
+                                onChange={(e) => updateSelectedDesignConfig({ textOffsetY: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              fontSize
+                              <input
+                                type="number"
+                                value={effectiveDesign.fontSize ?? designFontSize}
+                                onChange={(e) => updateSelectedDesignConfig({ fontSize: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                            <label className="text-xs text-gray-700">
+                              maxChars
+                              <input
+                                type="number"
+                                value={effectiveDesign.maxChars ?? 15}
+                                onChange={(e) => updateSelectedDesignConfig({ maxChars: Number(e.target.value) })}
+                                className="mt-1 w-full px-2 py-1 border rounded bg-white"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                    </div>{/* Fin columna derecha */}
+                  </div>/* Fin grid */
               )}
 
               {/* STEP 2 */}

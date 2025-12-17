@@ -4,25 +4,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import Image from 'next/image';
 
-export type TextPosition = 'below' | 'above' | 'left' | 'right' | 'center';
-
-export interface PresetDesign {
-  id: string;
-  path: string; // path relative to public/
-  label?: string;
-  defaultText?: string;
-  position?: TextPosition;
-  // optional size per-design
-  width?: number;
-  height?: number;
-  // additional styling props
-  fontFamily?: string;
-  color?: string; // hex
-  fontSize?: number; // px
-  maxChars?: number;
-  offsetX?: number; // px
-  offsetY?: number; // px
-}
+import type { RelicarioPresetDesign as PresetDesign } from '@/lib/relicarios/preset-designs';
 
 interface PresetDesignModalProps {
   designs: PresetDesign[];
@@ -69,9 +51,17 @@ export default function PresetDesignModal({ designs, trigger, onConfirm }: Prese
           <div className="flex items-start gap-4">
             <div className="relative w-[180px] h-[120px] border rounded bg-white flex items-center justify-center">
               <div
-                style={{ position: 'absolute', left: '50%', top: '50%', transform: `translate(calc(-50% + ${preview.offsetX ?? 0}px), calc(-50% + ${preview.offsetY ?? 0}px))` }}
+                style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
               >
-                <div className="relative" style={{ width: preview.width ?? 150, height: preview.height ?? 84, overflow: 'hidden' }}>
+                <div
+                  className="relative"
+                  style={{
+                    width: preview.width ?? 150,
+                    height: preview.height ?? 84,
+                    overflow: 'hidden',
+                    transform: `translate(${preview.offsetX ?? 0}px, ${preview.offsetY ?? 0}px)`,
+                  }}
+                >
                   <Image src={preview.path as string} alt={preview.label || ''} width={preview.width ?? 150} height={preview.height ?? 84} style={{ width: preview.width ?? 150, height: preview.height ?? 84 }} className="object-contain" />
                 </div>
               </div>
@@ -80,35 +70,75 @@ export default function PresetDesignModal({ designs, trigger, onConfirm }: Prese
               <div style={{ fontFamily }} className="absolute left-1/2"
                 role="presentation"
                 >
-                <div style={{ transform: `translateX(calc(-50% + ${preview.offsetX ?? 0}px)) translateY(${preview.offsetY ?? 0}px)` }} className="bottom-2 font-semibold text-center">
+                <div
+                  style={{
+                    transform: `translateX(calc(-50% + ${preview.textOffsetX ?? 0}px)) translateY(${preview.textOffsetY ?? 0}px)`,
+                    fontSize: preview.fontSize ? `${preview.fontSize}px` : undefined,
+                    color: preview.color,
+                    lineHeight: '1.05',
+                  }}
+                  className="bottom-2 font-semibold text-center"
+                >
                   {customText}
                 </div>
               </div>
             )}
             {preview.position === 'above' && (
               <div style={{ fontFamily }} className="absolute left-1/2" role="presentation">
-                <div style={{ transform: `translateX(calc(-50% + ${preview.offsetX ?? 0}px)) translateY(${preview.offsetY ?? 0}px)` }} className="top-2 font-semibold text-center">
+                <div
+                  style={{
+                    transform: `translateX(calc(-50% + ${preview.textOffsetX ?? 0}px)) translateY(${preview.textOffsetY ?? 0}px)`,
+                    fontSize: preview.fontSize ? `${preview.fontSize}px` : undefined,
+                    color: preview.color,
+                    lineHeight: '1.05',
+                  }}
+                  className="top-2 font-semibold text-center"
+                >
                   {customText}
                 </div>
               </div>
             )}
             {preview.position === 'left' && (
               <div style={{ fontFamily }} className="absolute top-1/2" role="presentation">
-                <div style={{ transform: `translateY(calc(-50% + ${preview.offsetY ?? 0}px)) translateX(${preview.offsetX ?? 0}px)` }} className="font-semibold text-center">
+                <div
+                  style={{
+                    transform: `translateY(calc(-50% + ${preview.textOffsetY ?? 0}px)) translateX(${preview.textOffsetX ?? 0}px)`,
+                    fontSize: preview.fontSize ? `${preview.fontSize}px` : undefined,
+                    color: preview.color,
+                    lineHeight: '1.05',
+                  }}
+                  className="font-semibold text-center"
+                >
                   {customText}
                 </div>
               </div>
             )}
             {preview.position === 'right' && (
               <div style={{ fontFamily }} className="absolute top-1/2" role="presentation">
-                <div style={{ transform: `translateY(calc(-50% + ${preview.offsetY ?? 0}px)) translateX(${preview.offsetX ?? 0}px)` }} className="font-semibold text-center">
+                <div
+                  style={{
+                    transform: `translateY(calc(-50% + ${preview.textOffsetY ?? 0}px)) translateX(${preview.textOffsetX ?? 0}px)`,
+                    fontSize: preview.fontSize ? `${preview.fontSize}px` : undefined,
+                    color: preview.color,
+                    lineHeight: '1.05',
+                  }}
+                  className="font-semibold text-center"
+                >
                   {customText}
                 </div>
               </div>
             )}
             {preview.position === 'center' && (
               <div style={{ fontFamily }} className="absolute left-1/2 top-1/2" role="presentation">
-                <div style={{ transform: `translate(calc(-50% + ${preview.offsetX ?? 0}px), calc(-50% + ${preview.offsetY ?? 0}px))` }} className="font-semibold text-center">
+                <div
+                  style={{
+                    transform: `translate(calc(-50% + ${preview.textOffsetX ?? 0}px), calc(-50% + ${preview.textOffsetY ?? 0}px))`,
+                    fontSize: preview.fontSize ? `${preview.fontSize}px` : undefined,
+                    color: preview.color,
+                    lineHeight: '1.05',
+                  }}
+                  className="font-semibold text-center"
+                >
                   {customText}
                 </div>
               </div>
