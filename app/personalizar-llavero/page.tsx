@@ -4,13 +4,15 @@ import {
     useEffect,
     useMemo,
     useState,
+    useRef,
+    useCallback,
     type ReactNode,
     type JSX,
 } from 'react';
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { CustomerForm, CustomerData, isValidEmail } from '@/components/checkout/CustomerForm';
+import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
 import { validateImageFile } from '@/lib/utils';
 
 
@@ -295,7 +297,11 @@ function EngravedText({
         <div
             style={{
                 width: boxW,
-                height: boxH,
+
+                height: 'auto',
+                maxHeight: boxH,
+                overflow: 'hidden',
+
                 fontSize,
                 lineHeight: 1.1,
                 color: textColor,
@@ -303,15 +309,18 @@ function EngravedText({
                 letterSpacing: 0.5,
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
+
+
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
                 textAlign: 'center',
                 padding: 8,
             }}
         >
             {sanitized || ' '}
         </div>
+
     );
 }
 
@@ -337,7 +346,7 @@ export default function PersonalizarLlaveroPage() {
         publicUrl: string;
     } | null>(null);
 
-const [baseColor, setBaseColor] = useState<Color>('silver');
+    const [baseColor, setBaseColor] = useState<Color>('silver');
     const [baseText, setBaseText] = useState<string>('Tu mensaje');
     const [baseFontSize, setBaseFontSize] = useState<number>(12);
 
@@ -364,7 +373,68 @@ const [baseColor, setBaseColor] = useState<Color>('silver');
 // toast de advertencia
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-const showToast = (message: string) => {
+    // Ref para el contenedor de vista previa (externo)
+    const previewContainerRef = useRef<HTMLDivElement>(null);
+
+    // Ref y escala para el contenedor de la imagen de la placa (interno)
+    const baseImageContainerRef = useRef<HTMLDivElement>(null);
+    const [overlayScale, setOverlayScale] = useState(1);
+    const [overlayPaddingTop, setOverlayPaddingTop] = useState("18%");
+
+    // Calcular escala basada en el ancho real del contenedor de la imagen
+    const updateOverlayScale = useCallback(() => {
+        if (baseImageContainerRef.current) {
+            const containerWidth = baseImageContainerRef.current.offsetWidth;
+            console.log("[llavero] containerWidth:", containerWidth);
+
+
+            // Base de diseño: 700px
+            // Escala mínima: 0.4 (móvil), máxima: 0.75 (escritorio)
+            const scale = Math.max(0.4, Math.min(containerWidth / 700, 0.75));
+            setOverlayScale(scale);
+
+            // desktop 22, movil 40
+            const paddingTop = containerWidth > 500 ? "22%" : "45%";
+            setOverlayPaddingTop(paddingTop);
+        }
+    }, []);
+
+    // Observar cambios de tamaño del contenedor de la imagen
+    useEffect(() => {
+        // 1) cálculo inmediato
+        updateOverlayScale();
+
+        // 2) re-cálculo 1 y 2 frames después (cuando ya pintó bien)
+        const raf1 = requestAnimationFrame(() => {
+            updateOverlayScale();
+        });
+        const raf2 = requestAnimationFrame(() => {
+            updateOverlayScale();
+        });
+
+        const resizeObserver = new ResizeObserver(() => {
+            updateOverlayScale();
+        });
+
+        if (baseImageContainerRef.current) {
+            resizeObserver.observe(baseImageContainerRef.current);
+        }
+
+        const onResize = () => updateOverlayScale();
+        window.addEventListener("resize", onResize);
+        window.addEventListener("orientationchange", onResize);
+
+        return () => {
+            cancelAnimationFrame(raf1);
+            cancelAnimationFrame(raf2);
+            window.removeEventListener("resize", onResize);
+            window.removeEventListener("orientationchange", onResize);
+            resizeObserver.disconnect();
+        };
+    }, [updateOverlayScale]);
+
+
+    const showToast = (message: string) => {
         setToastMessage(message);
         setTimeout(() => setToastMessage(null), 5000); // Auto-dismiss después de 5 segundos
     };
@@ -397,7 +467,6 @@ const showToast = (message: string) => {
     const isCustomerFormValid =
         customerData.name.trim().length > 2 &&
         customerData.phone.trim().length >= 7 &&
-        isValidEmail(customerData.email) &&
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
@@ -431,7 +500,7 @@ const showToast = (message: string) => {
         return ids;
     }, [addHelmet, addSmall, addMoto, photoEngraving, getAddon]);
 
-const payload = useMemo(
+    const payload = useMemo(
         () => ({
             base: { color: baseColor, text: baseText },
             helmet: addHelmet ? { color: helmetColor, text: helmetText } : null,
@@ -516,7 +585,7 @@ const payload = useMemo(
         }
     };
 
-function applyTemplate(templateId: number) {
+    function applyTemplate(templateId: number) {
         switch (templateId) {
             case 1:
                 setBaseColor('black');
@@ -718,7 +787,7 @@ function applyTemplate(templateId: number) {
         }
     };
 
-return (
+    return (
         <div className="min-h-screen bg-zinc-50">
             {/* Toast de advertencia */}
             {toastMessage && (
@@ -778,7 +847,10 @@ return (
                             {/* Vista previa - IZQUIERDA */}
                             <div className="lg:sticky lg:top-24">
                                 <div className="bg-white rounded-3xl p-8 shadow-lg">
-                                    <div className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden">
+                                    <div
+                                        ref={previewContainerRef}
+                                        className="relative w-full aspect-square max-w-[600px] mx-auto bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl flex items-center justify-center overflow-hidden"
+                                    >
                                         {/* Placa grande */}
                                         {activeView === 'base' && (
                                             <div
@@ -791,41 +863,38 @@ return (
                                                     transform: 'translateX(-50%) scale(1.1)',
                                                 }}
                                             >
-                                                <div className="relative w-full h-full">
+                                                <div ref={baseImageContainerRef} className="relative w-full h-full">
                                                     <img
                                                         src={IMAGES.base[baseColor]}
                                                         alt="Placa grande"
                                                         className="w-full h-full object-contain"
+                                                        onLoad={() => updateOverlayScale()}
                                                     />
 
                                                     {/* ZONA DE TEXTO + DIBUJO, ANCLADA POR ARRIBA */}
                                                     <div
-                                                        className="absolute inset-0 flex items-center justify-center p-4"
+                                                        className="absolute inset-0 flex items-center justify-center"
                                                         style={{
-                                                            // esto mantiene el bloque texto+dibujo aproximadamente
-                                                            // donde ya se veía bien antes
-                                                            transform: 'translateY(65px)',
+                                                            paddingTop: overlayPaddingTop,
+                                                            transform: `scale(${overlayScale})`,
+                                                            transformOrigin: "center center"
                                                         }}
                                                     >
                                                         {/* ZONA SEGURA: texto arriba, dibujo abajo */}
                                                         <div
-                                                            className="flex flex-col items-center justify-between"
+                                                            className="flex flex-col items-center justify-start"
                                                             style={{
                                                                 width: 130,
-                                                                height: hasVectorDesign ? 150 : 120, // alto total de la zona
+                                                                height: hasVectorDesign ? 260 : 210,
+                                                                gap: 6,
                                                             }}
                                                         >
                                                             {/* CONTENEDOR DEL TEXTO (parte superior de la zona) */}
-                                                            <div
-                                                                className="w-full flex items-start justify-center"
-                                                                style={{
-                                                                    height: hasVectorDesign ? 110 : 120, // alto máximo del texto
-                                                                }}
-                                                            >
-<EngravedText
+                                                            <div className="w-full flex justify-center">
+                                                                <EngravedText
                                                                     value={baseText}
                                                                     boxW={130}
-                                                                    boxH={hasVectorDesign ? 110 : 120} // mismo que arriba
+                                                                    boxH={hasVectorDesign ? 160 : 220}
                                                                     maxPx={18}
                                                                     maxLines={8}
                                                                     color={baseColor}
@@ -836,11 +905,8 @@ return (
                                                             {/* CONTENEDOR DEL DIBUJO (parte inferior de la zona) */}
                                                             {hasVectorDesign && (
                                                                 <div
-                                                                    className="w-full flex items-center justify-center"
-                                                                    style={{
-                                                                        height: 80,
-                                                                        transform: 'translateY(20px)'
-                                                                    }}
+                                                                    className="w-full flex justify-center"
+                                                                    style={{ height: 70, flexShrink: 0 }}
                                                                 >
                                                                     <img
                                                                         src={selectedVectorDesignData!.publicUrl}
@@ -1054,7 +1120,7 @@ return (
                                             onChange={handleBaseColorChange}
                                         />
                                         <div>
-<label className="block text-sm font-medium text-zinc-700 mb-2">
+                                            <label className="block text-sm font-medium text-zinc-700 mb-2">
                                                 Texto a grabar
                                             </label>
                                             {photoEngraving && (
@@ -1076,14 +1142,14 @@ return (
                                                 disabled={photoEngraving}
                                                 rows={3}
                                                 className={`w-full rounded-xl border border-zinc-300 p-3 text-zinc-900 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-blue-500 ${
-                                                    photoEngraving 
-                                                        ? "bg-zinc-100 cursor-not-allowed opacity-60" 
+                                                    photoEngraving
+                                                        ? "bg-zinc-100 cursor-not-allowed opacity-60"
                                                         : "bg-white"
                                                 }`}
                                                 placeholder={photoEngraving ? "Desactivado por fotograbado" : "Escribe tu mensaje aquí..."}
                                             />
 
-<p className="text-xs text-zinc-500 mt-1">
+                                            <p className="text-xs text-zinc-500 mt-1">
                                                 {baseText.length}/{BASE_TEXT_MAX_CHARS} caracteres
                                             </p>
 
@@ -1340,7 +1406,7 @@ return (
                                     title="Fotograbado"
                                     price={getAddonPrice("photo_engraving")}
                                     checked={photoEngraving}
-onChecked={(v) => {
+                                    onChecked={(v) => {
                                         setPhotoEngraving(v);
                                         if (v) {
                                             // Si activa fotograbado, limpiar el texto de la placa grande
@@ -1365,7 +1431,7 @@ onChecked={(v) => {
                                         </div>
                                     }
                                 >
-<div className="space-y-4">
+                                    <div className="space-y-4">
                                         {/* Aviso sobre restricción de texto */}
                                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                                             <p className="text-xs text-amber-700">
@@ -1481,7 +1547,7 @@ onChecked={(v) => {
 
                 {step === 2 && (
                     <div className="max-w-xl mx-auto bg-white rounded-2xl shadow p-6 md:p-8">
-                                                <CustomerForm data={customerData} onChange={setCustomerData} />
+                        <CustomerForm data={customerData} onChange={setCustomerData} />
                     </div>
                 )}
             </div>

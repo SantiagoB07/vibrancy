@@ -6,7 +6,7 @@ import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
-import { CustomerForm, CustomerData, isValidEmail } from "@/components/checkout/CustomerForm";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -83,7 +83,6 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
     const isCustomerFormValid =
         customerData.name.trim().length > 2 &&
         customerData.phone.trim().length >= 7 &&
-        isValidEmail(customerData.email) &&
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
@@ -411,7 +410,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
             </DialogTrigger>
 
             {/* SOLO ORGANIZACIÓN / LAYOUT */}
-<DialogContent
+            <DialogContent
                 className="sm:max-w-6xl w-full max-h-[90vh] p-0 bg-transparent border-none"
             >
                 <VisuallyHidden>
@@ -435,39 +434,39 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                     Personaliza tu dije de girasol
                                 </h1>
                                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                            <div className="text-left sm:text-right">
-                                <div className="text-xs text-zinc-600">Total</div>
-                                <div className="text-base md:text-2xl font-bold text-zinc-900">
-                                    ${" "}{nf.format(total)}
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-xs text-zinc-600">Total</div>
+                                        <div className="text-base md:text-2xl font-bold text-zinc-900">
+                                            ${" "}{nf.format(total)}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (step === 1) {
+                                                setStep(2);
+                                                return;
+                                            }
+                                            handlePay();
+                                        }}
+                                        disabled={
+                                            step === 2 &&
+                                            (!isCustomerFormValid || isPaying || !selectedVariant)
+                                        }
+                                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                    >
+                                        {step === 1
+                                            ? "Continuar"
+                                            : isPaying
+                                                ? "Procesando..."
+                                                : "Continuar al pago"}
+                                    </button>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => {
-                                    if (step === 1) {
-                                        setStep(2);
-                                        return;
-                                    }
-                                    handlePay();
-                                }}
-                                disabled={
-                                    step === 2 &&
-                                    (!isCustomerFormValid || isPaying || !selectedVariant)
-                                }
-                                className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
-                            >
-                                {step === 1
-                                    ? "Continuar"
-                                    : isPaying
-                                        ? "Procesando..."
-                                        : "Continuar al pago"}
-                            </button>
                         </div>
                     </div>
-                </div>
-                    </div>
 
 
-                                       {/* contenido scrollable */}
+                    {/* contenido scrollable */}
                     <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 pt-4">
                         {/* Paso 1: personalización */}
                         {step === 1 && (
@@ -501,15 +500,11 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                     />
                                                     {/* overlay de texto cara 1 */}
                                                     <div
-                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{
-                                                            transform: "translate(-50%, 7%)",
-                                                            width: "130px",
-                                                            height: "150px",
-                                                        }}
+                                                        className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{ paddingTop: "35%" }}
                                                     >
                                                         <span
-                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
                                                             style={{
                                                                 fontFamily,
                                                                 textShadow: `
@@ -517,7 +512,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                                     0 2px 3px rgba(0,0,0,0.12)
                                                                 `,
                                                                 wordBreak: "break-word",
-                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                                fontSize: `clamp(10px, ${getFontSizeForCircle(phraseFace1) * 0.04}em, ${getFontSizeForCircle(phraseFace1)}px)`,
                                                             }}
                                                         >
                                                             {formatTextForCircle(phraseFace1)}
@@ -543,15 +538,11 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                     />
                                                     {/* overlay de texto cara 2 */}
                                                     <div
-                                                        className="absolute left-1/2 top-1/2 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{
-                                                            transform: "translate(-50%, 7%)",
-                                                            width: "130px",
-                                                            height: "150px",
-                                                        }}
+                                                        className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
+                                                        style={{ paddingTop: "35%" }}
                                                     >
                                                         <span
-                                                            className="text-sm leading-tight tracking-wide text-[#3b3b3b]"
+                                                            className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
                                                             style={{
                                                                 fontFamily,
                                                                 textShadow: `
@@ -559,7 +550,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                                     0 2px 3px rgba(0,0,0,0.12)
                                                                 `,
                                                                 wordBreak: "break-word",
-                                                                fontSize: `${getFontSizeForCircle(phraseFace1)}px`,
+                                                                fontSize: `clamp(10px, ${getFontSizeForCircle(phraseFace2) * 0.04}em, ${getFontSizeForCircle(phraseFace2)}px)`,
                                                             }}
                                                         >
                                                             {formatTextForCircle(phraseFace2)}
