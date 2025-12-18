@@ -280,6 +280,30 @@ function TransferContent() {
                     </div>
                 </button>
 
+                {/* Link de seguimiento */}
+                <div className="bg-[#E6C29A]/50 rounded-xl p-4 mt-6">
+                    <p className="text-xs font-semibold text-[#5E3A1E] mb-2">
+                        Guarda este link para ver el estado de tu pedido:
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="text"
+                            readOnly
+                            value={`${typeof window !== "undefined" ? window.location.origin : ""}/mi-pedido/${orderId}?token=${token}`}
+                            className="flex-1 text-xs bg-white border border-[#B9804A]/30 rounded-lg px-3 py-2 text-[#6F4A2A] truncate"
+                        />
+                        <button
+                            onClick={() => copyToClipboard(`${window.location.origin}/mi-pedido/${orderId}?token=${token}`, "tracking")}
+                            className="px-3 py-2 bg-[#5E3A1E] text-[#F9E3C8] text-xs rounded-lg hover:bg-[#4C2F18] transition whitespace-nowrap"
+                        >
+                            {copied === "tracking" ? "¡Copiado!" : "Copiar"}
+                        </button>
+                    </div>
+                    <p className="text-xs text-[#7C5431] mt-2">
+                        Con este link puedes consultar el estado de tu pedido en cualquier momento.
+                    </p>
+                </div>
+
                 {/* Back link */}
                 <div className="mt-6 text-center">
                     <Link

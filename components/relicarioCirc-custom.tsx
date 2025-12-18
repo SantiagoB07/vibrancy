@@ -7,7 +7,7 @@ import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { Cookie, Courgette } from "next/font/google";
 
-import { CustomerForm, CustomerData, isValidEmail } from "@/components/checkout/CustomerForm";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
 
 // ===========================
@@ -68,7 +68,6 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
   const isCustomerFormValid =
       customerData.name.trim().length > 2 &&
       customerData.phone.trim().length >= 7 &&
-      isValidEmail(customerData.email) &&
       customerData.address.trim().length > 5 &&
       customerData.locality.trim().length > 2;
 

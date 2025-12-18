@@ -71,7 +71,7 @@ export function CustomerForm({ data, onChange }: Props) {
             {/* Email */}
             <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Correo electrónico <span className="text-red-500">*</span>
+                    Correo electrónico <span className="text-gray-400">(opcional)</span>
                 </label>
                 <input
                     type="email"
@@ -79,10 +79,9 @@ export function CustomerForm({ data, onChange }: Props) {
                     onChange={(e) => update("email", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Ej: tu_correo@email.com"
-                    required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                    Te enviaremos la confirmación de tu pedido a este correo.
+                    Si lo agregas, te enviaremos actualizaciones de tu pedido.
                 </p>
             </div>
 

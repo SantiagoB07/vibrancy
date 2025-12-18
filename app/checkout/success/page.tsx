@@ -21,6 +21,7 @@ function CheckoutSuccessContent() {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState<boolean>(!!orderId);
     const [error, setError] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (!orderId || !token) return;
@@ -62,6 +63,19 @@ function CheckoutSuccessContent() {
     }, [orderId, token]);
 
     const isPaid = order?.status === "PAID";
+
+    // Generar URL de seguimiento
+    const trackingUrl = typeof window !== "undefined" && orderId && token
+        ? `${window.location.origin}/mi-pedido/${orderId}?token=${token}`
+        : null;
+
+    const copyTrackingLink = () => {
+        if (trackingUrl) {
+            navigator.clipboard.writeText(trackingUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     // Distintos estados de la vista según lo que tengamos
 
@@ -229,16 +243,42 @@ function CheckoutSuccessContent() {
                 </div>
 
                 {isPaid ? (
-                    <p className="mb-6 text-xs text-[#7C5431]">
+                    <p className="mb-4 text-xs text-[#7C5431]">
                         Tu compra está confirmada y pronto nos pondremos en contacto contigo
                         con los detalles del pedido y el envío. 💖
                     </p>
                 ) : (
-                    <p className="mb-6 text-xs text-[#7C5431]">
+                    <p className="mb-4 text-xs text-[#7C5431]">
                         Ya registramos tu orden, pero la confirmación del pago aún está en
                         proceso. Si ya pagaste, esta página se actualizará cuando Mercado
                         Pago confirme la transacción.
                     </p>
+                )}
+
+                {/* Link de seguimiento */}
+                {trackingUrl && (
+                    <div className="bg-[#E6C29A]/50 rounded-xl p-4 mb-6">
+                        <p className="text-xs font-semibold text-[#5E3A1E] mb-2">
+                            Guarda este link para ver el estado de tu pedido:
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                readOnly
+                                value={trackingUrl}
+                                className="flex-1 text-xs bg-white border border-[#B9804A]/30 rounded-lg px-3 py-2 text-[#6F4A2A] truncate"
+                            />
+                            <button
+                                onClick={copyTrackingLink}
+                                className="px-3 py-2 bg-[#5E3A1E] text-[#F9E3C8] text-xs rounded-lg hover:bg-[#4C2F18] transition whitespace-nowrap"
+                            >
+                                {copied ? "¡Copiado!" : "Copiar"}
+                            </button>
+                        </div>
+                        <p className="text-xs text-[#7C5431] mt-2">
+                            Con este link puedes consultar el estado de tu pedido en cualquier momento.
+                        </p>
+                    </div>
                 )}
 
                 <Link

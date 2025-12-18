@@ -4,7 +4,7 @@
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 import { X, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CustomerForm, CustomerData, isValidEmail } from "@/components/checkout/CustomerForm";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { Cookie, Courgette } from "next/font/google";
 
 
@@ -67,7 +67,6 @@ export function PetCustom({ product, children }: PetCustomProps) {
     const isCustomerFormValid =
         customerData.name.trim().length > 2 &&
         customerData.phone.trim().length >= 7 &&
-        isValidEmail(customerData.email) &&
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 

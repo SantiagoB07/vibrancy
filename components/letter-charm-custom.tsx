@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
-import { CustomerForm, CustomerData, isValidEmail } from "@/components/checkout/CustomerForm";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -87,7 +87,6 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
     const isCustomerFormValid =
         customerData.name.trim().length > 2 &&
         customerData.phone.trim().length >= 7 &&
-        isValidEmail(customerData.email) &&
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
