@@ -6,6 +6,7 @@ import { X, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { Cookie, Courgette } from "next/font/google";
+import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
 
 
 interface PetCustomProps {
@@ -317,45 +318,65 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                 {/* Customization Input */}
                                 <div className="space-y-4">
                                     <div>
-                    <textarea
-                        value={currentValue}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                const lines = currentValue.split(/\r?\n/);
-                                if (lines.length >= MAX_LINES) {
-                                    e.preventDefault();
-                                }
-                            }
-                        }}
-                        onChange={(e) => {
-                            const clamped = clampMultiline(e.target.value);
-                            if (currentFace === 1) {
-                                setPetName(clamped);
-                                if (typeof window !== "undefined") {
-                                    localStorage.setItem(
-                                        "petTag_petName",
-                                        clamped
-                                    );
-                                }
-                            } else {
-                                setOwnerInfo(clamped);
-                                if (typeof window !== "undefined") {
-                                    localStorage.setItem(
-                                        "petTag_ownerInfo",
-                                        clamped
-                                    );
-                                }
-                            }
-                        }}
-                        placeholder="Personaliza tu placa (Enter para nueva línea)"
-                        rows={Math.min(
-                            MAX_LINES,
-                            Math.max(1, currentLines.length)
-                        )}
-
-
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
-                    />
+                                        <div className="flex gap-2 items-start">
+                                            <textarea
+                                                value={currentValue}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        const lines = currentValue.split(/\r?\n/);
+                                                        if (lines.length >= MAX_LINES) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    const clamped = clampMultiline(e.target.value);
+                                                    if (currentFace === 1) {
+                                                        setPetName(clamped);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem(
+                                                                "petTag_petName",
+                                                                clamped
+                                                            );
+                                                        }
+                                                    } else {
+                                                        setOwnerInfo(clamped);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem(
+                                                                "petTag_ownerInfo",
+                                                                clamped
+                                                            );
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="Personaliza tu placa (Enter para nueva línea)"
+                                                rows={Math.min(
+                                                    MAX_LINES,
+                                                    Math.max(1, currentLines.length)
+                                                )}
+                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                            />
+                                            <AIPhraseModal
+                                                productType="pet-tag"
+                                                maxChars={MAX_PER_LINE}
+                                                onSelectPhrase={(phrase) => {
+                                                    const clamped = clampMultiline(phrase);
+                                                    if (currentFace === 1) {
+                                                        setPetName(clamped);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem("petTag_petName", clamped);
+                                                        }
+                                                    } else {
+                                                        setOwnerInfo(clamped);
+                                                        if (typeof window !== "undefined") {
+                                                            localStorage.setItem("petTag_ownerInfo", clamped);
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <span>Sugerir</span>
+                                            </AIPhraseModal>
+                                        </div>
                                         <div className="mt-4 flex justify-center">
                                             <select
                                                 value={fontFamily}
