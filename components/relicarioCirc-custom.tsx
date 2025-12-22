@@ -9,6 +9,7 @@ import { Cookie, Courgette } from "next/font/google";
 
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
+import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
 
 // ===========================
 // Fonts
@@ -474,24 +475,39 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                       <label htmlFor="relicario-input" className="block text-sm font-medium mb-1">
                         {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
                       </label>
-                      <input
-                          id="relicario-input"
-                          type="text"
-                          value={currentFace === 1 ? frontMessage : backMessage}
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            if (newValue.length <= MAX_CHARS) {
-                              if (currentFace === 1) {
-                                setFrontMessage(newValue);
-                              } else {
-                                setBackMessage(newValue);
+                      <div className="flex gap-2 items-center">
+                        <input
+                            id="relicario-input"
+                            type="text"
+                            value={currentFace === 1 ? frontMessage : backMessage}
+                            onChange={(e) => {
+                              const newValue = e.target.value;
+                              if (newValue.length <= MAX_CHARS) {
+                                if (currentFace === 1) {
+                                  setFrontMessage(newValue);
+                                } else {
+                                  setBackMessage(newValue);
+                                }
                               }
+                            }}
+                            placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                            maxLength={MAX_CHARS}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                        />
+                        <AIPhraseModal
+                          productType="relicario-circular"
+                          maxChars={MAX_CHARS}
+                          onSelectPhrase={(phrase) => {
+                            if (currentFace === 1) {
+                              setFrontMessage(phrase);
+                            } else {
+                              setBackMessage(phrase);
                             }
                           }}
-                          placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
-                          maxLength={MAX_CHARS}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                      />
+                        >
+                          <span>Sugerir</span>
+                        </AIPhraseModal>
+                      </div>
                       <p
                           className={`text-xs mt-1 text-center ${
                               (currentFace === 1 ? frontMessage.length : backMessage.length) >= MAX_CHARS
