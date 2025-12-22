@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -607,21 +608,35 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                 >
                                                     Texto Cara 1
                                                 </label>
-                                                <input
-                                                    id="girasol-text-face1"
-                                                    type="text"
-                                                    value={phraseFace1}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.slice(0, 95);
-                                                        setPhraseFace1(val);
-                                                        if (typeof window !== "undefined") {
-                                                            localStorage.setItem("girasol_phraseFace1", val);
-                                                        }
-                                                    }}
-                                                    placeholder="Frase para cara 1"
-                                                    maxLength={95}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                                                />
+                                                <div className="flex gap-2 items-center">
+                                                    <input
+                                                        id="girasol-text-face1"
+                                                        type="text"
+                                                        value={phraseFace1}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value.slice(0, 95);
+                                                            setPhraseFace1(val);
+                                                            if (typeof window !== "undefined") {
+                                                                localStorage.setItem("girasol_phraseFace1", val);
+                                                            }
+                                                        }}
+                                                        placeholder="Frase para cara 1"
+                                                        maxLength={95}
+                                                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                                                    />
+                                                    <AIPhraseModal
+                                                        productType="girasol"
+                                                        maxChars={95}
+                                                        onSelectPhrase={(phrase) => {
+                                                            setPhraseFace1(phrase);
+                                                            if (typeof window !== "undefined") {
+                                                                localStorage.setItem("girasol_phraseFace1", phrase);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <span>Sugerir</span>
+                                                    </AIPhraseModal>
+                                                </div>
                                                 <p
                                                     className={`text-xs mt-1 text-center ${
                                                         phraseFace1.length >= 95 ? "text-red-500" : "text-gray-500"
@@ -639,21 +654,35 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                 >
                                                     Texto Cara 2
                                                 </label>
-                                                <input
-                                                    id="girasol-text-face2"
-                                                    type="text"
-                                                    value={phraseFace2}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.slice(0, 95);
-                                                        setPhraseFace2(val);
-                                                        if (typeof window !== "undefined") {
-                                                            localStorage.setItem("girasol_phraseFace2", val);
-                                                        }
-                                                    }}
-                                                    placeholder="Frase para cara 2"
-                                                    maxLength={95}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-                                                />
+                                                <div className="flex gap-2 items-center">
+                                                    <input
+                                                        id="girasol-text-face2"
+                                                        type="text"
+                                                        value={phraseFace2}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value.slice(0, 95);
+                                                            setPhraseFace2(val);
+                                                            if (typeof window !== "undefined") {
+                                                                localStorage.setItem("girasol_phraseFace2", val);
+                                                            }
+                                                        }}
+                                                        placeholder="Frase para cara 2"
+                                                        maxLength={95}
+                                                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                                                    />
+                                                    <AIPhraseModal
+                                                        productType="girasol"
+                                                        maxChars={95}
+                                                        onSelectPhrase={(phrase) => {
+                                                            setPhraseFace2(phrase);
+                                                            if (typeof window !== "undefined") {
+                                                                localStorage.setItem("girasol_phraseFace2", phrase);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <span>Sugerir</span>
+                                                    </AIPhraseModal>
+                                                </div>
                                                 <p
                                                     className={`text-xs mt-1 text-center ${
                                                         phraseFace2.length >= 95 ? "text-red-500" : "text-gray-500"
