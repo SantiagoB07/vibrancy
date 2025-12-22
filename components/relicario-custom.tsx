@@ -10,6 +10,7 @@ import { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
+import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
 
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
@@ -937,35 +938,56 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     <label htmlFor="tag-input" className="sr-only">
       {currentFace === 1 ? "Nombre de la mascota" : "Información del dueño"}
     </label>
-    <input
-      id="tag-input"
-      type="text"
-      value={currentFace === 1 ? petName : ownerInfo}
-      onChange={(e) => {
-        const newValue = e.target.value;
-        const limit = selectedDesignConfig?.maxChars ?? 15;
-        if (newValue.length <= limit) {
-          if (currentFace === 1) {
-            setPetName(newValue);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("petTag_petName", newValue);
-            }
-          } else {
-            setOwnerInfo(newValue);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("petTag_ownerInfo", newValue);
+    <div className="flex gap-2 items-center">
+      <input
+        id="tag-input"
+        type="text"
+        value={currentFace === 1 ? petName : ownerInfo}
+        onChange={(e) => {
+          const newValue = e.target.value;
+          const limit = selectedDesignConfig?.maxChars ?? 15;
+          if (newValue.length <= limit) {
+            if (currentFace === 1) {
+              setPetName(newValue);
+              if (typeof window !== "undefined") {
+                localStorage.setItem("petTag_petName", newValue);
+              }
+            } else {
+              setOwnerInfo(newValue);
+              if (typeof window !== "undefined") {
+                localStorage.setItem("petTag_ownerInfo", newValue);
+              }
             }
           }
+        }}
+        placeholder={
+          currentFace === 1
+            ? "Nombre de la mascota"
+            : "Info. de contacto del dueño"
         }
-      }}
-      placeholder={
-        currentFace === 1
-          ? "Nombre de la mascota"
-          : "Info. de contacto del dueño"
-      }
-      maxLength={selectedDesignConfig?.maxChars ?? 15}
-      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-    />
+        maxLength={selectedDesignConfig?.maxChars ?? 15}
+        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+      />
+      <AIPhraseModal
+        productType="relicario"
+        maxChars={selectedDesignConfig?.maxChars ?? 15}
+        onSelectPhrase={(phrase) => {
+          if (currentFace === 1) {
+            setPetName(phrase);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("petTag_petName", phrase);
+            }
+          } else {
+            setOwnerInfo(phrase);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("petTag_ownerInfo", phrase);
+            }
+          }
+        }}
+      >
+        <span>Sugerir</span>
+      </AIPhraseModal>
+    </div>
     <p
       className={`text-xs mt-1 text-center ${
         (currentFace === 1 ? petName.length : ownerInfo.length) >=
