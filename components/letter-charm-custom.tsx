@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
+import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -432,21 +433,35 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                         >
                                             Mensaje de la carta
                                         </label>
-                                        <textarea
-                                            id="letter-message"
-                                            value={message}
-                                            onChange={(e) => {
-                                                const val = e.target.value.slice(0, 50); // Limite de caracteres
-                                                setMessage(val);
-                                                if (typeof window !== 'undefined') {
-                                                    localStorage.setItem('letter_message', val);
-                                                }
-                                            }}
-                                            placeholder="Escribe tu mensaje aquí..."
-                                            maxLength={50}
-                                            rows={3}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
-                                        />
+                                        <div className="flex gap-2 items-start">
+                                            <textarea
+                                                id="letter-message"
+                                                value={message}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.slice(0, 50); // Limite de caracteres
+                                                    setMessage(val);
+                                                    if (typeof window !== 'undefined') {
+                                                        localStorage.setItem('letter_message', val);
+                                                    }
+                                                }}
+                                                placeholder="Escribe tu mensaje aquí..."
+                                                maxLength={50}
+                                                rows={3}
+                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                            />
+                                            <AIPhraseModal
+                                                productType="letter-charm"
+                                                maxChars={50}
+                                                onSelectPhrase={(phrase) => {
+                                                    setMessage(phrase);
+                                                    if (typeof window !== 'undefined') {
+                                                        localStorage.setItem('letter_message', phrase);
+                                                    }
+                                                }}
+                                            >
+                                                <span>Sugerir</span>
+                                            </AIPhraseModal>
+                                        </div>
                                         <p
                                             className={`text-xs mt-1 text-center ${
                                                 message.length >= 50 ? 'text-red-500' : 'text-gray-500'
