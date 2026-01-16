@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
@@ -10,6 +10,8 @@ import { Cookie, Courgette } from "next/font/google";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
 import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
+import { addToCart } from "@/lib/local-cart";
+import { toast } from "sonner";
 
 // ===========================
 // Fonts
@@ -216,7 +218,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
     };
   };
 
-  // ===========================
+// ===========================
   // Select font for DB
   // ===========================
   const getSelectedFontForDb = () => {
@@ -226,6 +228,35 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
     if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive")
       return "LUCIDA_CALLIGRAPHY";
     return "UNKNOWN";
+  };
+
+  // ===========================
+  // HANDLE ADD TO CART
+  // ===========================
+  const handleAddToCart = () => {
+    if (!selectedVariant) {
+      alert("Selecciona una variante.");
+      return;
+    }
+
+    addToCart({
+      productId: Number(product.id),
+      productVariantId: selectedVariant.id,
+      variantName: selectedVariant.name,
+      quantity: 1,
+      title: `${product.title} - ${selectedVariant.name}`,
+      unitPrice: selectedVariant.price_override ?? product.price,
+      personalizationFront: frontMessage || null,
+      personalizationBack: backMessage || null,
+      engravingFont: getSelectedFontForDb(),
+      productImage: product.img || baseImg,
+    });
+
+    toast.success("Producto agregado al carrito", {
+      description: `${product.title} - ${selectedVariant.name}`,
+    });
+
+    setIsOpen(false);
   };
 
   // ===========================
@@ -336,13 +367,36 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
 
             {/* HEADER */}
             <div className="border-b p-4 px-6 flex items-center justify-between">
-              <h1 className="text-lg md:text-xl font-bold">Personaliza tu relicario circular</h1>
+              <div className="flex items-center gap-3">
+                {step === 2 && (
+                  <button
+                    onClick={() => setStep(1)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                    aria-label="Volver a personalización"
+                  >
+                    <ArrowLeft className="h-5 w-5 text-gray-600" />
+                  </button>
+                )}
+                <h1 className="text-lg md:text-xl font-bold">Personaliza tu relicario circular</h1>
+              </div>
 
-              <div className="flex items-center gap-4">
+<div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-xs text-gray-600">Total</p>
                   <p className="text-xl font-bold">${nf.format(total)}</p>
                 </div>
+
+                {step === 1 && (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!selectedVariant}
+                    className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-5 py-2 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    <span className="hidden sm:inline">Agregar al carrito</span>
+                    <span className="sm:hidden">Carrito</span>
+                  </button>
+                )}
 
                 <button
                     onClick={() => {
@@ -355,7 +409,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                     disabled={step === 2 && !isCustomerFormValid}
                     className="bg-black text-white px-6 py-2 rounded-full disabled:opacity-60"
                 >
-                  {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
+                  {step === 1 ? "Comprar ahora" : isPaying ? "Procesando..." : "Continuar al pago"}
                 </button>
               </div>
             </div>
@@ -462,12 +516,28 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         </span>
                       </button>
 
-                      <button
-                          onClick={toggleVariant}
-                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
-                      >
-                        Color: {selectedVariant?.name ?? "Cargando..."}
-                      </button>
+                      {/* Mini paleta de colores */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                        <span className="text-sm text-gray-600 mr-1">Color:</span>
+                        {variants.map((v) => {
+                          const isGold = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold") || v.name.toLowerCase().includes("dorado");
+                          const isSelected = selectedVariant?.id === v.id;
+                          const colorClass = isGold ? "bg-yellow-400" : "bg-gray-300";
+                          return (
+                            <button
+                              key={v.id}
+                              onClick={() => setSelectedVariant(v)}
+                              className={`w-6 h-6 rounded-full ${colorClass} transition-all ${
+                                isSelected
+                                  ? "ring-2 ring-offset-2 ring-black"
+                                  : "hover:scale-110"
+                              }`}
+                              title={v.name}
+                              aria-label={`Color ${v.name}`}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Campo de texto dinámico según cara */}
