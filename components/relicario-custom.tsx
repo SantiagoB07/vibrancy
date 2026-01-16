@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useState, useEffect, type ChangeEvent, type ReactNode } from "react";
 
 import Image from "next/image";
@@ -11,6 +11,8 @@ import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
 import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
+import { addToCart } from "@/lib/local-cart";
+import { toast } from "sonner";
 
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
@@ -159,9 +161,50 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     customerData.address.trim().length > 5 &&
     customerData.locality.trim().length > 2;
 
-  const nf = new Intl.NumberFormat("es-CO");
+const nf = new Intl.NumberFormat("es-CO");
   const unitPrice = selectedVariant?.price_override ?? product.price;
   const total = unitPrice;
+
+  const getSelectedFontForDb = () => {
+    if (fontFamily === cookie.style.fontFamily) {
+      return "COOKIE";
+    }
+    if (fontFamily === courgette.style.fontFamily) {
+      return "COURGETTE";
+    }
+    if (fontFamily === "Georgia, 'Times New Roman', serif") {
+      return "GEORGIA";
+    }
+    if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+      return "LUCIDA_CALLIGRAPHY";
+    }
+    return "UNKNOWN";
+  };
+
+  const handleAddToCart = () => {
+    addToCart({
+      productId: Number(product.id),
+      productVariantId: selectedVariant?.id ?? null,
+      variantName: selectedVariant?.name,
+      quantity: 1,
+      title: selectedVariant
+        ? `${product.title} - ${selectedVariant.name}`
+        : product.title,
+      unitPrice: unitPrice,
+      personalizationFront: petName || null,
+      personalizationBack: ownerInfo || null,
+      engravingFont: getSelectedFontForDb(),
+      productImage: product.img || imageUrls.gold || undefined,
+    });
+
+    toast.success("Producto agregado al carrito", {
+      description: selectedVariant
+        ? `${product.title} - ${selectedVariant.name}`
+        : product.title,
+    });
+
+    setIsOpen(false);
+  };
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -342,30 +385,11 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     event.target.value = "";
   };
 
-  const handlePay = async () => {
+const handlePay = async () => {
     if (!isCustomerFormValid) {
       alert("Por favor completa tus datos de envío.");
       return;
     }
-
-    const getSelectedFontForDb = () => {
-      if (fontFamily === cookie.style.fontFamily) {
-        return "COOKIE";
-      }
-      if (fontFamily === courgette.style.fontFamily) {
-        return "COURGETTE";
-      }
-      if (fontFamily === "Georgia, 'Times New Roman', serif") {
-        return "GEORGIA";
-      }
-      if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
-        return "LUCIDA_CALLIGRAPHY";
-      }
-
-      // Por si en el futuro agregas más opciones y se te olvida actualizar aquí
-      return "UNKNOWN";
-    };
-
 
     try {
       setIsPaying(true);
@@ -451,16 +475,38 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
           <div className="bg-white border-b">
             <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <h1 className="text-base md:text-xl font-bold text-zinc-900">
-                  Personaliza tu relicario corazón
-                </h1>
-                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                <div className="flex items-center gap-3">
+                  {step === 2 && (
+                    <button
+                      onClick={() => setStep(1)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition"
+                      aria-label="Volver a personalización"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-gray-600" />
+                    </button>
+                  )}
+                  <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                    Personaliza tu relicario corazón
+                  </h1>
+                </div>
+<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                   <div className="text-left sm:text-right">
                     <div className="text-xs text-zinc-600">Total</div>
                     <div className="text-base md:text-2xl font-bold text-zinc-900">
                       ${" "}{nf.format(total)}
                     </div>
                   </div>
+                  {step === 1 && (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={!selectedVariant && variants.length > 0}
+                      className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      <span className="hidden sm:inline">Agregar al carrito</span>
+                      <span className="sm:hidden">Carrito</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       if (step === 1) {
@@ -476,7 +522,7 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
                     className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
                   >
                     {step === 1
-                      ? "Continuar"
+                      ? "Comprar ahora"
                       : isPaying
                       ? "Procesando..."
                       : "Continuar al pago"}
@@ -923,12 +969,35 @@ PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.p
     </span>
   </button>
 
-  <button
-    onClick={toggleVariant}
-    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors"
-  >
-    {variant === "gold" ? "Cambiar a Silver" : "Cambiar a Gold"}
-  </button>
+  {/* Mini paleta de colores */}
+  <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+    <span className="text-sm text-gray-600 mr-1">Color:</span>
+    {variants.map((v) => {
+      const isGold = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold");
+      const isSelected = selectedVariant?.id === v.id;
+      const colorClass = isGold ? "bg-yellow-400" : "bg-gray-300";
+      return (
+        <button
+          key={v.id}
+          onClick={() => {
+            setSelectedVariant(v);
+            const next: "gold" | "silver" = isGold ? "gold" : "silver";
+            setVariant(next);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("petTag_variant", next);
+            }
+          }}
+          className={`w-6 h-6 rounded-full ${colorClass} transition-all ${
+            isSelected
+              ? "ring-2 ring-offset-2 ring-black"
+              : "hover:scale-110"
+          }`}
+          title={v.name}
+          aria-label={`Color ${v.name}`}
+        />
+      );
+    })}
+  </div>
 </div>
 
 
