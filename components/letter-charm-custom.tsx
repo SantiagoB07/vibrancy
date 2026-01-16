@@ -1,13 +1,15 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
+import { addToCart } from "@/lib/local-cart";
+import { toast } from "sonner";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -101,7 +103,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
     // cara 1 (sobre) o cara 2 (adentro)
-    const [currentFace, setCurrentFace] = useState<1 | 2>(1);
+    const [currentFace, setCurrentFace] = useState<1 | 2>(2);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isRotating, setIsRotating] = useState(false);
 
@@ -197,11 +199,53 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
 
     const currentImages = imagesByVariant[variantKey];
 
-    // ===== HEADER: nf, total, handlePay =====
+// ===== HEADER: nf, total, handlePay =====
     const nf = new Intl.NumberFormat("es-CO");
     const total = selectedVariant?.price_override ?? product.price;
 
-    const handlePay = async () => {
+    const getSelectedFontForDb = () => {
+        if (fontFamily === cookie.style.fontFamily) {
+            return "COOKIE";
+        }
+        if (fontFamily === courgette.style.fontFamily) {
+            return "COURGETTE";
+        }
+        if (fontFamily === "Georgia, 'Times New Roman', serif") {
+            return "GEORGIA";
+        }
+        if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+            return "LUCIDA_CALLIGRAPHY";
+        }
+        return "UNKNOWN";
+    };
+
+    const handleAddToCart = () => {
+        if (!selectedVariant) {
+            alert("Selecciona un color.");
+            return;
+        }
+
+        addToCart({
+            productId: Number(product.id),
+            productVariantId: selectedVariant.id,
+            variantName: selectedVariant.name,
+            quantity: 1,
+            title: `${product.title} - ${selectedVariant.name}`,
+            unitPrice: total,
+            personalizationFront: message || null,
+            personalizationBack: null,
+            engravingFont: getSelectedFontForDb(),
+            productImage: product.img || currentImages.sobre,
+        });
+
+        toast.success("Producto agregado al carrito", {
+            description: `${product.title} - ${selectedVariant.name}`,
+        });
+
+        setIsOpen(false);
+    };
+
+const handlePay = async () => {
         if (!selectedVariant) {
             alert("Selecciona un color.");
             return;
@@ -211,24 +255,6 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
             alert("Por favor completa tus datos de envío.");
             return;
         }
-
-        const getSelectedFontForDb = () => {
-            if (fontFamily === cookie.style.fontFamily) {
-                return "COOKIE";
-            }
-            if (fontFamily === courgette.style.fontFamily) {
-                return "COURGETTE";
-            }
-            if (fontFamily === "Georgia, 'Times New Roman', serif") {
-                return "GEORGIA";
-            }
-            if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
-                return "LUCIDA_CALLIGRAPHY";
-            }
-
-            // Mas fuentes...
-            return "UNKNOWN";
-        };
 
         try {
             setIsPaying(true);
@@ -311,16 +337,38 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
                         <div className="px-6 py-4 flex items-center justify-between pr-16">
-                            <h1 className="text-lg md:text-xl font-bold text-zinc-900">
-                                Personaliza tu dije de carta
-                            </h1>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                {step === 2 && (
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="p-2 hover:bg-gray-100 rounded-full transition"
+                                        aria-label="Volver a personalización"
+                                    >
+                                        <ArrowLeft className="h-5 w-5 text-gray-600" />
+                                    </button>
+                                )}
+                                <h1 className="text-lg md:text-xl font-bold text-zinc-900">
+                                    Personaliza tu dije de carta
+                                </h1>
+                            </div>
+<div className="flex items-center gap-4">
                                 <div className="text-right">
                                     <div className="text-xs md:text-sm text-zinc-600">Total</div>
                                     <div className="text-lg md:text-2xl font-bold text-zinc-900">
                                         ${" "}{nf.format(total)}
                                     </div>
                                 </div>
+                                {step === 1 && (
+                                    <button
+                                        onClick={handleAddToCart}
+                                        disabled={!selectedVariant}
+                                        className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                    >
+                                        <ShoppingCart className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Agregar al carrito</span>
+                                        <span className="sm:hidden">Carrito</span>
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         if (step === 1) {
@@ -332,7 +380,7 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                                     disabled={step === 2 && (!isCustomerFormValid || isPaying)}
                                     className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
                                 >
-                                    {step === 1 ? "Continuar" : isPaying ? "Procesando..." : "Continuar al pago"}
+                                    {step === 1 ? "Comprar ahora" : isPaying ? "Procesando..." : "Continuar al pago"}
                                 </button>
 
 
@@ -415,13 +463,38 @@ export function LetterCharmCustom({ product, children }: LetterCharmCustomProps)
                 </span>
                                     </button>
 
-                                    <button
-                                        onClick={toggleVariant}
-                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors capitalize"
-                                        disabled={!selectedVariant}
-                                    >
-                                        Color: {selectedVariant?.name ?? 'Cargando...'}
-                                    </button>
+                                    {/* Mini paleta de colores */}
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                                        <span className="text-sm text-gray-600 mr-1">Color:</span>
+                                        {variants.map((v) => {
+                                            const key = mapVariantNameToKey(v.name);
+                                            const isSelected = selectedVariant?.id === v.id;
+                                            const colorClasses: Record<VariantKey, string> = {
+                                                gold: "bg-yellow-400",
+                                                silver: "bg-gray-300",
+                                                rose: "bg-pink-300",
+                                            };
+                                            return (
+                                                <button
+                                                    key={v.id}
+                                                    onClick={() => {
+                                                        setSelectedVariant(v);
+                                                        setVariantKey(key);
+                                                        if (typeof window !== 'undefined') {
+                                                            localStorage.setItem('letter_variant_key', key);
+                                                        }
+                                                    }}
+                                                    className={`w-6 h-6 rounded-full ${colorClasses[key]} transition-all ${
+                                                        isSelected
+                                                            ? "ring-2 ring-offset-2 ring-black"
+                                                            : "hover:scale-110"
+                                                    }`}
+                                                    title={v.name}
+                                                    aria-label={`Color ${v.name}`}
+                                                />
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
                                 {/* Inputs de texto */}
