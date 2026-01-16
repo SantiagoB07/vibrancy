@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from 'next/font/google';
+import { Toaster } from 'sonner';
 import "./globals.css";
 import { AppLayout } from '@/components/layout/AppLayout';
 
@@ -27,6 +28,18 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${geistSans.className} antialiased`}>
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton
+          toastOptions={{
+            style: {
+              background: '#F9E3C8',
+              border: '1px solid #B9804A',
+              color: '#5E3A1E',
+            },
+          }}
+        />
         <AppLayout>
           {children}
         </AppLayout>
