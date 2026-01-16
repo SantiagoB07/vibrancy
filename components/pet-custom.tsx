@@ -2,11 +2,13 @@
 
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { Cookie, Courgette } from "next/font/google";
 import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
+import { addToCart } from "@/lib/local-cart";
+import { toast } from "sonner";
 
 
 interface PetCustomProps {
@@ -87,32 +89,50 @@ export function PetCustom({ product, children }: PetCustomProps) {
         [currentValue]
     );
 
-    const nf = new Intl.NumberFormat("es-CO");
+const nf = new Intl.NumberFormat("es-CO");
     const total = product.price;
 
-    const handlePay = async () => {
+    const getSelectedFontForDb = () => {
+        if (fontFamily === cookie.style.fontFamily) {
+            return "COOKIE";
+        }
+        if (fontFamily === courgette.style.fontFamily) {
+            return "COURGETTE";
+        }
+        if (fontFamily === "Georgia, 'Times New Roman', serif") {
+            return "GEORGIA";
+        }
+        if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+            return "LUCIDA_CALLIGRAPHY";
+        }
+        return "UNKNOWN";
+    };
+
+    const handleAddToCart = () => {
+        addToCart({
+            productId: Number(product.id),
+            productVariantId: null,
+            quantity: 1,
+            title: product.title,
+            unitPrice: product.price,
+            personalizationFront: petName || null,
+            personalizationBack: ownerInfo || null,
+            engravingFont: getSelectedFontForDb(),
+            productImage: product.img || "/images/pet-tag-removebg-preview.png",
+        });
+
+        toast.success("Producto agregado al carrito", {
+            description: product.title,
+        });
+
+        setIsOpen(false);
+    };
+
+const handlePay = async () => {
         if (!isCustomerFormValid) {
             alert("Por favor completa tus datos de envío.");
             return;
         }
-        const getSelectedFontForDb = () => {
-            if (fontFamily === cookie.style.fontFamily) {
-                return "COOKIE";
-            }
-            if (fontFamily === courgette.style.fontFamily) {
-                return "COURGETTE";
-            }
-            if (fontFamily === "Georgia, 'Times New Roman', serif") {
-                return "GEORGIA";
-            }
-            if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
-                return "LUCIDA_CALLIGRAPHY";
-            }
-
-            // Por si en el futuro agregas más opciones y se te olvida actualizar aquí
-            return "UNKNOWN";
-        };
-
 
         try {
             setIsPaying(true);
@@ -201,12 +221,23 @@ export function PetCustom({ product, children }: PetCustomProps) {
                         <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
                             {/* Mobile: stack vertical, Desktop: horizontal */}
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                                <h1 className="text-base md:text-xl font-bold text-zinc-900">
-                                    {step === 1
-                                        ? "Personaliza tu placa"
-                                        : "Completa tus datos de envío"}
-                                </h1>
-                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                <div className="flex items-center gap-3">
+                                    {step === 2 && (
+                                        <button
+                                            onClick={() => setStep(1)}
+                                            className="p-2 hover:bg-gray-100 rounded-full transition"
+                                            aria-label="Volver a personalización"
+                                        >
+                                            <ArrowLeft className="h-5 w-5 text-gray-600" />
+                                        </button>
+                                    )}
+                                    <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                                        {step === 1
+                                            ? "Personaliza tu placa"
+                                            : "Completa tus datos de envío"}
+                                    </h1>
+                                </div>
+<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                                     <div className="text-left sm:text-right">
                                         <div className="text-xs text-zinc-600">Total</div>
                                         <div className="text-base md:text-2xl font-bold text-zinc-900">
@@ -214,6 +245,16 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                             {nf.format(total)}
                                         </div>
                                     </div>
+                                    {step === 1 && (
+                                        <button
+                                            onClick={handleAddToCart}
+                                            className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 transition text-sm md:text-base"
+                                        >
+                                            <ShoppingCart className="h-4 w-4" />
+                                            <span className="hidden sm:inline">Agregar al carrito</span>
+                                            <span className="sm:hidden">Carrito</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => {
                                             if (step === 1) {
@@ -228,7 +269,7 @@ export function PetCustom({ product, children }: PetCustomProps) {
                                         className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
                                     >
                                         {step === 1
-                                            ? "Continuar"
+                                            ? "Comprar ahora"
                                             : isPaying
                                                 ? "Procesando..."
                                                 : "Continuar al pago"}
