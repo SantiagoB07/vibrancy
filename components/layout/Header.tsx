@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { SOCIAL_LINKS } from "@/lib/constants";
+import { CartIcon } from "@/components/cart/CartIcon";
 
 const navLinks = [
   { href: "/", label: "Inicio" },
@@ -27,8 +28,8 @@ export function Header() {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            {/* Desktop Navigation - Centro */}
+            <nav className="hidden md:flex items-center justify-center flex-1 gap-8">
               {navLinks.map((link) => (
                   link.external ? (
                       <a
@@ -52,11 +53,17 @@ export function Header() {
               ))}
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="flex items-center gap-4">
+            {/* Desktop Cart - Derecha (simétrico al logo) */}
+            <div className="hidden md:flex items-center">
+              <CartIcon />
+            </div>
+
+            {/* Mobile: Cart + Menu Button */}
+            <div className="flex items-center gap-2 md:hidden">
+              <CartIcon />
               <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="md:hidden p-2 hover:bg-amber-200 rounded-full transition-colors"
+                  className="p-2 hover:bg-amber-200 rounded-full transition-colors"
               >
                 {mobileMenuOpen ? (
                     <X className="h-6 w-6 text-amber-900" />
