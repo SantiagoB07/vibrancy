@@ -1,13 +1,15 @@
 'use client';
 
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, ShoppingCart, ArrowLeft } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { AIPhraseModal } from "@/components/ai/ai-phrase-modal";
+import { addToCart } from "@/lib/local-cart";
+import { toast } from "sonner";
 
 const cookie = Cookie({ subsets: ["latin"], weight: "400" });
 const courgette = Courgette({ subsets: ["latin"], weight: "400" });
@@ -87,14 +89,56 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
         customerData.address.trim().length > 5 &&
         customerData.locality.trim().length > 2;
 
-    const [isPaying, setIsPaying] = useState(false);
+const [isPaying, setIsPaying] = useState(false);
 
 
     // formateador de número (COP)
     const nf = new Intl.NumberFormat("es-CO");
     const total = selectedVariant?.price_override ?? product.price;
 
-    const handlePay = async () => {
+    const getSelectedFontForDb = () => {
+        if (fontFamily === cookie.style.fontFamily) {
+            return "COOKIE";
+        }
+        if (fontFamily === courgette.style.fontFamily) {
+            return "COURGETTE";
+        }
+        if (fontFamily === "Georgia, 'Times New Roman', serif") {
+            return "GEORGIA";
+        }
+        if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
+            return "LUCIDA_CALLIGRAPHY";
+        }
+        return "UNKNOWN";
+    };
+
+    const handleAddToCart = () => {
+        if (!selectedVariant) {
+            alert("Selecciona un color antes de continuar.");
+            return;
+        }
+
+        addToCart({
+            productId: Number(product.id),
+            productVariantId: selectedVariant.id,
+            variantName: selectedVariant.name,
+            quantity: 1,
+            title: `${product.title} - ${selectedVariant.name}`,
+            unitPrice: total,
+            personalizationFront: phraseFace1 || null,
+            personalizationBack: phraseFace2 || null,
+            engravingFont: getSelectedFontForDb(),
+            productImage: product.img || imageUrls.closedGold || undefined,
+        });
+
+        toast.success("Producto agregado al carrito", {
+            description: `${product.title} - ${selectedVariant.name}`,
+        });
+
+        setIsOpen(false);
+    };
+
+const handlePay = async () => {
         if (!selectedVariant) {
             alert("Selecciona un color antes de continuar.");
             return;
@@ -104,24 +148,6 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
             alert("Por favor completa tus datos de envío.");
             return;
         }
-
-        const getSelectedFontForDb = () => {
-            if (fontFamily === cookie.style.fontFamily) {
-                return "COOKIE";
-            }
-            if (fontFamily === courgette.style.fontFamily) {
-                return "COURGETTE";
-            }
-            if (fontFamily === "Georgia, 'Times New Roman', serif") {
-                return "GEORGIA";
-            }
-            if (fontFamily === "'Lucida Calligraphy', 'Lucida Handwriting', cursive") {
-                return "LUCIDA_CALLIGRAPHY";
-            }
-
-            // Por si en el futuro agregas más opciones y se te olvida actualizar aquí
-            return "UNKNOWN";
-        };
 
         try {
             setIsPaying(true);
@@ -431,16 +457,38 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                         <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
                             {/* Mobile: stack vertical, Desktop: horizontal */}
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                                <h1 className="text-base md:text-xl font-bold text-zinc-900">
-                                    Personaliza tu dije de girasol
-                                </h1>
-                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                <div className="flex items-center gap-3">
+                                    {step === 2 && (
+                                        <button
+                                            onClick={() => setStep(1)}
+                                            className="p-2 hover:bg-gray-100 rounded-full transition"
+                                            aria-label="Volver a personalización"
+                                        >
+                                            <ArrowLeft className="h-5 w-5 text-gray-600" />
+                                        </button>
+                                    )}
+                                    <h1 className="text-base md:text-xl font-bold text-zinc-900">
+                                        Personaliza tu dije de girasol
+                                    </h1>
+                                </div>
+<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                                     <div className="text-left sm:text-right">
                                         <div className="text-xs text-zinc-600">Total</div>
                                         <div className="text-base md:text-2xl font-bold text-zinc-900">
                                             ${" "}{nf.format(total)}
                                         </div>
                                     </div>
+                                    {step === 1 && (
+                                        <button
+                                            onClick={handleAddToCart}
+                                            disabled={!selectedVariant}
+                                            className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                        >
+                                            <ShoppingCart className="h-4 w-4" />
+                                            <span className="hidden sm:inline">Agregar al carrito</span>
+                                            <span className="sm:hidden">Carrito</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => {
                                             if (step === 1) {
@@ -456,7 +504,7 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                         className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
                                     >
                                         {step === 1
-                                            ? "Continuar"
+                                            ? "Comprar ahora"
                                             : isPaying
                                                 ? "Procesando..."
                                                 : "Continuar al pago"}
@@ -587,12 +635,34 @@ export function GirasolCustom({ product, children }: GirasolCustomProps) {
                                                 </span>
                                             </button>
 
-                                            <button
-                                                onClick={toggleVariant}
-                                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors text-sm font-medium"
-                                            >
-                                                {variant === "gold" ? "Cambiar a Silver" : "Cambiar a Gold"}
-                                            </button>
+                                            {/* Mini paleta de colores */}
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                                                <span className="text-sm text-gray-600 mr-1">Color:</span>
+                                                {variants.map((v) => {
+                                                    const key = mapVariantNameToKey(v.name);
+                                                    const isSelected = selectedVariant?.id === v.id;
+                                                    const colorClass = key === "gold" ? "bg-yellow-400" : "bg-gray-300";
+                                                    return (
+                                                        <button
+                                                            key={v.id}
+                                                            onClick={() => {
+                                                                setSelectedVariant(v);
+                                                                setVariant(key);
+                                                                if (typeof window !== "undefined") {
+                                                                    localStorage.setItem("girasol_variant", key);
+                                                                }
+                                                            }}
+                                                            className={`w-6 h-6 rounded-full ${colorClass} transition-all ${
+                                                                isSelected
+                                                                    ? "ring-2 ring-offset-2 ring-black"
+                                                                    : "hover:scale-110"
+                                                            }`}
+                                                            title={v.name}
+                                                            aria-label={`Color ${v.name}`}
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
 
