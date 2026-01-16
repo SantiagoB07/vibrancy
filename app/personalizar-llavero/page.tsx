@@ -10,10 +10,12 @@ import {
     type JSX,
 } from 'react';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CustomerForm, CustomerData } from '@/components/checkout/CustomerForm';
 import { validateImageFile } from '@/lib/utils';
+import { addToCart } from '@/lib/local-cart';
+import { toast } from 'sonner';
 
 
 
@@ -707,9 +709,32 @@ export default function PersonalizarLlaveroPage() {
     }
 
 
-    if (!IMAGES || loadingAddons) {
+if (!IMAGES || loadingAddons) {
         return <div className="p-10 text-center">Cargando...</div>;
     }
+
+    const handleAddToCart = () => {
+        addToCart({
+            productId: PRODUCT_ID,
+            productVariantId: selectedVariant?.id ?? null,
+            variantName: selectedVariant?.name,
+            quantity: 1,
+            title: selectedVariant
+                ? `${PRODUCT_TITLE} - ${selectedVariant.name}`
+                : PRODUCT_TITLE,
+            unitPrice: total,
+            personalizationFront: baseText || null,
+            personalizationBack: JSON.stringify(payload),
+            selectedAddons: selectedAddonIds,
+            productImage: IMAGES?.base[baseColor] || undefined,
+        });
+
+        toast.success("Producto agregado al carrito", {
+            description: selectedVariant
+                ? `${PRODUCT_TITLE} - ${selectedVariant.name}`
+                : PRODUCT_TITLE,
+        });
+    };
 
     const handlePay = async () => {
         if (!isCustomerFormValid) {
@@ -808,16 +833,37 @@ export default function PersonalizarLlaveroPage() {
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10">
                 <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-zinc-900">
-                        Personaliza tu Llavero
-                    </h1>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        {step === 2 && (
+                            <button
+                                onClick={() => setStep(1)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition"
+                                aria-label="Volver a personalización"
+                            >
+                                <ArrowLeft className="h-5 w-5 text-gray-600" />
+                            </button>
+                        )}
+                        <h1 className="text-xl font-bold text-zinc-900">
+                            Personaliza tu Llavero
+                        </h1>
+                    </div>
+<div className="flex items-center gap-4">
                         <div className="text-right">
                             <div className="text-sm text-zinc-600">Total</div>
                             <div className="text-2xl font-bold text-zinc-900">
                                 {nf.format(total)}
                             </div>
                         </div>
+                        {step === 1 && (
+                            <button
+                                onClick={handleAddToCart}
+                                className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-5 py-3 rounded-full font-medium hover:bg-zinc-200 transition"
+                            >
+                                <ShoppingCart className="h-4 w-4" />
+                                <span className="hidden sm:inline">Agregar al carrito</span>
+                                <span className="sm:hidden">Carrito</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 if (step === 1) {
@@ -830,7 +876,7 @@ export default function PersonalizarLlaveroPage() {
                             className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-zinc-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {step === 1
-                                ? 'Continuar'
+                                ? 'Comprar ahora'
                                 : isPaying
                                     ? 'Procesando...'
                                     : 'Continuar al pago'}
