@@ -873,7 +873,7 @@ if (!IMAGES || loadingAddons) {
                                 handlePay();
                             }}
                             disabled={step === 2 && (!isCustomerFormValid || isPaying)}
-                            className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-zinc-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="bg-[#5E3A1E] text-white px-6 py-3 rounded-full font-medium hover:bg-[#4C2F18] transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {step === 1
                                 ? 'Comprar ahora'
