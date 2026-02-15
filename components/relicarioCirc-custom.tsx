@@ -351,7 +351,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-none">
           <VisuallyHidden>
             <DialogTitle>Personaliza tu relicario circular</DialogTitle>
           </VisuallyHidden>
@@ -366,35 +366,31 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
             </button>
 
             {/* HEADER */}
-            <div className="border-b p-4 px-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="border-b px-4 py-3 flex items-center justify-between pr-14">
+              <div className="flex items-center gap-2">
                 {step === 2 && (
                   <button
                     onClick={() => setStep(1)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                    className="p-1.5 hover:bg-gray-100 rounded-full transition"
                     aria-label="Volver a personalización"
                   >
-                    <ArrowLeft className="h-5 w-5 text-gray-600" />
+                    <ArrowLeft className="h-4 w-4 text-gray-600" />
                   </button>
                 )}
-                <h1 className="text-lg md:text-xl font-bold">Personaliza tu relicario circular</h1>
+                <h1 className="text-base font-bold">Personaliza tu relicario circular</h1>
               </div>
 
-<div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-xs text-gray-600">Total</p>
-                  <p className="text-xl font-bold">${nf.format(total)}</p>
-                </div>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-bold">${nf.format(total)}</p>
 
                 {step === 1 && (
                   <button
                     onClick={handleAddToCart}
                     disabled={!selectedVariant}
-                    className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-5 py-2 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                    className="flex items-center gap-1.5 bg-zinc-100 text-zinc-800 px-3 py-2 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    <span className="hidden sm:inline">Agregar al carrito</span>
-                    <span className="sm:hidden">Carrito</span>
+                    <span className="hidden sm:inline">Carrito</span>
                   </button>
                 )}
 
@@ -407,7 +403,7 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                       handlePay();
                     }}
                     disabled={step === 2 && !isCustomerFormValid}
-                    className="bg-black text-white px-6 py-2 rounded-full disabled:opacity-60"
+                    className="bg-[#5E3A1E] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4C2F18] disabled:opacity-60 disabled:cursor-not-allowed transition text-sm"
                 >
                   {step === 1 ? "Comprar ahora" : isPaying ? "Procesando..." : "Continuar al pago"}
                 </button>
@@ -415,100 +411,97 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
             </div>
 
             {/* CONTENT */}
-            <div className="flex-1 overflow-y-auto p-8">
+            <div className="flex-1 overflow-y-auto p-6">
 
               {/* STEP 1 */}
               {step === 1 && (
-                  <>
-                    {/* Preview del relicario con rotación */}
-                    <div className="flex justify-center mb-6">
+                <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                  {/* Columna izquierda: Preview del relicario */}
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <div
+                      className="relative w-[260px] h-[260px] md:w-[280px] md:h-[280px] perspective-1000"
+                      style={{ transformStyle: "preserve-3d" }}
+                    >
+                      {/* Frente (Anverso) */}
                       <div
-                          className="relative w-[300px] h-[300px] perspective-1000"
-                          style={{ transformStyle: "preserve-3d" }}
+                        className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                          currentFace === 1 ? "rotate-y-0" : "rotate-y-180"
+                        }`}
                       >
-                        {/* Frente (Anverso) */}
+                        <Image
+                          src={baseImg}
+                          alt="Relicario circular (frente)"
+                          fill
+                          className="object-contain"
+                        />
+                        {/* Overlay texto frente */}
                         <div
-                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                currentFace === 1 ? "rotate-y-0" : "rotate-y-180"
-                            }`}
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{
+                            opacity: currentFace === 1 && !isRotating ? 1 : 0,
+                            transition: "opacity 0.2s ease-in-out",
+                          }}
                         >
-                          <Image
-                              src={baseImg}
-                              alt="Relicario circular (frente)"
-                              fill
-                              className="object-contain"
-                          />
-
-                          {/* Overlay texto frente */}
-                          <div
-                              className="absolute inset-0 flex items-center justify-center"
-                              style={{
-                                opacity: currentFace === 1 && !isRotating ? 1 : 0,
-                                transition: "opacity 0.2s ease-in-out",
-                              }}
+                          <span
+                            className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                            style={{
+                              fontFamily,
+                              fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+                              color: "#3b3b3b",
+                              textShadow: `
+                                0 1px 1px rgba(255,255,255,0.8),
+                                0 2px 2px rgba(0,0,0,0.2)
+                              `,
+                            }}
                           >
-                            <span
-                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
-                                style={{
-                                  fontFamily,
-                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
-                                  color: "#3b3b3b",
-                                  textShadow: `
-                                    0 1px 1px rgba(255,255,255,0.8),
-                                    0 2px 2px rgba(0,0,0,0.2)
-                                  `,
-                                }}
-                            >
-                              {formatTextWithBreak(frontMessage) || "Frase anverso"}
-                            </span>
-                          </div>
+                            {formatTextWithBreak(frontMessage) || "Frase anverso"}
+                          </span>
                         </div>
+                      </div>
 
-                        {/* Reverso */}
+                      {/* Reverso */}
+                      <div
+                        className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
+                          currentFace === 2 ? "rotate-y-0" : "-rotate-y-180"
+                        }`}
+                      >
+                        <Image
+                          src={baseImg}
+                          alt="Relicario circular (reverso)"
+                          fill
+                          className="object-contain"
+                        />
+                        {/* Overlay texto reverso */}
                         <div
-                            className={`absolute inset-0 transition-transform duration-500 backface-hidden ${
-                                currentFace === 2 ? "rotate-y-0" : "-rotate-y-180"
-                            }`}
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{
+                            opacity: currentFace === 2 && !isRotating ? 1 : 0,
+                            transition: "opacity 0.2s ease-in-out",
+                          }}
                         >
-                          <Image
-                              src={baseImg}
-                              alt="Relicario circular (reverso)"
-                              fill
-                              className="object-contain"
-                          />
-
-                          {/* Overlay texto reverso */}
-                          <div
-                              className="absolute inset-0 flex items-center justify-center"
-                              style={{
-                                opacity: currentFace === 2 && !isRotating ? 1 : 0,
-                                transition: "opacity 0.2s ease-in-out",
-                              }}
+                          <span
+                            className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+                            style={{
+                              fontFamily,
+                              fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+                              color: "#3b3b3b",
+                              textShadow: `
+                                0 1px 1px rgba(255,255,255,0.8),
+                                0 2px 2px rgba(0,0,0,0.2)
+                              `,
+                            }}
                           >
-                            <span
-                                className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
-                                style={{
-                                  fontFamily,
-                                  fontSize: `${20 + (isCookie ? 2 : 0)}px`,
-                                  color: "#3b3b3b",
-                                  textShadow: `
-                                    0 1px 1px rgba(255,255,255,0.8),
-                                    0 2px 2px rgba(0,0,0,0.2)
-                                  `,
-                                }}
-                            >
-                              {formatTextWithBreak(backMessage) || "Frase reverso"}
-                            </span>
-                          </div>
+                            {formatTextWithBreak(backMessage) || "Frase reverso"}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Botones de control: Rotar y Cambiar color */}
-                    <div className="flex justify-center mb-6 space-x-4">
+                    {/* Botones de control debajo de la imagen */}
+                    <div className="flex flex-wrap justify-center mt-4 gap-3">
                       <button
-                          onClick={handleRotate}
-                          className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                        onClick={handleRotate}
+                        className="flex items-center space-x-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                       >
                         <RotateCcw className="h-4 w-4" />
                         <span className="text-sm font-medium">
@@ -518,11 +511,11 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
 
                       {/* Mini paleta de colores */}
                       <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-                        <span className="text-sm text-gray-600 mr-1">Color:</span>
+                        <span className="text-sm text-gray-600">Color:</span>
                         {variants.map((v) => {
-                          const isGold = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold") || v.name.toLowerCase().includes("dorado");
+                          const isGoldVariant = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold") || v.name.toLowerCase().includes("dorado");
                           const isSelected = selectedVariant?.id === v.id;
-                          const colorClass = isGold ? "bg-yellow-400" : "bg-gray-300";
+                          const colorClass = isGoldVariant ? "bg-yellow-400" : "bg-gray-300";
                           return (
                             <button
                               key={v.id}
@@ -539,30 +532,33 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                         })}
                       </div>
                     </div>
+                  </div>
 
+                  {/* Columna derecha: Controles */}
+                  <div className="flex-1 flex flex-col justify-center space-y-5">
                     {/* Campo de texto dinámico según cara */}
-                    <div className="max-w-md mx-auto mb-6">
-                      <label htmlFor="relicario-input" className="block text-sm font-medium mb-1">
+                    <div>
+                      <label htmlFor="relicario-input" className="block text-sm font-medium text-gray-700 mb-2">
                         {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
                       </label>
                       <div className="flex gap-2 items-center">
                         <input
-                            id="relicario-input"
-                            type="text"
-                            value={currentFace === 1 ? frontMessage : backMessage}
-                            onChange={(e) => {
-                              const newValue = e.target.value;
-                              if (newValue.length <= MAX_CHARS) {
-                                if (currentFace === 1) {
-                                  setFrontMessage(newValue);
-                                } else {
-                                  setBackMessage(newValue);
-                                }
+                          id="relicario-input"
+                          type="text"
+                          value={currentFace === 1 ? frontMessage : backMessage}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            if (newValue.length <= MAX_CHARS) {
+                              if (currentFace === 1) {
+                                setFrontMessage(newValue);
+                              } else {
+                                setBackMessage(newValue);
                               }
-                            }}
-                            placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
-                            maxLength={MAX_CHARS}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
+                            }
+                          }}
+                          placeholder={currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                          maxLength={MAX_CHARS}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm font-medium"
                         />
                         <AIPhraseModal
                           productType="relicario-circular"
@@ -575,79 +571,87 @@ export function RelicarioCircCustom({ product, children }: RelicarioCircCustomPr
                             }
                           }}
                         >
-                          <span>Sugerir</span>
+                          <span>Ideas</span>
                         </AIPhraseModal>
                       </div>
                       <p
-                          className={`text-xs mt-1 text-center ${
-                              (currentFace === 1 ? frontMessage.length : backMessage.length) >= MAX_CHARS
-                                  ? "text-red-500"
-                                  : "text-gray-500"
-                          }`}
+                        className={`text-xs mt-1 ${
+                          (currentFace === 1 ? frontMessage.length : backMessage.length) >= MAX_CHARS
+                            ? "text-red-500"
+                            : "text-gray-500"
+                        }`}
                       >
                         {currentFace === 1
-                            ? `${frontMessage.length}/${MAX_CHARS} caracteres`
-                            : `${backMessage.length}/${MAX_CHARS} caracteres`}
+                          ? `${frontMessage.length}/${MAX_CHARS} caracteres`
+                          : `${backMessage.length}/${MAX_CHARS} caracteres`}
                       </p>
                     </div>
 
-                    {/* Font selector */}
-                    <div className="flex justify-center mb-6">
+                    {/* Selector de fuente */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Estilo de letra
+                      </label>
                       <select
-                          value={fontFamily}
-                          onChange={(e) => setFontFamily(e.target.value)}
-                          className="border px-3 py-2 rounded-lg"
+                        value={fontFamily}
+                        onChange={(e) => setFontFamily(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 text-sm"
                       >
-                        <option value={cookieFont.style.fontFamily}>Cookie</option>
-                        <option value={courgetteFont.style.fontFamily}>Courgette</option>
-                        <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+                        <option value={cookieFont.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                        <option value={courgetteFont.style.fontFamily}>Courgette (caligráfica)</option>
+                        <option value="Georgia, 'Times New Roman', serif">Georgia (clásica)</option>
                         <option value="'Lucida Calligraphy', 'Lucida Handwriting', cursive">
-                          Lucida Calligraphy
+                          Lucida Calligraphy (elegante)
                         </option>
                       </select>
                     </div>
 
                     {/* Image Upload */}
-                    <div className="max-w-md mx-auto">
-                      <label className="block text-sm font-medium mb-2">Fotos (máx. 2)</label>
-
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Fotos para el relicario (máx. 2)
+                      </label>
                       <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (images.length >= MAX_IMAGES) {
-                              alert("Máximo 2 fotos");
-                              return;
-                            }
-                            setImages([...images, file]);
-                          }}
+                        type="file"
+                        accept="image/*"
+                        disabled={images.length >= MAX_IMAGES}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (images.length >= MAX_IMAGES) {
+                            alert("Máximo 2 fotos");
+                            return;
+                          }
+                          setImages([...images, file]);
+                          e.target.value = "";
+                        }}
+                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
 
                       {/* Thumbnails */}
-                      <div className="flex gap-4 mt-4">
-                        {images.map((img, i) => (
-                            <div key={i} className="relative">
+                      {images.length > 0 && (
+                        <div className="flex gap-4 mt-4">
+                          {images.map((img, i) => (
+                            <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden">
                               <Image
-                                  src={URL.createObjectURL(img)}
-                                  alt="Foto subida"
-                                  width={80}
-                                  height={80}
-                                  className="rounded-lg object-cover"
+                                src={URL.createObjectURL(img)}
+                                alt={`Foto ${i + 1}`}
+                                fill
+                                className="object-cover"
                               />
-
                               <button
-                                  onClick={() => setImages(images.filter((_, idx) => idx !== i))}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs"
+                                onClick={() => setImages(images.filter((_, idx) => idx !== i))}
+                                className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
                               >
-                                X
+                                <X className="h-3 w-3 text-gray-600" />
                               </button>
                             </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </>
+                  </div>
+                </div>
               )}
 
               {/* STEP 2 */}
