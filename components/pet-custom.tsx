@@ -201,7 +201,7 @@ const handlePay = async () => {
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
 
-<DialogContent className="sm:max-w-2xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-none">
                 <VisuallyHidden>
                     <DialogTitle>Personaliza tu placa para mascota</DialogTitle>
                 </VisuallyHidden>
@@ -218,77 +218,70 @@ const handlePay = async () => {
 
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
-                        <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
-                            {/* Mobile: stack vertical, Desktop: horizontal */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                                <div className="flex items-center gap-3">
-                                    {step === 2 && (
-                                        <button
-                                            onClick={() => setStep(1)}
-                                            className="p-2 hover:bg-gray-100 rounded-full transition"
-                                            aria-label="Volver a personalización"
-                                        >
-                                            <ArrowLeft className="h-5 w-5 text-gray-600" />
-                                        </button>
-                                    )}
-                                    <h1 className="text-base md:text-xl font-bold text-zinc-900">
-                                        {step === 1
-                                            ? "Personaliza tu placa"
-                                            : "Completa tus datos de envío"}
-                                    </h1>
-                                </div>
-<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                                    <div className="text-left sm:text-right">
-                                        <div className="text-xs text-zinc-600">Total</div>
-                                        <div className="text-base md:text-2xl font-bold text-zinc-900">
-                                            ${" "}
-                                            {nf.format(total)}
-                                        </div>
-                                    </div>
-                                    {step === 1 && (
-                                        <button
-                                            onClick={handleAddToCart}
-                                            className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 transition text-sm md:text-base"
-                                        >
-                                            <ShoppingCart className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Agregar al carrito</span>
-                                            <span className="sm:hidden">Carrito</span>
-                                        </button>
-                                    )}
+                        <div className="px-4 py-3 flex items-center justify-between pr-14">
+                            <div className="flex items-center gap-2">
+                                {step === 2 && (
                                     <button
-                                        onClick={() => {
-                                            if (step === 1) {
-                                                setStep(2);
-                                                return;
-                                            }
-                                            handlePay();
-                                        }}
-                                        disabled={
-                                            step === 2 && (!isCustomerFormValid || isPaying)
-                                        }
-                                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                        onClick={() => setStep(1)}
+                                        className="p-1.5 hover:bg-gray-100 rounded-full transition"
+                                        aria-label="Volver a personalización"
                                     >
-                                        {step === 1
-                                            ? "Comprar ahora"
-                                            : isPaying
-                                                ? "Procesando..."
-                                                : "Continuar al pago"}
+                                        <ArrowLeft className="h-4 w-4 text-gray-600" />
                                     </button>
+                                )}
+                                <h1 className="text-base font-bold text-zinc-900">
+                                    {step === 1
+                                        ? "Personaliza tu placa"
+                                        : "Datos de envío"}
+                                </h1>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="text-right mr-1">
+                                    <div className="text-xs text-zinc-500">Total</div>
+                                    <div className="text-lg font-bold text-zinc-900">
+                                        ${nf.format(total)}
+                                    </div>
                                 </div>
+                                {step === 1 && (
+                                    <button
+                                        onClick={handleAddToCart}
+                                        className="flex items-center gap-1.5 bg-zinc-100 text-zinc-700 px-3 py-2 rounded-full font-medium hover:bg-zinc-200 transition text-sm"
+                                    >
+                                        <ShoppingCart className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Carrito</span>
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => {
+                                        if (step === 1) {
+                                            setStep(2);
+                                            return;
+                                        }
+                                        handlePay();
+                                    }}
+                                    disabled={step === 2 && (!isCustomerFormValid || isPaying)}
+                                    className="bg-[#5E3A1E] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#4C2F18] disabled:opacity-60 disabled:cursor-not-allowed transition"
+                                >
+                                    {step === 1
+                                        ? "Comprar ahora"
+                                        : isPaying
+                                            ? "Procesando..."
+                                            : "Continuar al pago"}
+                                </button>
                             </div>
                         </div>
                     </div>
 
                     {/* CONTENIDO DEL MODAL (CON SCROLL) */}
-                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-10 pt-6">
+                    <div className="flex-1 overflow-y-auto p-6">
                         {step === 1 && (
-                            <>
-                                {/* Pet Tag Preview */}
-                                <div className="flex justify-center mb-6 md:mb-8">
+                            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                                {/* Columna izquierda: Vista de la placa */}
+                                <div className="flex-1 flex flex-col items-center justify-center">
                                     <div className="relative">
                                         {/* Bone-shaped Pet Tag IMAGE */}
                                         <div
-                                            className="relative w-48 md:w-72 transition-transform duration-500"
+                                            className="relative w-56 md:w-72 transition-transform duration-500"
                                             style={{
                                                 transform:
                                                     currentFace === 2
@@ -300,7 +293,7 @@ const handlePay = async () => {
                                             <img
                                                 src="/images/pet-tag-removebg-preview.png"
                                                 alt="Placa para mascota en forma de hueso"
-                                                className="block w-48 md:w-72 h-auto select-none pointer-events-none drop-shadow"
+                                                className="block w-56 md:w-72 h-auto select-none pointer-events-none drop-shadow"
                                             />
 
                                             {/* Text overlay */}
@@ -333,32 +326,33 @@ const handlePay = async () => {
                                                 >
                                                     {currentFace === 1 ? petName : ownerInfo}
                                                 </div>
-
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Face Switch Button */}
-                                <div className="flex justify-center mb-4 md:mb-6">
+                                    {/* Face Switch Button */}
                                     <button
                                         onClick={() => {
                                             setIsRotating(true);
                                             setCurrentFace(currentFace === 1 ? 2 : 1);
                                             setTimeout(() => setIsRotating(false), 500);
                                         }}
-                                        className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                                        className="flex items-center space-x-2 px-3 py-2 mt-4 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
                                     >
                                         <RotateCcw className="h-4 w-4" />
-                                        <span className="text-xs md:text-sm font-medium">
-                      {currentFace === 1 ? "Ver cara 2" : "Ver cara 1"}
-                    </span>
+                                        <span className="text-sm font-medium">
+                                            {currentFace === 1 ? "Ver cara 2" : "Ver cara 1"}
+                                        </span>
                                     </button>
                                 </div>
 
-                                {/* Customization Input */}
-                                <div className="space-y-4">
+                                {/* Columna derecha: Controles */}
+                                <div className="flex-1 flex flex-col justify-center space-y-5">
+                                    {/* Input de texto */}
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            {currentFace === 1 ? "Nombre de tu mascota" : "Info del dueño"}
+                                        </label>
                                         <div className="flex gap-2 items-start">
                                             <textarea
                                                 value={currentValue}
@@ -375,27 +369,18 @@ const handlePay = async () => {
                                                     if (currentFace === 1) {
                                                         setPetName(clamped);
                                                         if (typeof window !== "undefined") {
-                                                            localStorage.setItem(
-                                                                "petTag_petName",
-                                                                clamped
-                                                            );
+                                                            localStorage.setItem("petTag_petName", clamped);
                                                         }
                                                     } else {
                                                         setOwnerInfo(clamped);
                                                         if (typeof window !== "undefined") {
-                                                            localStorage.setItem(
-                                                                "petTag_ownerInfo",
-                                                                clamped
-                                                            );
+                                                            localStorage.setItem("petTag_ownerInfo", clamped);
                                                         }
                                                     }
                                                 }}
                                                 placeholder="Personaliza tu placa (Enter para nueva línea)"
-                                                rows={Math.min(
-                                                    MAX_LINES,
-                                                    Math.max(1, currentLines.length)
-                                                )}
-                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                                rows={Math.min(MAX_LINES, Math.max(2, currentLines.length))}
+                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm font-medium resize-none"
                                             />
                                             <AIPhraseModal
                                                 productType="pet-tag"
@@ -415,43 +400,45 @@ const handlePay = async () => {
                                                     }
                                                 }}
                                             >
-                                                <span>Sugerir</span>
+                                                <span>Ideas</span>
                                             </AIPhraseModal>
                                         </div>
-                                        <div className="mt-4 flex justify-center">
-                                            <select
-                                                value={fontFamily}
-                                                onChange={(e) => {
-                                                    const newFont = e.target.value;
-                                                    setFontFamily(newFont);
-                                                    if (typeof window !== "undefined") {
-                                                        localStorage.setItem("petTag_fontFamily", newFont);
-                                                    }
-                                                }}
-                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                            >
-                                                <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
-                                                <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
-                                                <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
-                                                <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
-                                                    Lucida Calligraphy (elegante)
-                                                </option>
-                                            </select>
-                                        </div>
-                                        <div className="mt-1 text-center text-xs text-gray-500">
+                                        <div className="mt-1 text-xs text-gray-500">
                                             {currentLines.map((l, i) => (
-                                                <div key={i}>{`L${i + 1}: ${l.length}/${MAX_PER_LINE} caracteres`}</div>
+                                                <span key={i} className="mr-3">{`L${i + 1}: ${l.length}/${MAX_PER_LINE}`}</span>
                                             ))}
                                             {currentLines.length < MAX_LINES && (
-                                                <div>{`Puedes añadir otra línea (máx. ${MAX_LINES}).`}</div>
+                                                <span className="text-gray-400">(Enter para nueva línea)</span>
                                             )}
                                         </div>
+                                    </div>
 
-
-
+                                    {/* Selector de fuente */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Estilo de letra
+                                        </label>
+                                        <select
+                                            value={fontFamily}
+                                            onChange={(e) => {
+                                                const newFont = e.target.value;
+                                                setFontFamily(newFont);
+                                                if (typeof window !== "undefined") {
+                                                    localStorage.setItem("petTag_fontFamily", newFont);
+                                                }
+                                            }}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 text-sm"
+                                        >
+                                            <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                                            <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                                            <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                                            <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                                                Lucida Calligraphy (elegante)
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {step === 2 && (
