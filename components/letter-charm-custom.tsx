@@ -321,7 +321,7 @@ const handlePay = async () => {
                 {children}
             </DialogTrigger>
 
-<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-none">
                 <VisuallyHidden>
                     <DialogTitle>Personaliza tu dije de carta</DialogTitle>
                 </VisuallyHidden>
@@ -336,37 +336,36 @@ const handlePay = async () => {
 
                     {/* HEADER DEL MODAL */}
                     <div className="bg-white border-b">
-                        <div className="px-6 py-4 flex items-center justify-between pr-16">
-                            <div className="flex items-center gap-3">
+                        <div className="px-4 py-3 flex items-center justify-between pr-14">
+                            <div className="flex items-center gap-2">
                                 {step === 2 && (
                                     <button
                                         onClick={() => setStep(1)}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition"
+                                        className="p-1.5 hover:bg-gray-100 rounded-full transition"
                                         aria-label="Volver a personalización"
                                     >
-                                        <ArrowLeft className="h-5 w-5 text-gray-600" />
+                                        <ArrowLeft className="h-4 w-4 text-gray-600" />
                                     </button>
                                 )}
-                                <h1 className="text-lg md:text-xl font-bold text-zinc-900">
+                                <h1 className="text-base font-bold text-zinc-900">
                                     Personaliza tu dije de carta
                                 </h1>
                             </div>
-<div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    <div className="text-xs md:text-sm text-zinc-600">Total</div>
-                                    <div className="text-lg md:text-2xl font-bold text-zinc-900">
-                                        ${" "}{nf.format(total)}
+                            <div className="flex items-center gap-2">
+                                <div className="text-right mr-1">
+                                    <div className="text-xs text-zinc-500">Total</div>
+                                    <div className="text-lg font-bold text-zinc-900">
+                                        ${nf.format(total)}
                                     </div>
                                 </div>
                                 {step === 1 && (
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={!selectedVariant}
-                                        className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                        className="flex items-center gap-1.5 bg-zinc-100 text-zinc-700 px-3 py-2 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm"
                                     >
                                         <ShoppingCart className="h-4 w-4" />
-                                        <span className="hidden sm:inline">Agregar al carrito</span>
-                                        <span className="sm:hidden">Carrito</span>
+                                        <span className="hidden sm:inline">Carrito</span>
                                     </button>
                                 )}
                                 <button
@@ -378,26 +377,23 @@ const handlePay = async () => {
                                         handlePay();
                                     }}
                                     disabled={step === 2 && (!isCustomerFormValid || isPaying)}
-                                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                                    className="bg-[#5E3A1E] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#4C2F18] disabled:opacity-60 disabled:cursor-not-allowed transition"
                                 >
                                     {step === 1 ? "Comprar ahora" : isPaying ? "Procesando..." : "Continuar al pago"}
                                 </button>
-
-
                             </div>
                         </div>
                     </div>
 
                     {/* CONTENIDO CON SCROLL */}
-                    <div className="flex-1 overflow-y-auto p-8 pb-10 pt-6">
+                    <div className="flex-1 overflow-y-auto p-6">
                         {/* Paso 1: personalización */}
                         {step === 1 && (
-                            <>
-
-                                {/* Vista del dije */}
-                                <div className="flex justify-center gap-6 mb-8 items-center">
+                            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                                {/* Columna izquierda: Vista del dije */}
+                                <div className="flex-1 flex flex-col items-center justify-center">
                                     <div
-                                        className="relative w-[300px] h-[300px] perspective-1000"
+                                        className="relative w-[260px] h-[260px] md:w-[280px] md:h-[280px] perspective-1000"
                                         style={{ transformStyle: 'preserve-3d' }}
                                     >
                                         {/* cara 1: sobre (dije cerrado) */}
@@ -435,74 +431,74 @@ const handlePay = async () => {
                                                     height: '100px',
                                                 }}
                                             >
-                    <span
-                        className={`${isCookie ? "text-2xl" : "text-xl"} leading-tight tracking-wide text-[#3b3b3b]`}
-                        style={{
-                            fontFamily,
-                            wordBreak: 'break-word',
-                            whiteSpace: 'pre-wrap',
-                        }}
-                    >
-  {message}
-</span>
-
+                                                <span
+                                                    className={`${isCookie ? "text-2xl" : "text-xl"} leading-tight tracking-wide text-[#3b3b3b]`}
+                                                    style={{
+                                                        fontFamily,
+                                                        wordBreak: 'break-word',
+                                                        whiteSpace: 'pre-wrap',
+                                                    }}
+                                                >
+                                                    {message}
+                                                </span>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Botones de control debajo de la imagen */}
+                                    <div className="flex flex-wrap justify-center mt-4 gap-3">
+                                        <button
+                                            onClick={handleRotate}
+                                            className="flex items-center space-x-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                            <span className="text-sm font-medium">
+                                                {currentFace === 1 ? 'Ver adentro' : 'Ver sobre'}
+                                            </span>
+                                        </button>
+
+                                        {/* Mini paleta de colores */}
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                                            <span className="text-sm text-gray-600">Color:</span>
+                                            {variants.map((v) => {
+                                                const key = mapVariantNameToKey(v.name);
+                                                const isSelected = selectedVariant?.id === v.id;
+                                                const colorClasses: Record<VariantKey, string> = {
+                                                    gold: "bg-yellow-400",
+                                                    silver: "bg-gray-300",
+                                                    rose: "bg-pink-300",
+                                                };
+                                                return (
+                                                    <button
+                                                        key={v.id}
+                                                        onClick={() => {
+                                                            setSelectedVariant(v);
+                                                            setVariantKey(key);
+                                                            if (typeof window !== 'undefined') {
+                                                                localStorage.setItem('letter_variant_key', key);
+                                                            }
+                                                        }}
+                                                        className={`w-6 h-6 rounded-full ${colorClasses[key]} transition-all ${
+                                                            isSelected
+                                                                ? "ring-2 ring-offset-2 ring-black"
+                                                                : "hover:scale-110"
+                                                        }`}
+                                                        title={v.name}
+                                                        aria-label={`Color ${v.name}`}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Botones de control */}
-                                <div className="flex justify-center mb-6 space-x-4">
-                                    <button
-                                        onClick={handleRotate}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                        <span className="text-sm font-medium">
-                  Rotar dije ({currentFace === 1 ? 'Ver adentro' : 'Ver sobre'})
-                </span>
-                                    </button>
-
-                                    {/* Mini paleta de colores */}
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-                                        <span className="text-sm text-gray-600 mr-1">Color:</span>
-                                        {variants.map((v) => {
-                                            const key = mapVariantNameToKey(v.name);
-                                            const isSelected = selectedVariant?.id === v.id;
-                                            const colorClasses: Record<VariantKey, string> = {
-                                                gold: "bg-yellow-400",
-                                                silver: "bg-gray-300",
-                                                rose: "bg-pink-300",
-                                            };
-                                            return (
-                                                <button
-                                                    key={v.id}
-                                                    onClick={() => {
-                                                        setSelectedVariant(v);
-                                                        setVariantKey(key);
-                                                        if (typeof window !== 'undefined') {
-                                                            localStorage.setItem('letter_variant_key', key);
-                                                        }
-                                                    }}
-                                                    className={`w-6 h-6 rounded-full ${colorClasses[key]} transition-all ${
-                                                        isSelected
-                                                            ? "ring-2 ring-offset-2 ring-black"
-                                                            : "hover:scale-110"
-                                                    }`}
-                                                    title={v.name}
-                                                    aria-label={`Color ${v.name}`}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Inputs de texto */}
-                                <div className="space-y-4 max-w-md mx-auto">
+                                {/* Columna derecha: Controles */}
+                                <div className="flex-1 flex flex-col justify-center space-y-5">
+                                    {/* Mensaje de la carta */}
                                     <div>
                                         <label
                                             htmlFor="letter-message"
-                                            className="block text-sm font-medium text-gray-700 mb-1 text-center"
+                                            className="block text-sm font-medium text-gray-700 mb-2"
                                         >
                                             Mensaje de la carta
                                         </label>
@@ -511,7 +507,7 @@ const handlePay = async () => {
                                                 id="letter-message"
                                                 value={message}
                                                 onChange={(e) => {
-                                                    const val = e.target.value.slice(0, 50); // Limite de caracteres
+                                                    const val = e.target.value.slice(0, 50);
                                                     setMessage(val);
                                                     if (typeof window !== 'undefined') {
                                                         localStorage.setItem('letter_message', val);
@@ -520,7 +516,7 @@ const handlePay = async () => {
                                                 placeholder="Escribe tu mensaje aquí..."
                                                 maxLength={50}
                                                 rows={3}
-                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide resize-none"
+                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm font-medium resize-none"
                                             />
                                             <AIPhraseModal
                                                 productType="letter-charm"
@@ -532,42 +528,44 @@ const handlePay = async () => {
                                                     }
                                                 }}
                                             >
-                                                <span>Sugerir</span>
+                                                <span>Ideas</span>
                                             </AIPhraseModal>
                                         </div>
                                         <p
-                                            className={`text-xs mt-1 text-center ${
+                                            className={`text-xs mt-1 ${
                                                 message.length >= 50 ? 'text-red-500' : 'text-gray-500'
                                             }`}
                                         >
                                             {message.length}/50 caracteres
                                         </p>
                                     </div>
-                                </div>
 
-                                {/* Selector de fuente */}
-                                <div className="mt-4 flex justify-center">
-                                    <select
-                                        value={fontFamily}
-                                        onChange={(e) => {
-                                            const newFont = e.target.value;
-                                            setFontFamily(newFont);
-                                            if (typeof window !== 'undefined') {
-                                                localStorage.setItem('letter_fontFamily', newFont);
-                                            }
-                                        }}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                    >
-                                        <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
-                                        <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
-                                        <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
-                                        <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
-                                            Lucida Calligraphy (elegante)
-                                        </option>
-                                    </select>
+                                    {/* Selector de fuente */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Estilo de letra
+                                        </label>
+                                        <select
+                                            value={fontFamily}
+                                            onChange={(e) => {
+                                                const newFont = e.target.value;
+                                                setFontFamily(newFont);
+                                                if (typeof window !== 'undefined') {
+                                                    localStorage.setItem('letter_fontFamily', newFont);
+                                                }
+                                            }}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 text-sm"
+                                        >
+                                            <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                                            <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                                            <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                                            <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                                                Lucida Calligraphy (elegante)
+                                            </option>
+                                        </select>
+                                    </div>
                                 </div>
-
-                            </>
+                            </div>
                         )}
                         {step === 2 && (
                             <CustomerForm
