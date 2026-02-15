@@ -6,7 +6,6 @@ import { useState, useEffect, type ChangeEvent, type ReactNode } from "react";
 
 import Image from "next/image";
 import { Cookie, Courgette } from "next/font/google";
-import { PresetDesign } from "./preset-design-modal";
 import { createClient } from "@supabase/supabase-js";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { validateImageFile } from "@/lib/utils";
@@ -73,86 +72,6 @@ export function RelicarioCustom({ product, children }: RelicarioCustomProps) {
     neighborhood: "",
     locality: "",
   });
-  const [textColor, setTextColor] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("petTag_textColor") || "#3b3b3b";
-    }
-    return "#3b3b3b";
-  });
-
-  const [designFontSize, setDesignFontSize] = useState(() => {
-    if (typeof window !== "undefined") {
-      return Number(localStorage.getItem("petTag_fontSize")) || 20;
-    }
-    return 20;
-  });
-
-  // Diseños predeterminados
-  const PRESET_DESIGNS: PresetDesign[] = [
-    { id: "alas", path: "/images/eRelicarios/alas.svg", label: "Alas", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -8, width: 120, height: 67 },
-    { id: "anillos", path: "/images/eRelicarios/anillos.svg", label: "Anillos", position: "below", defaultText: "Nombre", offsetX: 0, offsetY: -2, width: 105, height: 59 },
-    { id: "corazon", path: "/images/eRelicarios/corazon.svg", label: "Corazón", position: "right", defaultText: "Perdóname", offsetX: -6, offsetY: 0, width: 105, height: 59 },
-    { id: "corazon2", path: "/images/eRelicarios/corazon2.svg", label: "Corazón 2", position: "below", defaultText: "Vuelve", offsetX: 0, offsetY: -6, width: 105, height: 59 },
-    { id: "corazon3", path: "/images/eRelicarios/corazon3.svg", label: "Corazón 3", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -6, width: 105, height: 59 },
-    { id: "corazon4", path: "/images/eRelicarios/corazon4.svg", label: "Corazón 4", position: "below", defaultText: "Te amo", offsetX: 0, offsetY: -4, width: 120, height: 67 },
-    { id: "estrellas", path: "/images/eRelicarios/estrellas.svg", label: "Estrellas", position: "right", defaultText: "Siempre juntos", offsetX: -14, offsetY: 0, width: 120, height: 67 },
-    { id: "flores", path: "/images/eRelicarios/flores.svg", label: "Flores", position: "below", defaultText: "Nose", offsetX: 0, offsetY: -6, width: 120, height: 67 },
-    { id: "flores2", path: "/images/eRelicarios/flores2.svg", label: "Flores 2", position: "right", defaultText: "tampoco", offsetX: -8, offsetY: 0, width: 150, height: 84 },
-    { id: "mariposas", path: "/images/eRelicarios/mariposas.svg", label: "Mariposas", position: "right", defaultText: "algo", offsetX: -14, offsetY: 0, width: 105, height: 59 },
-  ];
-
-  const [selectedDesign, setSelectedDesign] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("petTag_design") || null;
-    }
-    return null;
-  });
-
-  const [selectedDesignConfig, setSelectedDesignConfig] = useState<PresetDesign | null>(() => {
-    if (typeof window !== "undefined") {
-      const raw = localStorage.getItem("petTag_design_config");
-      if (raw) {
-        try {
-          return JSON.parse(raw) as PresetDesign;
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  });
-
-  const effectiveDesign =
-PRESET_DESIGNS.find((d) => d.path === (selectedDesign || selectedDesignConfig?.path)) ||
-    selectedDesignConfig;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _chooseDesign = (design: PresetDesign | null) => {
-    setSelectedDesign(design ? design.path : null);
-    setSelectedDesignConfig(design || null);
-
-    if (typeof window !== "undefined") {
-      if (design) {
-        localStorage.setItem("petTag_design", design.path);
-        localStorage.setItem("petTag_design_config", JSON.stringify(design));
-        if (design.fontFamily) {
-          setFontFamily(design.fontFamily);
-          localStorage.setItem("petTag_fontFamily", design.fontFamily);
-        }
-        if (design.color) {
-          setTextColor(design.color);
-          localStorage.setItem("petTag_textColor", design.color);
-        }
-        if (design.fontSize) {
-          setDesignFontSize(design.fontSize);
-          localStorage.setItem("petTag_fontSize", String(design.fontSize));
-        }
-      } else {
-        localStorage.removeItem("petTag_design");
-        localStorage.removeItem("petTag_design_config");
-      }
-    }
-  };
 
   // ---- lógica de checkout / supabase (rama fix/general-items) ----
   const isCustomerFormValid =
@@ -458,7 +377,7 @@ const handlePay = async () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-<DialogContent className="sm:max-w-3xl w-full max-h-[90vh] p-0 bg-transparent border-none">
+<DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-none">
         <VisuallyHidden>
           <DialogTitle>Personaliza tu relicario corazón</DialogTitle>
         </VisuallyHidden>
@@ -472,74 +391,65 @@ const handlePay = async () => {
           </button>
 
           {/* HEADER DEL MODAL (layout del redesign + lógica de MP) */}
-          <div className="bg-white border-b">
-            <div className="px-4 md:px-6 py-3 md:py-4 pr-12 md:pr-16">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <div className="flex items-center gap-3">
-                  {step === 2 && (
-                    <button
-                      onClick={() => setStep(1)}
-                      className="p-2 hover:bg-gray-100 rounded-full transition"
-                      aria-label="Volver a personalización"
-                    >
-                      <ArrowLeft className="h-5 w-5 text-gray-600" />
-                    </button>
-                  )}
-                  <h1 className="text-base md:text-xl font-bold text-zinc-900">
-                    Personaliza tu relicario corazón
-                  </h1>
-                </div>
-<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                  <div className="text-left sm:text-right">
-                    <div className="text-xs text-zinc-600">Total</div>
-                    <div className="text-base md:text-2xl font-bold text-zinc-900">
-                      ${" "}{nf.format(total)}
-                    </div>
-                  </div>
-                  {step === 1 && (
-                    <button
-                      onClick={handleAddToCart}
-                      disabled={!selectedVariant && variants.length > 0}
-                      className="flex items-center gap-2 bg-zinc-100 text-zinc-800 px-4 md:px-5 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      <span className="hidden sm:inline">Agregar al carrito</span>
-                      <span className="sm:hidden">Carrito</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (step === 1) {
-                        setStep(2);
-                        return;
-                      }
-                      handlePay();
-                    }}
-                    disabled={
-                      (!selectedVariant && variants.length > 0) ||
-                      (step === 2 && (!isCustomerFormValid || isPaying))
-                    }
-                    className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
-                  >
-                    {step === 1
-                      ? "Comprar ahora"
-                      : isPaying
-                      ? "Procesando..."
-                      : "Continuar al pago"}
-                  </button>
-                </div>
-              </div>
+          <div className="bg-white border-b px-4 py-3 flex items-center justify-between pr-14">
+            <div className="flex items-center gap-2">
+              {step === 2 && (
+                <button
+                  onClick={() => setStep(1)}
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition"
+                  aria-label="Volver a personalización"
+                >
+                  <ArrowLeft className="h-4 w-4 text-gray-600" />
+                </button>
+              )}
+              <h1 className="text-base font-bold text-zinc-900">
+                Personaliza tu relicario corazón
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-bold text-zinc-900">${nf.format(total)}</p>
+              {step === 1 && (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!selectedVariant && variants.length > 0}
+                  className="flex items-center gap-1.5 bg-zinc-100 text-zinc-800 px-3 py-2 rounded-full font-medium hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="hidden sm:inline">Carrito</span>
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (step === 1) {
+                    setStep(2);
+                    return;
+                  }
+                  handlePay();
+                }}
+                disabled={
+                  (!selectedVariant && variants.length > 0) ||
+                  (step === 2 && (!isCustomerFormValid || isPaying))
+                }
+                className="bg-[#5E3A1E] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4C2F18] disabled:opacity-60 disabled:cursor-not-allowed transition text-sm"
+              >
+                {step === 1
+                  ? "Comprar ahora"
+                  : isPaying
+                  ? "Procesando..."
+                  : "Continuar al pago"}
+              </button>
             </div>
           </div>
 
           {/* CONTENIDO */}
-          <div className="flex-1 overflow-y-auto p-8 pb-10 pt-6">
+          <div className="flex-1 overflow-y-auto p-6">
             {step === 1 && (
-              <>
-                {/* Preview del relicario */}
-                <div className="flex justify-center mb-8">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                {/* Columna izquierda: Preview del relicario */}
+                <div className="flex-1 flex flex-col items-center justify-center">
                   <div
-                    className="relative w-[520px] h-[280px] perspective-1000"
+                    className="relative w-[320px] h-[180px] md:w-[360px] md:h-[200px] perspective-1000"
                     style={{ transformStyle: "preserve-3d" }}
                   >
   {/* Frente */}
@@ -555,7 +465,7 @@ const handlePay = async () => {
       className="object-contain"
     />
 
-    {/* Texto / diseño sobre el frente */}
+    {/* Texto sobre el frente */}
     <div
       className="absolute inset-0 flex items-center justify-center"
       style={{
@@ -563,189 +473,19 @@ const handlePay = async () => {
         transition: "opacity 0.2s ease-in-out",
       }}
     >
-      {effectiveDesign ? (
-        <div className="absolute inset-0 pointer-events-none z-10">
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: `translate(calc(-50% + ${effectiveDesign.offsetX ?? 0}px), calc(-50% + ${
-                effectiveDesign.offsetY ?? 0
-              }px))`,
-            }}
-          >
-            {(() => {
-              const txt = formatTextWithBreak(petName || effectiveDesign.defaultText || "");
-              let baseSize = effectiveDesign.fontSize ?? designFontSize;
-              if (isCookie) {
-                baseSize += 2;
-              }
-              const computedFontSize =
-                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.85) : baseSize;
-
-              const baseStyle = {
-                fontFamily: effectiveDesign.fontFamily || fontFamily,
-                color: effectiveDesign.color || textColor,
-                fontSize: `${computedFontSize}px`,
-                padding:
-                  effectiveDesign.position === "left" || effectiveDesign.position === "right"
-                    ? "0"
-                    : "0 8px",
-              } as React.CSSProperties;
-              const ox = effectiveDesign.offsetX ?? 0;
-              const oy = effectiveDesign.offsetY ?? 0;
-              const horizGap = -20;
-
-              switch (effectiveDesign.position) {
-                case "below":
-                  return (
-                    <div className="flex flex-col items-center">
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div style={{ ...baseStyle, marginTop: oy }}>{txt}</div>
-                    </div>
-                  );
-                case "above":
-                  return (
-                    <div className="flex flex-col items-center">
-                      <div style={{ ...baseStyle, marginBottom: oy }}>{txt}</div>
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                    </div>
-                  );
-                case "left":
-                  return (
-                    <div className="flex items-center">
-                      <div style={{ ...baseStyle, marginRight: horizGap }}>{txt}</div>
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                    </div>
-                  );
-                case "right":
-                  return (
-                    <div className="flex items-center">
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div style={{ ...baseStyle, marginLeft: horizGap }}>{txt}</div>
-                    </div>
-                  );
-                case "center":
-                default:
-                  return (
-                    <div
-                      className="relative"
-                      style={{
-                        width: effectiveDesign.width ?? 150,
-                        height: effectiveDesign.height ?? 84,
-                        overflow: "visible",
-                      }}
-                    >
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div
-                        style={{
-                          ...baseStyle,
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          transform: `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`,
-                        }}
-                      >
-                        {txt}
-                      </div>
-                    </div>
-                  );
-              }
-            })()}
-          </div>
-        </div>
-      ) : (
-        <span
-          className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
-          style={{
-            fontFamily,
-            textShadow: `
-              0 1px 1px rgba(255,255,255,0.8),
-              0 2px 2px rgba(0,0,0,0.2)
-            `,
-            fontSize: `${designFontSize + (isCookie ? 2 : 0)}px`,
-            color: textColor,
-          }}
-        >
-          {formatTextWithBreak(petName)}
-        </span>
-      )}
+      <span
+        className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+        style={{
+          fontFamily,
+          textShadow: `
+            0 1px 1px rgba(255,255,255,0.8),
+            0 2px 2px rgba(0,0,0,0.2)
+          `,
+          fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+        }}
+      >
+        {formatTextWithBreak(petName)}
+      </span>
     </div>
   </div>
 
@@ -770,311 +510,145 @@ const handlePay = async () => {
         transition: "opacity 0.2s ease-in-out",
       }}
     >
-      {effectiveDesign ? (
-        <div className="absolute inset-0 pointer-events-none z-10">
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: `translate(calc(-50% + ${effectiveDesign.offsetX ?? 0}px), calc(-50% + ${
-                effectiveDesign.offsetY ?? 0
-              }px))`,
-            }}
-          >
-            {(() => {
-              const txt = formatTextWithBreak(ownerInfo || effectiveDesign.defaultText || "");
-              let baseSize = effectiveDesign.fontSize ?? designFontSize;
-              if (isCookie) {
-                baseSize += 2;
-              }
-              const computedFontSize =
-                  effectiveDesign.position === "right" ? Math.round(baseSize * 0.7) : baseSize;
-
-              const baseStyle = {
-                fontFamily: effectiveDesign.fontFamily || fontFamily,
-                color: effectiveDesign.color || textColor,
-                fontSize: `${computedFontSize}px`,
-                padding:
-                  effectiveDesign.position === "left" || effectiveDesign.position === "right"
-                    ? "0"
-                    : "0 8px",
-              } as React.CSSProperties;
-              const ox = effectiveDesign.offsetX ?? 0;
-              const oy = effectiveDesign.offsetY ?? 0;
-              const horizGap = -30;
-
-              switch (effectiveDesign.position) {
-                case "below":
-                  return (
-                    <div className="flex flex-col items-center">
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div style={{ ...baseStyle, marginTop: oy }}>{txt}</div>
-                    </div>
-                  );
-                case "above":
-                  return (
-                    <div className="flex flex-col items-center">
-                      <div style={{ ...baseStyle, marginBottom: oy }}>{txt}</div>
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                    </div>
-                  );
-                case "left":
-                  return (
-                    <div className="flex items-center">
-                      <div style={{ ...baseStyle, marginRight: horizGap }}>{txt}</div>
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                    </div>
-                  );
-                case "right":
-                  return (
-                    <div className="flex items-center">
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div style={{ ...baseStyle, marginLeft: horizGap }}>{txt}</div>
-                    </div>
-                  );
-                case "center":
-                default:
-                  return (
-                    <div
-                      className="relative"
-                      style={{
-                        width: effectiveDesign.width ?? 150,
-                        height: effectiveDesign.height ?? 84,
-                        overflow: "visible",
-                      }}
-                    >
-                      <div
-                        className="relative"
-                        style={{
-                          width: effectiveDesign.width ?? 150,
-                          height: effectiveDesign.height ?? 84,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={effectiveDesign.path}
-                          alt={effectiveDesign.label || ""}
-                          width={effectiveDesign.width ?? 150}
-                          height={effectiveDesign.height ?? 84}
-                          className="object-contain"
-                        />
-                      </div>
-                      <div
-                        style={{
-                          ...baseStyle,
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          transform: `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`,
-                        }}
-                      >
-                        {txt}
-                      </div>
-                    </div>
-                  );
-              }
-            })()}
-          </div>
-        </div>
-      ) : (
-        <span
-          className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
-          style={{
-            fontFamily,
-            textShadow: `
-              0 1px 1px rgba(255,255,255,0.8),
-              0 2px 2px rgba(0,0,0,0.2)
-            `,
-          }}
-        >
-          {formatTextWithBreak(ownerInfo)}
-        </span>
-      )}
+      <span
+        className="text-xl font-extrabold text-[#3b3b3b] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] tracking-wide text-center inline-block max-w-[90%]"
+        style={{
+          fontFamily,
+          textShadow: `
+            0 1px 1px rgba(255,255,255,0.8),
+            0 2px 2px rgba(0,0,0,0.2)
+          `,
+          fontSize: `${20 + (isCookie ? 2 : 0)}px`,
+        }}
+      >
+        {formatTextWithBreak(ownerInfo)}
+      </span>
     </div>
   </div>
 
                   </div>
+
+                  {/* Botones de control debajo de la imagen */}
+                  <div className="flex flex-wrap justify-center mt-4 gap-3">
+                    <button
+                      onClick={handleRotate}
+                      className="flex items-center space-x-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        {currentFace === 1 ? "Ver reverso" : "Ver anverso"}
+                      </span>
+                    </button>
+
+                    {/* Mini paleta de colores */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                      <span className="text-sm text-gray-600">Color:</span>
+                      {variants.map((v) => {
+                        const isGoldVariant = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold");
+                        const isSelected = selectedVariant?.id === v.id;
+                        const colorClass = isGoldVariant ? "bg-yellow-400" : "bg-gray-300";
+                        return (
+                          <button
+                            key={v.id}
+                            onClick={() => {
+                              setSelectedVariant(v);
+                              const next: "gold" | "silver" = isGoldVariant ? "gold" : "silver";
+                              setVariant(next);
+                              if (typeof window !== "undefined") {
+                                localStorage.setItem("petTag_variant", next);
+                              }
+                            }}
+                            className={`w-6 h-6 rounded-full ${colorClass} transition-all ${
+                              isSelected
+                                ? "ring-2 ring-offset-2 ring-black"
+                                : "hover:scale-110"
+                            }`}
+                            title={v.name}
+                            aria-label={`Color ${v.name}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
-{/* Botones de control */}
-<div className="flex justify-center mb-6 space-x-4">
-  <button
-    onClick={handleRotate}
-    className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-  >
-    <RotateCcw className="h-4 w-4" />
-    <span className="text-sm font-medium">
-      {currentFace === 1 ? "Ver reverso" : "Ver anverso"}
-    </span>
-  </button>
+                {/* Columna derecha: Controles */}
+                <div className="flex-1 flex flex-col justify-center space-y-5">
+                  {/* Input de texto */}
+                  <div>
+                    <label htmlFor="tag-input" className="block text-sm font-medium text-gray-700 mb-2">
+                      {currentFace === 1 ? "Frase del anverso" : "Frase del reverso"}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        id="tag-input"
+                        type="text"
+                        value={currentFace === 1 ? petName : ownerInfo}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          const limit = 15;
+                          if (newValue.length <= limit) {
+                            if (currentFace === 1) {
+                              setPetName(newValue);
+                              if (typeof window !== "undefined") {
+                                localStorage.setItem("petTag_petName", newValue);
+                              }
+                            } else {
+                              setOwnerInfo(newValue);
+                              if (typeof window !== "undefined") {
+                                localStorage.setItem("petTag_ownerInfo", newValue);
+                              }
+                            }
+                          }
+                        }}
+                        placeholder={
+                          currentFace === 1
+                            ? "Frase del anverso"
+                            : "Frase del reverso"
+                        }
+                        maxLength={15}
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm font-medium"
+                      />
+                      <AIPhraseModal
+                        productType="relicario"
+                        maxChars={15}
+                        onSelectPhrase={(phrase) => {
+                          if (currentFace === 1) {
+                            setPetName(phrase);
+                            if (typeof window !== "undefined") {
+                              localStorage.setItem("petTag_petName", phrase);
+                            }
+                          } else {
+                            setOwnerInfo(phrase);
+                            if (typeof window !== "undefined") {
+                              localStorage.setItem("petTag_ownerInfo", phrase);
+                            }
+                          }
+                        }}
+                      >
+                        <span>Ideas</span>
+                      </AIPhraseModal>
+                    </div>
+                    <p
+                      className={`text-xs mt-1 ${
+                        (currentFace === 1 ? petName.length : ownerInfo.length) >=
+                        (15)
+                          ? "text-red-500"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {currentFace === 1
+                        ? `${petName.length}/${15} caracteres`
+                        : `${ownerInfo.length}/${15} caracteres`}
+                    </p>
+                  </div>
 
-  {/* Mini paleta de colores */}
-  <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-    <span className="text-sm text-gray-600 mr-1">Color:</span>
-    {variants.map((v) => {
-      const isGold = v.color?.toLowerCase() === "gold" || v.name.toLowerCase().includes("gold");
-      const isSelected = selectedVariant?.id === v.id;
-      const colorClass = isGold ? "bg-yellow-400" : "bg-gray-300";
-      return (
-        <button
-          key={v.id}
-          onClick={() => {
-            setSelectedVariant(v);
-            const next: "gold" | "silver" = isGold ? "gold" : "silver";
-            setVariant(next);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("petTag_variant", next);
-            }
-          }}
-          className={`w-6 h-6 rounded-full ${colorClass} transition-all ${
-            isSelected
-              ? "ring-2 ring-offset-2 ring-black"
-              : "hover:scale-110"
-          }`}
-          title={v.name}
-          aria-label={`Color ${v.name}`}
-        />
-      );
-    })}
-  </div>
-</div>
-
-
-{/* Inputs de texto */}
-<div className="space-y-4 mb-6 mt-4">
-  <div>
-    <label htmlFor="tag-input" className="sr-only">
-      {currentFace === 1 ? "Nombre de la mascota" : "Información del dueño"}
-    </label>
-    <div className="flex gap-2 items-center">
-      <input
-        id="tag-input"
-        type="text"
-        value={currentFace === 1 ? petName : ownerInfo}
-        onChange={(e) => {
-          const newValue = e.target.value;
-          const limit = selectedDesignConfig?.maxChars ?? 15;
-          if (newValue.length <= limit) {
-            if (currentFace === 1) {
-              setPetName(newValue);
-              if (typeof window !== "undefined") {
-                localStorage.setItem("petTag_petName", newValue);
-              }
-            } else {
-              setOwnerInfo(newValue);
-              if (typeof window !== "undefined") {
-                localStorage.setItem("petTag_ownerInfo", newValue);
-              }
-            }
-          }
-        }}
-        placeholder={
-          currentFace === 1
-            ? "Nombre de la mascota"
-            : "Info. de contacto del dueño"
-        }
-        maxLength={selectedDesignConfig?.maxChars ?? 15}
-        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-sm font-semibold tracking-wide"
-      />
-      <AIPhraseModal
-        productType="relicario"
-        maxChars={selectedDesignConfig?.maxChars ?? 15}
-        onSelectPhrase={(phrase) => {
-          if (currentFace === 1) {
-            setPetName(phrase);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("petTag_petName", phrase);
-            }
-          } else {
-            setOwnerInfo(phrase);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("petTag_ownerInfo", phrase);
-            }
-          }
-        }}
-      >
-        <span>Sugerir</span>
-      </AIPhraseModal>
-    </div>
-    <p
-      className={`text-xs mt-1 text-center ${
-        (currentFace === 1 ? petName.length : ownerInfo.length) >=
-        (selectedDesignConfig?.maxChars ?? 15)
-          ? "text-red-500"
-          : "text-gray-500"
-      }`}
-    >
-      {currentFace === 1
-        ? `${petName.length}/${selectedDesignConfig?.maxChars ?? 15} caracteres`
-        : `${ownerInfo.length}/${selectedDesignConfig?.maxChars ?? 15} caracteres`}
-    </p>
-  </div>
-</div>
-
-                {/* Selector de fuente */}
-                <div className="mt-2 mb-6 flex justify-center">
-                  <select
+                  {/* Selector de fuente */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Estilo de letra
+                    </label>
+                    <select
                       value={fontFamily}
                       onChange={(e) => {
                         const newFont = e.target.value;
@@ -1083,71 +657,67 @@ const handlePay = async () => {
                           localStorage.setItem("petTag_fontFamily", newFont);
                         }
                       }}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                  >
-                    <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
-                    <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
-                    <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
-                    <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
-                      Lucida Calligraphy (elegante)
-                    </option>
-                  </select>
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 text-sm"
+                    >
+                      <option value={cookie.style.fontFamily}>Cookie (dulce / manuscrita)</option>
+                      <option value={courgette.style.fontFamily}>Courgette (caligráfica)</option>
+                      <option value={"Georgia, 'Times New Roman', serif"}>Georgia (clásica)</option>
+                      <option value={"'Lucida Calligraphy', 'Lucida Handwriting', cursive"}>
+                        Lucida Calligraphy (elegante)
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Upload de imágenes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Fotos para el relicario (máx. 2)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={uploadedImages.length >= 2}
+                      onChange={handleImageUpload}
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+
+                    {uploadedImages.length > 0 && (
+                      <div className="mt-4 flex gap-4">
+                        {uploadedImages.map((img, index) => (
+                          <div
+                            key={index}
+                            className="relative w-20 h-20 rounded-lg overflow-hidden"
+                          >
+                            <Image
+                              src={img}
+                              alt={`Imagen cargada ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+                                setPhotosForCheckout((prev) => {
+                                  const filtered = prev.filter((_, i) => i !== index);
+                                  return filtered.map((p, idx) => ({
+                                    ...p,
+                                    position: idx + 1,
+                                  }));
+                                });
+                              }}
+                              className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
+                            >
+                              <X className="h-3 w-3 text-gray-600" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-
-{/* Upload de imágenes (rama nueva, con múltiples fotos) */}
-<div className="px-2 md:px-8 pb-6">
-  <div className="border-t border-gray-200 pt-4 mt-4">
-    <h3 className="text-sm font-medium text-gray-900 mb-2">
-      Sube hasta 2 fotos para añadir al relicario.
-    </h3>
-    <div className="flex items-center space-x-4">
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        disabled={uploadedImages.length >= 2}
-        onChange={handleImageUpload}
-        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
-      />
-    </div>
-
-    {uploadedImages.length > 0 && (
-      <div className="mt-4 flex gap-4">
-        {uploadedImages.map((img, index) => (
-          <div
-            key={index}
-            className="relative w-32 h-32 rounded-lg overflow-hidden"
-          >
-            <Image
-              src={img}
-              alt={`Imagen cargada ${index + 1}`}
-              fill
-              className="object-cover"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-                setPhotosForCheckout((prev) => {
-                  const filtered = prev.filter((_, i) => i !== index);
-                  return filtered.map((p, idx) => ({
-                    ...p,
-                    position: idx + 1,
-                  }));
-                });
-              }}
-              className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
-            >
-              <X className="h-3 w-3 text-gray-600" />
-            </button>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</div>
-              </>
+              </div>
             )}
 
             {step === 2 && (
