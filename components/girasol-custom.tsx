@@ -213,12 +213,13 @@ const handlePay = async () => {
     const getFontSizeForCircle = (text: string) => {
         const len = text.length;
 
-
         let size: number;
-        if (len <= 20) size = 18;
-        else if (len <= 50) size = 15;
-        else if (len <= 95) size = 13;
-        else size = 11;
+        if (len <= 10) size = 28;
+        else if (len <= 20) size = 24;
+        else if (len <= 35) size = 20;
+        else if (len <= 50) size = 17;
+        else if (len <= 70) size = 14;
+        else size = 12;
 
         if (isCookie) {
             size += 5;
@@ -501,7 +502,7 @@ const handlePay = async () => {
                                             step === 2 &&
                                             (!isCustomerFormValid || isPaying || !selectedVariant)
                                         }
-                                        className="bg-black text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
+                                        className="bg-[#5E3A1E] text-white px-4 md:px-6 py-2 md:py-3 rounded-full font-medium hover:bg-[#4C2F18] disabled:opacity-60 disabled:cursor-not-allowed transition text-sm md:text-base"
                                     >
                                         {step === 1
                                             ? "Comprar ahora"
@@ -550,7 +551,7 @@ const handlePay = async () => {
                                                     {/* overlay de texto cara 1 */}
                                                     <div
                                                         className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{ paddingTop: "35%" }}
+                                                        style={{ paddingTop: "43%" }}
                                                     >
                                                         <span
                                                             className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
@@ -588,7 +589,7 @@ const handlePay = async () => {
                                                     {/* overlay de texto cara 2 */}
                                                     <div
                                                         className="absolute inset-0 flex items-center justify-center text-center pointer-events-none"
-                                                        style={{ paddingTop: "35%" }}
+                                                        style={{ paddingTop: "37%" }}
                                                     >
                                                         <span
                                                             className="leading-tight tracking-wide text-[#3b3b3b] max-w-[35%]"
